@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+<h1>What is Quokka?</h1>
+
+<p>Quokka is a software build system, focusing on reproducible, modular builds
+    with fine-grained dependency management. It essentially provides an <a href="http://ant.apache.org">Ant</a>-based
+    alternative to <a href="http://maven.apache.org">Maven</a>.
+</p>
+
+<h2>Key Features</h2>
+<dl>
+    <dt><b>Modular Builds</b></dt>
+    <dd>
+        Build tasks such as compilation, or source code formatting are packaged into <i>plugins</i>. Each
+        project can be tailored to include specific plugins as required.
+        <br/><br/>
+        Build configurations (including plugins, dependencies and other resources) can be bundled
+        into a <i>dependency set</i> for re-use amongst projects. For example, a dependency
+        set could be defined to add Checksytle processing to your project, along with your tailored checkstyle
+        configuration file. Projects can include any number of such dependency sets, and sets may nest other
+        sets within them, providing varying degrees of reuse.
+    </dd>
+    <br/>
+    <dt><b>Fine-grained Dependency Management</b></dt>
+    <dd>
+        Quokka allows any number of paths of dependencies to be defined for use within a project. Selected paths can
+        also be exported to the repository for reuse within other projects. If your project depends on another project,
+        quokka can automatically include dependencies of your dependencies recursively. In such cases you have full
+        control down to any level as to which dependencies are included.
+    </dd>
+    <br/>
+    <dt><b>Extensibility</b></dt>
+    <dd>
+        Quokka projects can be extended using both plugins and standard Ant scripts. The plugin architecture allows
+        plugins to interact with one another. For example, the life cycle plugin defines an abstract "test" target which
+        is implemented by both the jUnit and TestNG plugins - you just pick the implementation for your project.
+        Furthermore, explicit SPIs have been defined to extend quokka programatically, including the Plugin and
+        Repository SPIs.
+    </dd>
+    <br/>
+    <dt><b>Reproducible Builds</b></dt>
+    <dd>
+        Quokka combines several features to make builds reproducible. Reproducible means that if a given revision of
+        your project built with quokka in the past, it should be possible to build it today with exactly the same
+        result. The following features make this possible:
+        <ul>
+            <li><b>Bootstrapping:</b>
+                A project can be configured to use a specific version of quokka and jvm. Quokka will then fork the
+                required environment automatically.
+            </li>
+            <li><b>Versioned global repository:</b>
+                Once an artifact, such as a .jar, is stored in the global repository, it and any metadata associated
+                with it can never change. If corrections are required, they will be stored as a separate revision. This
+                guarantees a reference to a given dependency will not change over time.
+            </li>
+            <li><b>Project repository: </b>
+                For even greater safety, some or all artifacts can be stored with the project in version control in a
+                local project repository.
+            </li>
+            <li><b>Plugins do not automatically upgrade themselves: </b>
+                Unlike Maven, quokka plugins do not automatically upgrade themselves. You must specify the version of a
+                plugin to use and it remains constant.
+            </li>
+            <li><b>Release plugin:</b>
+                The release plugin provides additional checks upon releasing and tagging your code, including ensuring
+                that bootstrapping is configured and there are no snapshot dependencies.
+            </li>
+        </ul>
+    </dd>
+</dl>
+<h2>Additional Features</h2>
+<ul>
+    <li><b>Profiles:</b>
+        Profiles can be used to enable certain features, or change configurations for a given project. Profiles
+        might include "dev" and "prod" for configuring a .war file for development and production environments
+        respectively. There are also automatic
+        profiles based on property values. For example, if you set your java source level to 1.5, the jUnit
+        plugin will automatically select jUnit 4.x, instead of 3.x.
+    </li>
+    <li><b>IDE integration:</b>
+        Quokka is implemented as a transparent extension to ANT. There have been no modifications to ANT at all
+        to implement quokka. As such, existing IDE integration for ANT works with quokka by default (or can be
+        configured to do so).
+    </li>
+    <li><b>Extensions:</b>
+        A wide range of extensions are available for quokka already, with the list growing rapidly. See the
+        <a href="extensions.html">extensions</a> page for more information on available plugins, archetypes
+        and XML catalogues.
+    </li>
+</ul>
+<h1>Where to next?</h1>
+
+<p>Check out the <a href="getting-started.html">Getting Started</a> guide for information on installing and
+    running quokka for the first time.</p>
+
+<h1><a name="news"><span/></a>News</h1>
+
+<div class="post">
+    <div class="date">
+        <span class="month">Nov</span>
+        <span class="day">24</span>
+    </div>
+
+    <p>
+        <span class="title">Quokka 1.0-m01 Released</span>
+        The initial release is now available from the downloads page for early adopters.
+    </p>
+</div>
+</body>
+</html>

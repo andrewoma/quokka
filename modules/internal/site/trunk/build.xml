@@ -1,0 +1,69 @@
+<project name="quokka.site.ext">
+    <import file="../../internal/master/ide-parent.xml"/>
+
+    <target name="site"
+            depends="transform-html, transform-docbook, transform-docbook-html, transform-temp-html, extract-resources, help">
+        <copy todir="${quokka.project.targetdir}/site/help-example">
+            <fileset dir="${quokka.project.targetdir}/help"/>
+        </copy>
+    </target>
+
+    <macrodef name="deploy">
+        <attribute name="file"/>
+        <attribute name="script"/>
+        <sequential>
+            <!-- Make sure user and password have been set -->
+            <input-unless-set property="user"/>
+            <input-unless-set property="password"/>
+
+            <!-- Copy up to quokka.ws -->
+            <scp file="@{file}"
+                 todir="${user}:${password}@quokka.ws:~/backups/@{script}.zip"
+                 trust="true"/>
+
+            <!--deploy it -->
+            <sshexec host="quokka.ws"
+                     username="${user}"
+                     password="${password}"
+                     command="/bin/sh ~/bin/@{script}.sh"
+                     trust="true"/>
+        </sequential>
+    </macrodef>
+
+    <target name="deploy-site">
+        <zip destfile="${quokka.project.targetdir}/quokka.ws.zip">
+            <fileset dir="${quokka.project.targetdir}/site"/>
+        </zip>
+
+        <deploy file="${quokka.project.targetdir}/quokka.ws.zip" script="deploy-site"/>
+    </target>
+
+    <target name="deploy-snapshot-repo">
+        <property name="snapshotRepoTemp" location="${quokka.project.targetdir}/snapshot-repo.zip"/>
+        <zip destfile="${snapshotRepoTemp}">
+            <fileset dir="${quokka.repo.snapshot.rootdir}" includes="quokka/**"/>
+        </zip>
+
+        <deploy file="${snapshotRepoTemp}" script="deploy-snapshot-repo"/>
+    </target>
+
+    <target name="deploy-reports">
+        <property name="reportsTemp" location="${quokka.project.targetdir}/reports.zip"/>
+        <zip destfile="${reportsTemp}">
+            <fileset dir="../../internal/master/target/dev-reports"/>
+        </zip>
+
+        <deploy file="${reportsTemp}" script="deploy-reports"/>
+    </target>
+
+    <target name="deploy-repo">
+        <property name="repoTemp" location="${quokka.project.targetdir}/repo.zip"/>
+        <zip destfile="${repoTemp}">
+            <fileset dir="${quokka.repo.localrelease.rootdir}"/>
+        </zip>
+
+        <deploy file="${repoTemp}" script="deploy-repo"/>
+    </target>
+
+    <target name="deploy-all" depends="deploy-site, deploy-snapshot-repo, deploy-repo"/>
+</project>

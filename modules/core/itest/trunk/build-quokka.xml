@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="core.itest">
+    <artifacts group="quokka.core.itest" version="1.0-m01-ss">
+        <artifact paths="runtime"/>
+    </artifacts>
+
+    <dependency-set>
+        <dependency group="quokka.core.test" version="1.0-m01-ss" paths="compile(junit), runtime"/>
+        <dependency group="apache.ant" version="1.7.0" paths="compile"/>
+        <dependency group="quokka.core.repo-spi" version="1.0-m01-ss" paths="compile"/>
+        <dependency group="quokka.core.repo-standard" version="1.0-m01-ss" paths="compile"/>
+        <dependency group="quokka.core.util" version="1.0-m01-ss" paths="compile"/>
+        <dependency group="quokka.core.main" version="1.0-m01-ss" paths="compile"/>
+        <dependency group="quokka.core.plugin-spi" version="1.0-m01-ss" paths="compile, runtime"/>
+
+        <dependency-set group="quokka.internal.module-depset" version="1.0-m01-ss"/>
+    </dependency-set>
+</project>

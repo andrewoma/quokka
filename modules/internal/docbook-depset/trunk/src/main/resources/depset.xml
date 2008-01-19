@@ -1,0 +1,11 @@
+<dependency-set>
+    <path id="docbook" description="Path for xml plugin to transform docbook documents"/>
+    <path id="docbook-cat" description="Path for xml catalogs for docbook transformations"/>
+
+    <dependency group="sf.saxon" version="6.5.3" paths="docbook"/>
+    <dependency group="sf.docbook" name="saxon-xsl-ext" version="1.72" paths="docbook"/>
+    <dependency group="apache.ant" name="trax" version="1.7" paths="docbook"/>
+
+    <dependency group="quokka.xmlcat.docbook-xsl-1-72-0" version="1.0-m01-ss" paths="docbook-cat"/>
+    <dependency group="quokka.xmlcat.docbook-dtd-4-5" version="1.0-m01-ss" paths="docbook-cat"/>
+</dependency-set>

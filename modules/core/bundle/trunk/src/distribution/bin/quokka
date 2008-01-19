@@ -1,0 +1,57 @@
+#!/bin/sh
+# This script is designed to launch multiple versions of quokka via
+# quokka's bootstrapping mechanism.
+home=`dirname "$0"`
+home=`dirname "$home"`
+
+# Edit the following section to set the default quokka version.
+# Cygwin users: do not leave trailing slashes on any paths
+# =========================================================================
+#JAVACMD=</path/to your most commonly used jdk/java>
+maxMemory=1024m
+launcherCp=$home/lib/apache.ant_ant-launcher_jar_1.7.jar
+quokkaCp=$home/lib/apache.ant_ant_jar_1.7.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_1.0-m01-ss.jar
+# =========================================================================
+
+# Get the java command
+if [ -z "$JAVACMD" ] ; then
+  if [ -n "$JAVA_HOME"  ] ; then
+    # IBM's JDK on AIX uses strange locations for the executables
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+      JAVACMD="$JAVA_HOME/jre/sh/java"
+    elif [ -x "$JAVA_HOME/jre/bin/java" ] ; then
+      JAVACMD="$JAVA_HOME/jre/bin/java"
+    else
+      JAVACMD="$JAVA_HOME/bin/java"
+    fi
+  else
+    JAVACMD=`which java 2> /dev/null `
+    if [ -z "$JAVACMD" ] ; then
+        JAVACMD=java
+    fi
+  fi
+fi
+
+if [ ! -x "$JAVACMD" ] ; then
+  echo "Error: JAVA_HOME is not defined correctly."
+  echo "  We cannot execute $JAVACMD"
+  exit 1
+fi
+
+# Allow for cygwin, convert paths back to windows convention
+antLibDir=$home/antlib
+case "`uname`" in
+  CYGWIN*) cygwin=true
+    home=`cygpath -w "$home"`
+    JAVACMD=`cygpath -w "$JAVACMD"`
+    antLibDir=`cygpath -w "$antLibDir"`
+    launcherCp=`cygpath --path -w "$launcherCp"`
+    quokkaCp=`cygpath --path -w "$quokkaCp"`
+  ;;
+esac
+
+standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\" -Dquokka.bootstrap.maxMemory=$maxMemory -Xmx$maxMemory"
+standardArgs="-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib"
+cmd="\"$JAVACMD\" $standardOpts $QUOKKA_OPTS -classpath \"$launcherCp\" \"-Dant.home=$home\" org.apache.tools.ant.launch.Launcher $standardArgs $QUOKKA_ARGS -cp \"$quokkaCp\" $@"
+eval $cmd

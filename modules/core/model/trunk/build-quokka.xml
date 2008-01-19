@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="core.model">
+    <artifacts group="quokka.core.model" version="1.0-m01-ss">
+        <artifact paths="runtime"/>
+    </artifacts>
+
+<!--
+    <bootstrap>
+        <cores>
+            <core version="1.0-m01"/>
+        </cores>
+        <jdks java-version="">
+            <jdk max-memory="512m" spec-version="1.6">
+                <sysproperty name="os.arch" value="Windows" required="true"/>
+            </jdk>
+        </jdks>
+        <boot-dependency group="asdfasf" name="sfsdfs" version="asfa"/>
+    </bootstrap>
+-->
+
+    <dependency-set>
+        <dependency group="quokka.core.test" version="1.0-m01-ss" paths="test-compile(junit)"/>
+        <dependency group="quokka.core.repo-spi" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="quokka.core.util" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="quokka.core.bootstrap-util" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="quokka.core.version" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="quokka.core.plugin-spi" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
+
+        <dependency-set group="quokka.internal.module-depset" version="1.0-m01-ss"/>
+    </dependency-set>
+</project>

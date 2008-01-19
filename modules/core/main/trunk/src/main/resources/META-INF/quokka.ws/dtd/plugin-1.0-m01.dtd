@@ -1,0 +1,41 @@
+<!--
+   DTD for quokka plugin files. See http://quokka.ws/project-reference.html for more information.
+
+   PUBLIC "quokka.ws/dtd/plugin-1.0-m01"
+   SYSTEM "http://quokka.ws/dtd/plugin-1.0-m01.dtd"
+-->
+<!ELEMENT description (#PCDATA) >
+
+<!ELEMENT path-group EMPTY >
+<!ATTLIST path-group id NMTOKEN #REQUIRED >
+<!ATTLIST path-group paths CDATA #REQUIRED >
+
+<!ELEMENT plugin ( description*, targets, properties* ) >
+<!ATTLIST plugin class NMTOKEN #IMPLIED >
+<!ATTLIST plugin name-space NMTOKEN #REQUIRED >
+
+<!ELEMENT project-path EMPTY >
+<!ATTLIST project-path descend-default NMTOKEN #IMPLIED >
+<!ATTLIST project-path description CDATA #REQUIRED >
+<!ATTLIST project-path id NMTOKEN #REQUIRED >
+
+<!ELEMENT properties ( property+ ) >
+
+<!ELEMENT property ( #PCDATA ) >
+<!ATTLIST property name CDATA #REQUIRED >
+<!ATTLIST property value CDATA #IMPLIED >
+
+<!ELEMENT target ( path-group | project-path | property )* >
+<!ATTLIST target abstract ( true | false) #IMPLIED >
+<!ATTLIST target main ( true | false) #IMPLIED >
+<!ATTLIST target alias NMTOKEN #IMPLIED >
+<!ATTLIST target depends CDATA #IMPLIED >
+<!ATTLIST target description CDATA #IMPLIED >
+<!ATTLIST target implements NMTOKEN #IMPLIED >
+<!ATTLIST target name NMTOKEN #REQUIRED >
+<!ATTLIST target prefix NMTOKEN #IMPLIED >
+<!ATTLIST target template-name NMTOKEN #IMPLIED >
+<!ATTLIST target template NMTOKEN #IMPLIED >
+<!ATTLIST target enabled-by-default ( true | false) #IMPLIED >
+
+<!ELEMENT targets ( target+ ) >

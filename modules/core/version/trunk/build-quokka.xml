@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="core.version">
+    <artifacts group="quokka.core.version" version="1.0-m01-ss">
+        <artifact paths="runtime"/>
+    </artifacts>
+
+    <dependency-set>
+        <dependency group="quokka.core.test" version="1.0-m01-ss" paths="test-compile(junit)"/>
+        <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
+
+        <dependency-set group="quokka.internal.module-depset" version="1.0-m01-ss"/>
+    </dependency-set>
+</project>

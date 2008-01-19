@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="internal.site">
+    <artifacts group="quokka.internal.site" version="1.0-m01-ss">
+        <artifact/>
+    </artifacts>
+
+    <dependency-set>
+        <path id="site_naut05_custom"/>
+
+        <plugin group="quokka.plugin.resources" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.standard-lifecycle" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.jar" version="1.0-m01-ss"/>
+
+        <dependency group="apache.ant" name="trax" version="1.7" paths="xml-transform"/>
+        <dependency group="sf.saxon" version="6.5.3" paths="xml-transform"/>
+        <dependency group="sf.docbook" name="saxon-xsl-ext" version="1.72" paths="xml-transform"/>
+
+        <dependency group="quokka.xmlcat.site-naut05-custom" version="1.0-m01-ss"
+                    paths="xml-catalog, site_naut05_custom"/>
+        <dependency group="quokka.xmlcat.xhtml1-20020801" version="1.0-m01-ss" paths="xml-catalog"/>
+        <dependency group="quokka.xmlcat.docbook-xsl-1-72-0" version="1.0-m01-ss" paths="xml-catalog"/>
+        <dependency group="quokka.xmlcat.docbook-dtd-4-5" version="1.0-m01-ss" paths="xml-catalog"/>
+
+        <dependency group="apache.ant" name="jsch" version="1.7" paths="ant-types"/>
+        <dependency group="sf.jsch" version="0.1.35" paths="ant-types"/>
+
+        <!--<dependency group="apache.commons.net" version="1.4.1" paths="ant-types"/>-->
+        <!--<dependency group="apache.ant" name="commons-net" version="1.7" paths="ant-types"/>-->
+
+        <dependency-set group="quokka.internal.docbook-depset" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.xml" version="1.0-m01-ss">
+            <target name="transform-html" template="transform" prefix="transform-html"/>
+            <target name="transform-temp-html" template="transform" prefix="transform-temp-html"
+                    depends="quokka.help:generate-summary"/>
+            <target name="transform-docbook" template="transform" prefix="transform-docbook"/>
+            <target name="transform-docbook-html" template="transform" prefix="transform-docbook-html"
+                    depends="transform-docbook"/>
+        </plugin>
+        <plugin group="quokka.plugin.help" version="1.0-m01-ss">
+            <target name="generate-summary" depends="transform-html"/>
+        </plugin>
+        <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.help" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.resources" version="1.0-m01-ss">
+            <target name="extract-resources" template="extract" prefix="extract-resources"/>
+        </plugin>
+
+    </dependency-set>
+</project>

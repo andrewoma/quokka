@@ -1,0 +1,97 @@
+<project name="internal.master.ext">
+    <property name="home" location="../.."/>
+
+    <!-- Default to building all -->
+    <property name="modules" value="*"/>
+
+    <buildpath id="buildpath">
+        <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
+                 excludes="plugin/archetype/**, internal/master/**"/>
+    </buildpath>
+
+    <buildpath id="buildpath-code">
+        <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
+                 excludes="plugin/archetype/**, internal/**, depset/**, xmlcat/**, archetype/**, core/bundle/**"/>
+    </buildpath>
+
+    <!-- Iterate over 1 or more file lists, calling the target specified via subant -->
+    <macrodef name="iterate">
+        <attribute name="target"/>
+        <attribute name="master" default="none"/>
+        <attribute name="buildpathref" default="buildpath"/>
+        <sequential>
+            <subant target="@{target}" buildpathref="@{buildpathref}"/>
+            <if>
+                <not><equals arg1="@{master}" arg2="none"/></not>
+                <then>
+                    <run-target target="@{master}"/>
+                </then>
+            </if>
+        </sequential>
+    </macrodef>
+
+    <target name="install-all" description="Install all modules">
+        <iterate target="install"/>
+    </target>
+
+    <target name="process-test-resources-all">
+        <iterate target="process-test-resources"/>
+    </target>
+
+    <target name="process-resources-all">
+        <iterate target="process-resources"/>
+    </target>
+
+    <target name="package-all">
+        <iterate target="package"/>
+    </target>
+
+    <target name="clean-all">
+        <iterate target="clean" master="clean"/>
+    </target>
+
+    <target name="help-report-all">
+        <iterate target="quokka.help:collect" master="quokka.help:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="cobertura-all">
+        <iterate target="quokka.cobertura:collect" master="quokka.cobertura:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="junitreport-all">
+        <iterate target="quokka.junitreport:collect" master="quokka.junitreport:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="format-all">
+        <iterate target="format" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="reports-all">
+        <iterate target="quokka.devreport:generate" master="quokka.devreport:reports"/>
+    </target>
+
+    <target name="install-quokka">
+        <tstamp>
+            <format property="backup" pattern="'C:/Data/Dev/Projects/repository-backups/'yyyy-MM-dd-HHmmss"/>
+        </tstamp>
+        <copy todir="${backup}">
+            <fileset dir="C:\Data\Dev\Projects\stable-repository"/>
+        </copy>
+
+        <delete dir="C:\Data\Dev\Projects\repository-backups\rollback"/>
+        <copy todir="C:\Data\Dev\Projects\repository-backups\rollback">
+            <fileset dir="C:\Data\Dev\Projects\stable-repository"/>
+        </copy>
+
+        <!--<delete dir="C:\Documents and Settings\Administrator\My Documents\Development\NewProjects\stable-repository"/>-->
+        <copy todir="C:\Data\Dev\Projects\stable-repository">
+            <fileset dir="C:\Data\Dev\Projects\snapshot-repository"/>
+        </copy>
+    </target>
+
+    <target name="rollback-install-quokka">
+        <copy todir="C:\Data\Dev\Projects\stable-repository">
+            <fileset dir="C:\Data\Dev\Projects\repository-backups\rollback"/>
+        </copy>
+    </target>
+</project>

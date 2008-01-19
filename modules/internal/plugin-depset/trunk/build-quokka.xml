@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="internal.plugin-depset">
+    <artifacts group="quokka.internal.plugin-depset" version="1.0-m01-ss">
+        <artifact/>
+    </artifacts>
+
+    <dependency-set>
+        <dependency-set group="quokka.depset.resourcebundle" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
+        <!--<plugin group="quokka.plugin.help" version="1.0-m01-ss"/>-->
+    </dependency-set>
+</project>

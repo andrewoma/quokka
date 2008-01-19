@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+<h1>Building from Source</h1>
+
+
+<p>Follow the steps below to build quokka from source:</p>
+<ul>
+    <li>Quokka is used to build itself, so install quokka if you haven't
+        already done so.<br/></li>
+    <li><p>Install a <a href="http://subversion.tigris.org/">subversion</a> client if you haven't already done so.</p>
+    </li>
+    <li>You can check out individual modules and build them in isolation, or you can use predefined svn externals
+        that check out groups of modules together (recommended).
+        <ul>
+            <li>Core modules are at <a href="http://quokka.googlecode.com/svn/modules">http://quokka.googlecode.com/svn/modules</a>
+            </li>
+            <li>Contrib modules are at <a href="http://quokka-contrib.googlecode.com/svn/modules">http://quokka-contrib.googlecode.com/svn/modules</a>
+            </li>
+            <li>Externals are at <a href="http://quokka.googlecode.com/svn/externals">http://quokka.googlecode.com/svn/externals</a>
+                <br/><b>Note:</b> When using externals, make sure you check them out using the correct protocol (http://
+                for those
+                under the anon directory, and https:// for those under the dev directory)
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<h2>Examples</h2>
+
+<h3>Build the trunk of all modules (including core and contrib)</h3>
+<ul>
+    <li>Check out anonymously:<br/>
+        <pre>svn checkout <b>http</b>://quokka.googlecode.com/svn/externals/anon/all-trunks all-trunks</pre>
+    </li>
+    <li>Or, check out as a developer:<br/>
+        <pre>svn checkout <b>https</b>://quokka.googlecode.com/svn/externals/dev/all-trunks all-trunks
+    --username &lt;user&gt;</pre>
+    </li>
+    <li>Type <code>quokka -f all-trunks/internal/master/build.xml install-all</code> to build and install all
+        modules into your local repository.
+    </li>
+</ul>
+<h3>Building the jUnit plugin</h3>
+<ul>
+    <li>Check out anonymously:<br/>
+        <pre>svn checkout <b>http</b>://quokka-contrib.googlecode.com/svn/modules/plugin/junit/trunk junit-trunk</pre>
+    </li>
+    <li>Or, check out as a developer:<br/>
+        <pre>svn checkout <b>https</b>://quokka-contrib.googlecode.com/svn/modules/plugin/junit/trunk junit-trunk
+    --username &lt;user&gt;</pre>
+    </li>
+    <li>Type <code>quokka -f junit-trunk/build.xml install</code> to build and install the plugin</li>
+</ul>
+
+</body>
+</html>

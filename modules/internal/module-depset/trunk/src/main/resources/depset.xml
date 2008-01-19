@@ -1,0 +1,20 @@
+<dependency-set>
+    <profile id="skiptest" description="Skips tests, disabling all test-related targets"/>
+    <dependency-set group="quokka.depset.jar" version="1.0-m01-ss"/>
+    <plugin group="quokka.plugin.junit" version="1.0-m01-ss" profiles="-skiptest"/>
+    <plugin group="quokka.plugin.junitreport" version="1.0-m01-ss" use-defaults="false" profiles="-skiptest">
+        <target name="report" profiles="-hasParent"/>
+        <target name="collect" profiles="hasParent"/>
+    </plugin>
+    <plugin group="quokka.plugin.cobertura" version="1.0-m01-ss" use-defaults="false" profiles="-skiptest">
+        <target name="report" profiles="-hasParent"/>
+        <target name="collect" profiles="hasParent"/>
+    </plugin>
+    <plugin group="quokka.plugin.help" version="1.0-m01-ss" use-defaults="false">
+        <target name="report" profiles="-hasParent"/>
+        <target name="collect" profiles="hasParent"/>
+        <target name="generate-help"/>
+    </plugin>
+    <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
+    <plugin group="quokka.plugin.jalopy" version="1.0-m01-ss"/>
+</dependency-set>

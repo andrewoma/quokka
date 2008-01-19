@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+
+<project name="internal.master">
+    <!--<artifacts group="quokka.bundle" version="1.0-m01-ss">-->
+    <!--<artifact name="core"/>-->
+    <!--</artifacts>-->
+
+    <!--<bootstrap>-->
+    <!--<cores version="1.0">-->
+    <!--<core options="xerces, xercesimpl" profiles="jdk1.2, jdk1.3"/>-->
+    <!--<core profiles="-jdk1.2, -jdk1.3"/>-->
+    <!--</cores>-->
+    <!--<jdks max-memory="1024m">-->
+    <!--<jdk spec-verion="1.2" profiles="jdk1.2"/>-->
+    <!--<jdk spec-verion="1.3" profiles="jdk1.3"/>-->
+    <!--<jdk spec-verion="1.4" profiles="jdk1.4"/>-->
+    <!--<jdk spec-verion="1.5" profiles="jdk1.5"/>-->
+    <!--<jdk spec-verion="1.6" profiles="jdk1.6"/>-->
+    <!--</jdks>-->
+    <!--</bootstrap>-->
+
+    <dependency-set>
+        <plugin group="quokka.plugin.standard-lifecycle" version="1.0-m01-ss"/>
+        <plugin group="quokka.plugin.cobertura" version="1.0-m01-ss" use-defaults="false"
+                targets="aggregate-report"/>
+        <plugin group="quokka.plugin.junitreport" version="1.0-m01-ss" use-defaults="false"
+                targets="aggregate-report"/>
+        <plugin group="quokka.plugin.help" version="1.0-m01-ss" use-defaults="false"
+                targets="aggregate-report"/>
+        <plugin group="quokka.plugin.devreport" version="1.0-m01-ss" use-defaults="false" targets="reports"/>
+    </dependency-set>
+</project>

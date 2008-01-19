@@ -1,0 +1,70 @@
+/*
+ * Copyright 2007-2008 Andrew O'Malley
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+package ws.quokka.core.bootstrap.resources;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+
+/**
+ *
+ */
+public class BootStrapResources {
+    //~ Instance fields ------------------------------------------------------------------------------------------------
+
+    private List jdks = new ArrayList();
+    private List availableLibraries = new ArrayList();
+
+    //~ Methods --------------------------------------------------------------------------------------------------------
+
+    public List getJdks() {
+        return jdks;
+    }
+
+    public List getAvailableLibraries() {
+        return availableLibraries;
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+
+        for (Iterator i = jdks.iterator(); i.hasNext();) {
+            Jdk jdk = (Jdk)i.next();
+            sb.append(jdk.getLocation().getAbsolutePath()).append("\n");
+
+            for (Iterator j = new TreeMap(jdk.getProperties()).entrySet().iterator(); j.hasNext();) {
+                Map.Entry entry = (Map.Entry)j.next();
+                sb.append("\t").append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+            }
+
+            sb.append("\n");
+        }
+
+        sb.append("Available libraries:\n");
+
+        for (Iterator i = availableLibraries.iterator(); i.hasNext();) {
+            DependencyResource resource = (DependencyResource)i.next();
+            sb.append(resource.toFileName()).append("\n");
+        }
+
+        return sb.toString();
+    }
+}

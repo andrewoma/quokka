@@ -1,0 +1,45 @@
+<project>
+    <someelement/>
+
+    <bootstrap profiles="p1">
+        <cores>
+            <core version="cores-default"/>
+        </cores>
+        <cores profiles="p1">
+            <core version="cores-p1"/>
+            <core version="cores-p2" profiles="p2"/>
+        </cores>
+        <cores profiles="p2">
+            <core version="cores-p2-1"/>
+            <core version="cores-p2-1"/>
+        </cores>
+        <core version="core-p1" profiles="p1"/>
+        <core version="core-p2" profiles="p2"/>
+        <core version="core-default"/>
+
+        <jdk java-version="jdk-p1" profiles="p1">
+            <sysproperty name="sysprop-default" value="sysprop-default"/>
+            <sysproperty name="sysprop-p1" value="sysprop-p1" profiles="p1"/>
+            <sysproperty name="sysprop-p2" value="sysprop-p2" profiles="p2"/>
+        </jdk>
+        <jdk java-version="blah" profiles="p2"/>
+        <jdk java-version="jdk-default"/>
+        <jdks profiles="p1">
+            <jdk java-version="jdk-p1-1"/>
+        </jdks>
+        <jdks profiles="p2">
+            <jdk java-version="jdk-p2-1"/>
+        </jdks>
+        <jdks>
+            <jdk java-version="jdk-default-1"/>
+        </jdks>
+
+        <dependency group="group-default" version="1"/>
+        <dependency group="group-p1" version="1" profiles="p1"/>
+        <dependency group="group-p2" version="1" profiles="p2"/>
+    </bootstrap>
+
+    <bootstrap profiles="p2"/>
+
+    <someotherelement/>
+</project>

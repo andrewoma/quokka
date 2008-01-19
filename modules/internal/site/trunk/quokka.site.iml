@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4" relativePaths="true" type="JAVA_MODULE">
+  <component name="ModuleRootManager" />
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/compile" />
+    <exclude-output />
+    <output-test url="file://$MODULE_DIR$/target/test-compile" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="lifecycle-plugin" />
+    <orderEntry type="module" module-name="itest" />
+    <orderEntry type="module" module-name="test" />
+    <orderEntry type="module" module-name="plugin-spi" />
+    <orderEntry type="library" name="Groovy from GroovyJ 0.1.9 (Demetra)" level="application" />
+    <orderEntry type="library" name="Groovy from GroovyJ 0.1.9 (Demetra)" level="application" />
+    <orderEntryProperties />
+  </component>
+</module>
+

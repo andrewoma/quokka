@@ -1,0 +1,34 @@
+<project name="core.bundle.ext">
+
+    <target name="install-quokka" depends="dist">
+        <tstamp>
+            <format property="distbackup" pattern="'C:/Data/Dev/Projects/dist-backups/'yyyy-MM-dd-HHmmss"/>
+        </tstamp>
+        <mkdir dir="${distbackup}"/>
+        <property name="distloc" location="C:\Data\Dev\Projects\quokka\dist"/>
+        <copy todir="${distbackup}">
+            <fileset dir="${distloc}"/>
+        </copy>
+        <!--<delete dir="${distloc}"/>-->
+        <!--<mkdir dir="${distloc}"/>-->
+        <copy todir="${distloc}">
+            <fileset dir="${distdir}"/>
+        </copy>
+    </target>
+
+    <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
+        <property name="distdir" location="${quokka.project.targetdir}/dist"/>
+        <mkdir dir="${distdir}"/>
+        <copy todir="${distdir}">
+            <fileset dir="${quokka.project.sourcedir}/distribution"/>
+        </copy>
+        <mkdir dir="${distdir}/lib"/>
+        <echo>dist=${quokka.project.path.dist}</echo>
+        <copy-path id="dist" todir="${distdir}/lib" pattern="#{group}_#{name}_#{type}_#{version}.#{extension}"/>
+        <copy todir="${distdir}/lib"
+              file="${quokka.lifecycle.packageoutput}/${quokka.project.artifact.group}_core_jar_${quokka.project.artifact.version}.jar"/>
+        <property name="distfile" location="${quokka.project.targetdir}/quokka-${quokka.project.artifact.version}.zip"/>
+        <copy todir="${distdir}" file="${docbook-pdf.out}"/>
+        <zip destfile="${distfile}" basedir="${distdir}"/>
+    </target>
+</project>
