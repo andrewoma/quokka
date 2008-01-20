@@ -285,7 +285,6 @@
       <module fileurl="file://$PROJECT_DIR$/../../core/version/core.version.iml" filepath="$PROJECT_DIR$/../../core/version/core.version.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../depset/jar/depset.jar.iml" filepath="$PROJECT_DIR$/../../depset/jar/depset.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" filepath="$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" filepath="$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" />
       <module fileurl="file://$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" filepath="$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/internal.master.iml" filepath="$PROJECT_DIR$/internal.master.iml" />
       <module fileurl="file://$PROJECT_DIR$/../module-depset/internal.module-depset.iml" filepath="$PROJECT_DIR$/../module-depset/internal.module-depset.iml" />
@@ -354,69 +353,60 @@
   <component name="libraryTable">
     <library name="ant-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../repository/apache/ant/1.7/ant_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../repository/apache/ant/1.7/ant-launcher_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../Apps/apache-ant-1.7.0/lib/ant-jsch.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant-launcher_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/jsch_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../Apps/apache-ant-1.7.0/src/main" />
+        <root url="file://$PROJECT_DIR$/../../../../../../Apps/apache-ant-1.7.0/src/main" />
       </SOURCES>
     </library>
     <library name="junit-3.8.1">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../repository/junit/3.8.1/junit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/junit/3.8.1/junit_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="ant-junit-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../repository/apache/ant/1.7/junit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/junit_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../Apps/apache-ant-1.7.0/src/main" />
+        <root url="file://$PROJECT_DIR$/../../../../../../Apps/apache-ant-1.7.0/src/main" />
       </SOURCES>
     </library>
     <library name="cobertura-1.8">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../repository/sf/cobertura/1.8/cobertura_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/cobertura/1.8/cobertura_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="svn4ant">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../Sandbox/Libs/svn4ant_1.1-build68/lib/svn4ant.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../Sandbox/Libs/svn4ant_1.1-build68/main" />
-      </SOURCES>
-    </library>
     <library name="svnkit-1.1.4">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../Libs/svnkit-1.1.4/svnkit.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../Libs/svnkit-1.1.4/svnkit-cli.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/svnkit/1.1.4/svnkit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/svnkit/1.1.4/svnkit-cli_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../../../../Libs/svnkit-1.1.4/svnkitsrc.zip!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../../Libs/svnkit-1.1.4/svnkitsrc.zip!/" />
       </SOURCES>
     </library>
     <library name="ganymed-210">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../Libs/ganymed-ssh2-build210/ganymed-ssh2-build210.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../../Libs/ganymed-ssh2-build210/ganymed-ssh2-build210.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="jalopy-0.6.2">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../Sandbox/Apps/jalopy-ant-0.6.2/lib/jalopy-ant-0.6.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../Sandbox/Apps/jalopy-ant-0.6.2/lib/jalopy-1.0b11.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../Sandbox/Apps/jalopy-ant-0.6.2/lib/oro-2.0.6.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/jalopy/jalopy/1.0-b11/jalopy_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/jalopy/ant/0.6.2/ant_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/oro/2.0.8/oro_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -432,7 +422,7 @@
     </library>
     <library name="cobertura-1.9">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../Libs/cobertura-1.9/cobertura.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/cobertura/1.9/cobertura_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
