@@ -2,10 +2,6 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
 
 <project name="internal.master">
-    <!--<artifacts group="quokka.bundle" version="1.0-m01-ss">-->
-    <!--<artifact name="core"/>-->
-    <!--</artifacts>-->
-
     <!--<bootstrap>-->
     <!--<cores version="1.0">-->
     <!--<core options="xerces, xercesimpl" profiles="jdk1.2, jdk1.3"/>-->
@@ -27,7 +23,7 @@
         <plugin group="quokka.plugin.junitreport" version="1.0-m01-ss" use-defaults="false"
                 targets="aggregate-report"/>
         <plugin group="quokka.plugin.help" version="1.0-m01-ss" use-defaults="false"
-                targets="aggregate-report"/>
+                targets="aggregate-report, help"/>
         <plugin group="quokka.plugin.devreport" version="1.0-m01-ss" use-defaults="false" targets="reports"/>
     </dependency-set>
 </project>
