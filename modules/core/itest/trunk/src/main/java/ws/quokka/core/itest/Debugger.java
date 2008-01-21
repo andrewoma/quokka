@@ -36,67 +36,8 @@ public class Debugger {
         debugger.setLogLevel(Project.MSG_INFO);
 
         //        debugger.properties.put("profiles", "skiptest");
-        //        debugger.debug("archetype\\jar", "install");
-        //        debugger.debug("archetype\\depset", "install");
-        //        debugger.debug("core\\main", "install");
-        //        debugger.debug("core\\repo-spi", "install");
-        //        debugger.debug("core\\bootstrap-util", "install");
-        //        debugger.debug("plugin\\junitreport", "install");
-        //                debugger.debug("plugin\\jalopy", "install");
-        //        debugger.debug("plugin\\subversion", "install");
-        //        debugger.debug("plugin\\help", "install");
-        //        debugger.debug("plugin\\cobertura", "install");
-        //        debugger.debug("plugin\\standard-lifecycle", "install");
-        //        debugger.debug("plugin\\devreport", "install");
-        //        debugger.debug("plugin\\jarbundle", "install");
-        //        debugger.debug("archetype\\multiproject", "clean");
-        //        debugger.debug("archetype\\multiproject", "install");
-        //        debugger.debug("plugin\\release", "install");
-        //        debugger.debug("plugin\\lifecycle", "install");
-        //        debugger.debug("internal\\master", "clean");
-        //        debugger.debug("internal\\master", "install-all");
-        //        debugger.debug("internal\\module-depset", "install");
-        //        debugger.debug("internal\\master", "reports-all");
-        //        debugger.properties.put("profiles", "skiptest");
-        //        debugger.debug("archetype\\jar", "install");
-        //        debugger.debug("archetype\\depset", "install");
-        //        debugger.debug("core\\main", "install");
-        //        debugger.debug("core\\repo-spi", "install");
-        //        debugger.debug("core\\bootstrap-util", "install");
-        //        debugger.debug("plugin\\junitreport", "install");
-        //        debugger.debug("plugin\\junit", "install");
-        //        debugger.debug("plugin\\subversion", "install");
-        //        debugger.debug("plugin\\help", "install");
-        //        debugger.debug("plugin\\cobertura", "install");
-        //        debugger.debug("plugin\\standard-lifecycle", "install");
-        //        debugger.debug("plugin\\devreport", "install");
-        //        debugger.debug("plugin\\jarbundle", "install");
-        //        debugger.debug("archetype\\multiproject", "clean");
-        //        debugger.debug("archetype\\multiproject", "install");
-        //        debugger.debug("plugin\\release", "install");
-        //        debugger.debug("plugin\\lifecycle", "install");
-        //        debugger.debug("internal\\master", "clean");
-        //        debugger.debug("internal\\master", "install-all");
-        //        debugger.debug("internal\\module-depset", "install");
-        //        debugger.debug("internal\\master", "reports-all");
-        //        debugger.debug("internal\\master", "install-all");
-        debugger.debug("internal\\docbook-depset", "install");
-        debugger.debug("core\\bundle", "docbook-pdf");
-
-        //        debugger.debug("internal\\docbook-depset", "clean", "install");
-        //        debugger.debug("xmlcat\\site-naut05-custom", "clean", "install");
-        //        debugger.debug("internal\\site", "clean");
-        //        debugger.debug("internal\\site", "site");
-        //        debugger.debug("internal\\site", "help");
-        //        debugger.debug("internal\\site", "testunzip");
-        //        debugger.debug("internal\\site", "deploy-site");
-        //        debugger.debug("internal\\site", "deploy-reports");
-        //        debugger.debug("internal\\site", "deploy-all");
-        //        debugger.debug("core\\bundle", "clean", "dist");
-        //        debugger.debug("core\\bundle", "clean", "docbook");
-        //        debugger.debug("core\\bundle", "docbook-pdf");
-        //        debugger.debug("core\\bundle", "docbook-pdf");
-        //        debugger.debug("core\\repo-spi", "install");
+                debugger.debug("core\\bundle", "install-quokka");
+                debugger.debug("internal\\master", "install-quokka");
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
@@ -117,7 +58,7 @@ public class Debugger {
         }
 
         public void ant(String module, String[] targets) {
-            ant(new File("C:\\Data\\Dev\\Projects\\quokka\\" + module + "\\build.xml"), targets);
+            ant(new File("C:\\Data\\Dev\\Projects\\quokka-google\\all\\trunks\\" + module + "\\build.xml"), targets);
         }
 
         public void ant(String module, String target1, String target2) {
