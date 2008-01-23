@@ -6,6 +6,7 @@
         </tstamp>
         <mkdir dir="${distbackup}"/>
         <property name="distloc" location="C:\Data\Dev\Projects\quokka\dist"/>
+        <mkdir dir="${distloc}"/>
         <copy todir="${distbackup}">
             <fileset dir="${distloc}"/>
         </copy>

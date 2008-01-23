@@ -178,7 +178,7 @@ public class ProjectParser {
         }
 
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
-        resolver.addVersion("project", "1.0-m01");
+        resolver.addVersion("project", "0.1");
 
         Document document = Document.parse(projectFile, resolver);
         Project project = (Project)converter.fromXml(Project.class, document.getRoot());

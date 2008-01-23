@@ -100,8 +100,6 @@ public class StandardPluginParser implements PluginParser {
     }
 
     private Plugin parsePluginXml(RepoArtifact artifact) {
-        //        System.out.println("StandardPluginParser.parsePluginXml: artifact=" + artifact);
-        //        String pluginPath = "META-INF/quokka/plugin.xml";
         String pluginPath = getResourcesPrefix(artifact.getId()) + "plugin.xml";
         URL url = URLs.toURL(artifact.getLocalCopy(), pluginPath);
 
@@ -109,14 +107,11 @@ public class StandardPluginParser implements PluginParser {
             throw new BuildException(pluginPath + " cannot be found at location " + artifact.getLocalCopy().getPath());
         }
 
-        //        System.out.println("url=" + url);
         xmlConverter.addContext("artifact", artifact);
 
-        //        System.out.println("parsing: " + url);
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
-        resolver.addVersion("plugin", "1.0-m01");
+        resolver.addVersion("plugin", "0.1");
 
-        //        resolver.setPluginVersion("1.0m1");
         return (Plugin)xmlConverter.fromXml(Plugin.class, Document.parse(url, resolver).getRoot());
     }
 

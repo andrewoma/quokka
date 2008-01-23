@@ -43,17 +43,9 @@ public class DefaultBuildResourcesTest extends AbstractTest {
         super.setUp();
         resources.setTempDir(new File("C:\\Temp\\buildresources"));
 
-        Map entries = URLs.toURLEntries(new File(
-                    "C:\\Data\\Dev\\Projects\\quokka\\core\\main\\src\\test\\resources\\DefaultBuildResourcesTest\\resources\\root1"),
-                "");
-        entries.putAll(URLs.toURLEntries(
-                new File(
-                    "C:\\Data\\Dev\\Projects\\quokka\\core\\main\\src\\test\\resources\\DefaultBuildResourcesTest\\resources\\root2"),
-                ""));
-        entries.putAll(URLs.toURLEntries(
-                new File(
-                    "C:\\Data\\Dev\\Projects\\quokka\\core\\main\\src\\test\\resources\\DefaultBuildResourcesTest\\resources\\root3.jar"),
-                ""));
+        Map entries = URLs.toURLEntries(getTestCaseResource("resources\\root1"), "");
+        entries.putAll(URLs.toURLEntries(getTestCaseResource("resources\\root2"), ""));
+        entries.putAll(URLs.toURLEntries(getTestCaseResource("resources\\root3.jar"), ""));
 
         for (Iterator i = entries.keySet().iterator(); i.hasNext();) {
             String key = (String)i.next();

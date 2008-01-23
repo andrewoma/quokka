@@ -84,7 +84,7 @@ public class ProjectMetadataTest extends AbstractTest {
 
     public void testRolloverVersionFull() {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<!DOCTYPE project PUBLIC \"quokka.ws/dtd/project-1.0-m01\" \"http://quokka.ws/dtd/project-1.0-m01.dtd\">\n"
+            + "<!DOCTYPE project PUBLIC \"quokka.ws/dtd/project-0.1\" \"http://quokka.ws/dtd/project-0.1.dtd\">\n"
             + "\n" + "<project name=\"core.main\">\n"
             + "    <artifacts group=\"quokka.core.main\" version=\"1.0-m01-ss\">\n"
             + "        <artifact paths=\"runtime, dist\"/>\n" + "    </artifacts>\n" + "\n" + "    <dependency-set>\n"
@@ -94,7 +94,7 @@ public class ProjectMetadataTest extends AbstractTest {
             + "    </dependency-set>\n" + "</project>";
 
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<!DOCTYPE project PUBLIC \"quokka.ws/dtd/project-1.0-m01\" \"http://quokka.ws/dtd/project-1.0-m01.dtd\">\n"
+            + "<!DOCTYPE project PUBLIC \"quokka.ws/dtd/project-0.1\" \"http://quokka.ws/dtd/project-0.1.dtd\">\n"
             + "\n" + "<project name=\"core.main\">\n"
             + "    <artifacts group=\"quokka.core.main\" version=\"1.0-m01\">\n"
             + "        <artifact paths=\"runtime, dist\"/>\n" + "    </artifacts>\n" + "\n" + "    <dependency-set>\n"

@@ -6,15 +6,15 @@
 -->
 <!ELEMENT artifact ( dependencies?, paths? ) >
 <!ATTLIST artifact group NMTOKEN #REQUIRED >
-<!ATTLIST artifact name NMTOKEN #REQUIRED >
-<!ATTLIST artifact type NMTOKEN #REQUIRED >
+<!ATTLIST artifact name NMTOKEN #IMPLIED >
+<!ATTLIST artifact type NMTOKEN #IMPLIED >
 <!ATTLIST artifact version CDATA #REQUIRED >
 
 <!ELEMENT dependencies ( dependency+ ) >
 
 <!ELEMENT dependency ( path-spec* ) >
 <!ATTLIST dependency group NMTOKEN #REQUIRED >
-<!ATTLIST dependency name NMTOKEN #REQUIRED >
+<!ATTLIST dependency name NMTOKEN #IMPLIED >
 <!ATTLIST dependency paths CDATA #IMPLIED >
 <!ATTLIST dependency type NMTOKEN #IMPLIED>
 <!ATTLIST dependency version CDATA #REQUIRED >

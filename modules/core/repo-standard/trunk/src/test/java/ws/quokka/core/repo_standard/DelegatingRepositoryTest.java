@@ -33,13 +33,15 @@ public class DelegatingRepositoryTest extends AbstractRepositoryTest {
     }
 
     public void test() {
+        properties.put("quokka.project.repoRoots", "release, snapshot");
         put("release", "rootDir", getTestResource("FileRepositoryTest/hierarchical-repository").getAbsolutePath());
         put("release", "class", "file");
         put("snapshot", "rootDir", getTestResource("FileRepositoryTest/flat-repository").getAbsolutePath());
         put("snapshot", "class", "file");
         put("snapshot", "hierarchical", "false");
+        put("snapshot", "snapshots", "true");
         initialise();
-        resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version2-ss")), 0);
-        resolveArtifact(new RepoArtifactId("group1", "name2", "jar", new Version("version1-ss")), 0);
+        resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1")), 1);
+        resolveArtifact(new RepoArtifactId("group1", "name2", "jar", new Version("version1")), 0);
     }
 }

@@ -60,7 +60,7 @@ public class RepoXmlConverter {
                 // TODO: revist all XML DOCTYPE and encoding handling ...
                 public void run() throws Exception {
                     writer.write("<?xml version=\"1.0\"?>\n"
-                        + "<!DOCTYPE artifact PUBLIC \"quokka.ws/dtd/repository-1.0-m01\" \"http://quokka.ws/dtd/repository-1.0-m01.dtd\">\n");
+                        + "<!DOCTYPE artifact PUBLIC \"quokka.ws/dtd/repository-0.1\" \"http://quokka.ws/dtd/repository-0.1.dtd\">\n");
                 }
             };
 

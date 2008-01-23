@@ -124,8 +124,6 @@ public class LocatorDomParser {
 
         public void setDocumentLocator(Locator locator) {
             this.locator = locator;
-
-            //            System.out.println("locator=" + new Location(locator));
         }
 
         public void characters(char[] ch, int start, int length) {
@@ -153,7 +151,6 @@ public class LocatorDomParser {
             // Create element
             Element element = document.createElement(qName);
 
-            //            Element element = document.createElementNS(namespace, qName);
             // Add location attributes to the element
             addLocation(element, new LocatorImpl(locator));
 
@@ -164,12 +161,7 @@ public class LocatorDomParser {
                 String name = attributes.getQName(i);
                 String value = attributes.getValue(i);
 
-                //                if (attributes.getLocalName(i) == null) {
                 element.setAttribute(name, value);
-
-                //                } else {
-                //                    element.setAttributeNS(attributes.getURI(i), name, value);
-                //                }
             }
 
             // Add element to the last element
@@ -205,8 +197,8 @@ public class LocatorDomParser {
 
             try {
                 return entityResolver.resolveEntity(publicId, systemId);
-            } catch (IOException e) {
-                throw new SAXException(e);
+            } catch (Exception e) {
+                throw new BuildException(e, new Location(locator));
             }
         }
 

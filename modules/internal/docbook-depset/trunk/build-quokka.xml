@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="internal.docbook-depset">
     <artifacts group="quokka.internal.docbook-depset" version="1.0-m01-ss">

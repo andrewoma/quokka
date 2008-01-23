@@ -1,8 +1,8 @@
 <!--
    DTD for quokka plugin files. See http://quokka.ws/project-reference.html for more information.
 
-   PUBLIC "quokka.ws/dtd/plugin-1.0-m01"
-   SYSTEM "http://quokka.ws/dtd/plugin-1.0-m01.dtd"
+   PUBLIC "quokka.ws/dtd/plugin-0.1"
+   SYSTEM "http://quokka.ws/dtd/plugin-0.1.dtd"
 -->
 <!ELEMENT description (#PCDATA) >
 

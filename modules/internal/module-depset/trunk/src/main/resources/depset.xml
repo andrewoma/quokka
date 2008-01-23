@@ -18,4 +18,6 @@
     </plugin>
     <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
     <plugin group="quokka.plugin.jalopy" version="1.0-m01-ss"/>
+    <plugin group="quokka.plugin.release" version="1.0-m01-ss"/>
+    <plugin group="quokka.plugin.subversion" version="1.0-m01-ss"/>
 </dependency-set>

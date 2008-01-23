@@ -35,9 +35,24 @@ public class Debugger {
         debugger.setUp();
         debugger.setLogLevel(Project.MSG_INFO);
 
-        //        debugger.properties.put("profiles", "skiptest");
-                debugger.debug("core\\bundle", "install-quokka");
-                debugger.debug("internal\\master", "install-quokka");
+//        debugger.properties.put("profiles", "skiptest");
+        debugger.debug("plugin\\xml", "install");
+//        debugger.debug("core\\itest", "install");
+//        debugger.debug("core\\repo-spi", "install");
+//        debugger.debug("plugin\\jalopy", "install");
+//        debugger.debug("core\\main", "install");
+//
+//        debugger.debug("core\\main", "install");
+//        debugger.debug("plugin\\junit", "install");
+//        debugger.debug("core\\bundle", "docbook-pdf");
+        debugger.debug("internal\\master", "install-quokka");
+        debugger.debug("core\\bundle", "install");
+        debugger.debug("core\\bundle", "install-quokka");
+//        debugger.debug("internal\\master", "install-all");
+//        debugger.debug("core\\bundle", "install-quokka");
+//
+//        debugger.debug("internal\\master", "install-quokka");
+//        debugger.debug("xmlcat\\docbook-dtd-4-5", "install");
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------

@@ -268,7 +268,11 @@ public class ProjectMetadata implements Metadata {
                     String propertyPrefix = "property.";
 
                     if (id.startsWith(propertyPrefix)) {
-                        id = projectModel.getProperties().getProperty(id.substring(propertyPrefix.length()));
+                        String property = id.substring(propertyPrefix.length());
+                        id = ((DefaultProjectModel)projectModel).getAntProject().getProperty(property);
+                        Assert.isTrue(id != null,
+                            "plugin path refers to a property that does not exist: " + property + ", target="
+                            + target.getName() + ", pathGroup=" + group.toString());
                     }
 
                     String pluginPrefix = "plugin.";
@@ -287,6 +291,10 @@ public class ProjectMetadata implements Metadata {
     }
 
     private void addDependencySet(Set dependencies, DependencySet dependencySet) {
+        if (dependencySet.getArtifact() != null) {
+            dependencies.add(dependencySet.getArtifact().getId());
+        }
+
         for (Iterator i = dependencySet.getDependencies().iterator(); i.hasNext();) {
             Dependency dependency = (Dependency)i.next();
             dependencies.add(dependency.getId());

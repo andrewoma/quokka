@@ -304,7 +304,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         }
 
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
-        resolver.addVersion("repository", "1.0-m01");
+        resolver.addVersion("repository", "0.1");
 
         RepoArtifact artifact = (RepoArtifact)RepoXmlConverter.getXmlConverter().fromXml(RepoArtifact.class,
                 Document.parse(xml, resolver).getRoot());

@@ -1,4 +1,4 @@
-<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" "http://quokka.ws/dtd/project-1.0-m01.dtd">
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 <project name="test">
     <artifacts group="dummy.group" version="1.0-m01-ss">
         <artifact name="artifact1" paths="runtime"/>

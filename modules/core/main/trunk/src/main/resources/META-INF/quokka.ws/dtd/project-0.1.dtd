@@ -1,11 +1,15 @@
 <!--
    DTD for quokka project files. See http://quokka.ws/project-reference.html for more information.
 
-   PUBLIC "quokka.ws/dtd/project-1.0-m01"
-   SYSTEM "http://quokka.ws/dtd/project-1.0-m01.dtd"
+   PUBLIC "quokka.ws/dtd/project-0.1"
+   SYSTEM "http://quokka.ws/dtd/project-0.1"
 -->
 
-<!ELEMENT artifact ( description? ) >
+<!ELEMENT name EMPTY>
+<!ATTLIST name value CDATA #REQUIRED >
+<!ATTLIST name profiles CDATA #IMPLIED >
+
+<!ELEMENT artifact ( description? | name* ) >
 <!ATTLIST artifact description NMTOKEN #IMPLIED >
 <!ATTLIST artifact name NMTOKEN #IMPLIED >
 <!ATTLIST artifact type NMTOKEN #IMPLIED >
@@ -44,7 +48,8 @@
 <!ATTLIST profile id NMTOKEN #REQUIRED >
 <!ATTLIST profile description CDATA #IMPLIED >
 
-<!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin )* >
+<!ELEMENT override-core EMPTY>
+<!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin | override-core )* >
 <!ATTLIST dependency-set group NMTOKEN #IMPLIED >
 <!ATTLIST dependency-set name NMTOKEN #IMPLIED >
 <!ATTLIST dependency-set version NMTOKEN #IMPLIED >

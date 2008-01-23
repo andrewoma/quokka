@@ -3,11 +3,11 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <book lang="en">
   <bookinfo>
-    <title>Quokka - Plugin and Dependency Management for Ant</title>
+    <title>Quokka - Reproducbile, modular builds</title>
 
     <subtitle>Quokka Reference Documentation</subtitle>
 
-    <releaseinfo>1.0-m01</releaseinfo>
+    <releaseinfo>0.1</releaseinfo>
   </bookinfo>
 
   <toc></toc>
@@ -145,7 +145,7 @@
             enter:</para>
 
             <screen>$ quokka -version
-Quokka version 1.0-m01                        </screen>
+Quokka version 0.1                        </screen>
           </listitem>
 
           <listitem>
@@ -174,11 +174,11 @@ Quokka version 1.0-m01                        </screen>
           <para>Go to the command console and change to (or create) an empty
           directory for new project. Enter the following command:</para>
 
-          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar:1.0-m01 -Dgroup=mygroup.myname
+          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar:0.1 -Dgroup=mygroup.myname
 Buildfile: C:\Temp\quokkatest\temp-19405.xml
 
 archetype:
-[archetype] Creating project based on artifact: quokka.archetype.jar:jar:jar:1.0-m01
+[archetype] Creating project based on artifact: quokka.archetype.jar:jar:jar:0.1
 [archetype] Extracting the following archetype to C:\Temp\quokkatest:
 [archetype]     build-quokka.properties
 [archetype]     build-quokka.xml
@@ -266,10 +266,10 @@ quokka.stdlifecycle:generate-resources:
                 quokka\mygroup.myname_myname_jar_artifacts.properties
     [mkdir] Created dir: C:\Temp\quokkatest\target\compile\META-INF\quokka
     [mkdir] Created dir: C:\Temp\quokkatest\target\compile\META-INF\quokka\
-                mygroup.myname_myname_jar_1.0-m01
-   [plugin] Generated repository file for mygroup.myname:myname:jar:1.0-m01: 
+                mygroup.myname_myname_jar_0.1
+   [plugin] Generated repository file for mygroup.myname:myname:jar:0.1:
                 C:\Temp\quokkatest\target\compile\META-INF\quokka\
-                    mygroup.myname_myname_jar_1.0-m01-ss\repository.xml
+                    mygroup.myname_myname_jar_0.1\repository.xml
 
 quokka.javac:compile:
     [javac] Compiling 1 source file to C:\Temp\quokkatest\target\compile
@@ -300,12 +300,12 @@ quokka.junit:test:
 
 quokka.stdlifecycle:package:
     [mkdir] Created dir: C:\Temp\quokkatest\target\package
-   [plugin] Generated repository file for mygroup.myname:myname:jar:1.0-m01: C:\Temp\
-             quokkatest\target\package\mygroup.myname_myname_jar_1.0-m01_repository.xml
+   [plugin] Generated repository file for mygroup.myname:myname:jar:0.1: C:\Temp\
+             quokkatest\target\package\mygroup.myname_myname_jar_0.1_repository.xml
 
 quokka.jar:package:
       [jar] Building jar: C:\Temp\quokkatest\target\package\
-                mygroup.myname_myname_jar_1.0-m01.jar
+                mygroup.myname_myname_jar_0.1.jar
 
 BUILD SUCCESSFUL                    </screen>
 
@@ -365,7 +365,7 @@ BUILD SUCCESSFUL                    </screen>
 ...
 quokka.javac:compile:
    [plugin] Executing 'quokka.javac:compile' from plugin 
-                'quokka.plugin.javac:javac:jar:1.0-m01'
+                'quokka.plugin.javac:javac:jar:0.1'
     [mkdir] Skipping C:\Temp\quokkatest\target\compile because it already exists.
     [javac] sample\App.java omitted as C:\Temp\quokkatest\target\compile\sample\App.class 
                 is up to date.
@@ -525,11 +525,11 @@ Default target: package                    </screen>
           file in detail now. Here's our project file:</para>
 
           <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" 
-    "http://quokka.ws/dtd/project-1.0-m01.dtd"&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1"
+    "http://quokka.ws/dtd/project-0.1.dtd"&gt;
 
 &lt;project default-target="package"&gt;
-    &lt;artifacts group="mygroup.myname" version="1.0-m01"&gt;
+    &lt;artifacts group="mygroup.myname" version="0.1"&gt;
         &lt;artifact name="myname" paths="runtime"/&gt;
     &lt;/artifacts&gt;
 
@@ -550,23 +550,23 @@ Default target: package                    </screen>
 
         &lt;!-- quokka.depset.jar includes the plugins necessary to process resources,
              compile &amp; package a .jar file --&gt;
-        &lt;dependency-set group="quokka.depset.jar" version="1.0-m01"/&gt;
+        &lt;dependency-set group="quokka.depset.jar" version="0.1"/&gt;
 
         &lt;!-- Runs all developer reports and produces an HTML summary --&gt;
-        &lt;plugin group="quokka.plugin.devreport" version="1.0-m01"/&gt;
+        &lt;plugin group="quokka.plugin.devreport" version="0.1"/&gt;
 
         &lt;!-- Adds jUnit support for running unit and integration tests --&gt;
-        &lt;plugin group="quokka.plugin.junit" version="1.0-m01" 
+        &lt;plugin group="quokka.plugin.junit" version="0.1"
                 profiles="-skiptest"/&gt;
-        &lt;plugin group="quokka.plugin.junitreport" version="1.0-m01" 
+        &lt;plugin group="quokka.plugin.junitreport" version="0.1"
                 profiles="-skiptest"/&gt;
 
         &lt;!-- Adds Cobertura support for producing code coverage reports --&gt;
-        &lt;plugin group="quokka.plugin.cobertura" version="1.0-m01" 
+        &lt;plugin group="quokka.plugin.cobertura" version="0.1"
                 profiles="-skiptest"/&gt;
 
         &lt;!-- Adds the help plugin --&gt;
-        &lt;plugin group="quokka.plugin.help" version="1.0-m01"/&gt;
+        &lt;plugin group="quokka.plugin.help" version="0.1"/&gt;
     &lt;/dependency-set&gt;
 &lt;/project&gt;                    </programlisting>
 
@@ -644,11 +644,11 @@ Default target: package                    </screen>
           the dependency set, it looks like this:</para>
 
           <programlisting>&lt;dependency-set&gt;
-    &lt;plugin group="quokka.plugin.lifecycle" version="1.0-m01"/&gt;
-    &lt;plugin group="quokka.plugin.standard-lifecycle" version="1.0-m01"/&gt;
-    &lt;plugin group="quokka.plugin.resources" version="1.0-m01"/&gt;
-    &lt;plugin group="quokka.plugin.javac" version="1.0-m01"/&gt;
-    &lt;plugin group="quokka.plugin.jar" version="1.0-m01"/&gt;
+    &lt;plugin group="quokka.plugin.lifecycle" version="0.1"/&gt;
+    &lt;plugin group="quokka.plugin.standard-lifecycle" version="0.1"/&gt;
+    &lt;plugin group="quokka.plugin.resources" version="0.1"/&gt;
+    &lt;plugin group="quokka.plugin.javac" version="0.1"/&gt;
+    &lt;plugin group="quokka.plugin.jar" version="0.1"/&gt;
 &lt;/dependency-set&gt;</programlisting>
 
           <para>In fact, you could replace the
@@ -744,7 +744,7 @@ Default target: package                    </screen>
     ...
     &lt;dependency-set&gt;
         ...
-        <emphasis role="bold">&lt;plugin group="quokka.plugin.help" version="1.0-m01"/&gt;</emphasis>
+        <emphasis role="bold">&lt;plugin group="quokka.plugin.help" version="0.1"/&gt;</emphasis>
     &lt;/dependency-set&gt;
 &lt;/project&gt;                   </programlisting>
 
@@ -894,7 +894,7 @@ Buildfile: build-quokka.xml
 
 quokka.stdlifecycle:install:
      [copy] Copying 1 file to C:\Data\Dev\Projects\snapshot-repository\mygroup\
-                myname\1.0-m01
+                myname\0.1
 
 BUILD SUCCESSFUL                    </programlisting>
 
@@ -912,7 +912,7 @@ BUILD SUCCESSFUL                    </programlisting>
           by a declaration in the project file:</para>
 
           <programlisting>&lt;project&gt;
-    &lt;artifacts group="mygroup.myname" version="1.0-m01"&gt;
+    &lt;artifacts group="mygroup.myname" version="0.1"&gt;
         &lt;artifact name="myname" <emphasis role="bold">paths="runtime"</emphasis>/&gt;
     &lt;/artifacts&gt;
     &lt;dependency-set&gt;
@@ -1231,8 +1231,8 @@ quokka.project.java.target=1.5                    </programlisting>
         example:</para>
 
         <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-1.0-m01" 
-                  "http://quokka.ws/dtd/project-1.0-m01.dtd"&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1"
+                  "http://quokka.ws/dtd/project-0.1.dtd"&gt;
 
 &lt;project default-target="package"&gt;
     &lt;artifacts group="somegroup" version="1.0"&gt;
@@ -1248,22 +1248,22 @@ quokka.project.java.target=1.5                    </programlisting>
 
         &lt;!-- quokka.depset.jar includes the plugins necessary to process resources, 
              compile &amp; package a .jar file --&gt;
-        &lt;dependency-set group="quokka.depset.jar" version="1.0-m01"/&gt;
+        &lt;dependency-set group="quokka.depset.jar" version="0.1"/&gt;
 
         &lt;!-- Runs all developer reports and produces an HTML summary --&gt;
-        &lt;plugin group="quokka.plugin.devreport" version="1.0-m01"/&gt;
+        &lt;plugin group="quokka.plugin.devreport" version="0.1"/&gt;
 
         &lt;!-- Adds jUnit support for running unit and integration tests --&gt;
-        &lt;plugin group="quokka.plugin.junit" version="1.0-m01" profiles="-skiptest"/&gt;
-        &lt;plugin group="quokka.plugin.junitreport" version="1.0-m01" 
+        &lt;plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/&gt;
+        &lt;plugin group="quokka.plugin.junitreport" version="0.1"
                 profiles="-skiptest"/&gt;
 
         &lt;!-- Adds Cobertura support for producing code coverage reports --&gt;
-        &lt;plugin group="quokka.plugin.cobertura" version="1.0-m01" 
+        &lt;plugin group="quokka.plugin.cobertura" version="0.1"
                 profiles="-skiptest"/&gt;
 
         &lt;!-- Adds the help plugin --&gt;
-        &lt;plugin group="quokka.plugin.help" version="1.0-m01"/&gt;
+        &lt;plugin group="quokka.plugin.help" version="0.1"/&gt;
     &lt;/dependency-set&gt;
 &lt;/project&gt;</programlisting>
 
@@ -1975,7 +1975,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
             <programlisting>...
 &lt;dependency-set&gt;
-    &lt;dependency-set group="quokka.depset.jar" version="1.0-m01"/&gt;
+    &lt;dependency-set group="quokka.depset.jar" version="0.1"/&gt;
 &lt;/dependency-set&gt;
 ...</programlisting>
           </sect3>
@@ -2028,7 +2028,7 @@ quokka.project.java.target=1.5                    </programlisting>
             <para>For example, to exclude the jUnit plugin when the
             <literal>skiptest</literal> profile is enabled would be:</para>
 
-            <programlisting>&lt;plugin group="quokka.plugin.junit" version="1.0-m01" profiles="-skiptest"/&gt;</programlisting>
+            <programlisting>&lt;plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/&gt;</programlisting>
 
             <para>Enabling profiles is via the <literal>profiles</literal>
             property, commonly set at the command line as:</para>
@@ -2201,13 +2201,13 @@ quokka.project.java.target=1.5                    </programlisting>
           <para>Bootstrapping is defined by the
           <literal>bootstrapping</literal> element, a nested element within
           the <literal>project</literal> element. Below is an example that
-          would only build if quokka version <literal>1.0-m01</literal> and a
+          would only build if quokka version <literal>0.1</literal> and a
           Windows java <literal>1.6</literal> implementation were
           available:</para>
 
           <programlisting>&lt;bootstrap&gt;
     &lt;cores&gt;
-        &lt;core version="1.0-m01"/&gt;
+        &lt;core version="0.1"/&gt;
     &lt;/cores&gt;
     &lt;jdks&gt;
         &lt;jdk max-memory="512m" spec-version="[1.6, 1.6]"&gt;
@@ -2717,14 +2717,14 @@ prefix.*=${prefix.defs}</programlisting>
         </variablelist>
 
         <para>Examples of valid versions are: <literal>1, 1.2, 1.0.2.3,
-        1.0-m01, 2.2:2</literal></para>
+        0.1, 2.2:2</literal></para>
 
         <para>When versions are compared the numeric portion is compared as
         you expect (as if there were padded zeroes when any value is not
         supplied). The important thing to note that if two versions are
         otherwise equal, but one has a qualifier and the other doesn't the
         version with the qualifier is lesser. e.g. <literal>1.0</literal> &gt;
-        <literal>1.0-m01</literal>. (This is in accordance with JSR 277, but
+        <literal>0.1</literal>. (This is in accordance with JSR 277, but
         the opposite to OSGi).</para>
 
         <para>Also note that qualifier are compared via string comparisons, so
@@ -3318,10 +3318,10 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         Below is an example for the Cobertura plugin:</para>
 
         <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-1.0-m01" 
-                   "http://quokka.ws/dtd/repository-1.0-m01.dtd"&gt;
+&lt;!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.1"
+                   "http://quokka.ws/dtd/repository-0.1.dtd"&gt;
 
-&lt;artifact group="quokka.plugin.cobertura" name="cobertura" type="jar" version="1.0-m01-ss"&gt;
+&lt;artifact group="quokka.plugin.cobertura" name="cobertura" type="jar" version="0.1"&gt;
     &lt;paths&gt;
         &lt;path id="instrument" description="Path required for instrumenting classes"/&gt;
         &lt;path id="coverage" description="Path required collecting coverage data"/&gt;
@@ -3332,13 +3332,13 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
     &lt;dependencies&gt;
         &lt;dependency group="apache.oro" version="2.0.8" paths="instrument"/&gt;
         &lt;dependency group="apache.ant" version="1.7" paths="runtime"/&gt;
-        &lt;dependency group="quokka.plugin.lifecycle" version="1.0-m01-ss" paths="runtime"/&gt;
+        &lt;dependency group="quokka.plugin.lifecycle" version="0.1" paths="runtime"/&gt;
         &lt;dependency group="apache.log4j" version="1.2.15" paths="instrument, report"/&gt;
-        &lt;dependency group="quokka.core.bootstrap-util" version="1.0-m01-ss" 
+        &lt;dependency group="quokka.core.bootstrap-util" version="0.1"
                     paths="runtime"/&gt;
         &lt;dependency group="sf.cobertura" version="1.8" paths="runtime, coverage"/&gt;
-        &lt;dependency group="quokka.plugin.devreport" version="1.0-m01-ss" paths="runtime"/&gt;
-        &lt;dependency group="quokka.core.plugin-spi" version="1.0-m01-ss" paths="runtime"/&gt;
+        &lt;dependency group="quokka.plugin.devreport" version="0.1" paths="runtime"/&gt;
+        &lt;dependency group="quokka.core.plugin-spi" version="0.1" paths="runtime"/&gt;
         &lt;dependency group="objectweb.asm" version="2.2.1" paths="instrument"/&gt;
     &lt;/dependencies&gt;
 &lt;/artifact&gt;</programlisting>
@@ -3456,7 +3456,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         <para>For example, to create a new project that build a .jar file you
         can use:</para>
 
-        <screen>$ quokka.bat archetype -Darchetype=quokka.archetype.jar:1.0-m01 -Dgroup=mygroup.myname</screen>
+        <screen>$ quokka.bat archetype -Darchetype=quokka.archetype.jar:0.1 -Dgroup=mygroup.myname</screen>
 
         <para>This will create a project skeleton for you in the current
         directory that you can use as a starting point for your
@@ -3685,18 +3685,18 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
 &lt;project name="master" default-target="install-all"&gt;
     &lt;dependency-set&gt;
         &lt;!-- Clean target directory --&gt;
-        &lt;plugin group="quokka.plugin.standard-lifecycle" version="1.0-m01-ss"
+        &lt;plugin group="quokka.plugin.standard-lifecycle" version="0.1"
             use-defaults="false" targets="clean"/&gt;
 
         &lt;!-- Aggregated development reports --&gt;
-        &lt;plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/&gt;
-        &lt;plugin group="quokka.plugin.cobertura" version="1.0-m01-ss"
+        &lt;plugin group="quokka.plugin.devreport" version="0.1"/&gt;
+        &lt;plugin group="quokka.plugin.cobertura" version="0.1"
                 use-defaults="false" targets="aggregate-report"/&gt;
-        &lt;plugin group="quokka.plugin.junitreport" version="1.0-m01-ss"
+        &lt;plugin group="quokka.plugin.junitreport" version="0.1"
                 use-defaults="false"  targets="aggregate-report"/&gt;
-        &lt;plugin group="quokka.plugin.help" version="1.0-m01-ss"
+        &lt;plugin group="quokka.plugin.help" version="0.1"
                 use-defaults="false" targets="aggregate-report, help"/&gt;
-        &lt;plugin group="quokka.plugin.devreport" version="1.0-m01-ss"
+        &lt;plugin group="quokka.plugin.devreport" version="0.1"
                 use-defaults="false" targets="reports"/&gt;
     &lt;/dependency-set&gt;
 &lt;/project&gt;</programlisting>
@@ -3926,7 +3926,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
       amongst projects. The easiest way to create one is using an archetype.
       For example, within an empty directory type:</para>
 
-      <screen>$ quokka archetype -Darchetype=quokka.archetype.depset:1.0-m01 -Dgroup=mycompany.myproduct</screen>
+      <screen>$ quokka archetype -Darchetype=quokka.archetype.depset:0.1 -Dgroup=mycompany.myproduct</screen>
 
       <para>This will create a new dependency set project for you with the
       following structure:</para>
