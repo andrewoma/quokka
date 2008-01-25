@@ -21,6 +21,7 @@ import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
 import ws.quokka.core.bootstrap_util.QuokkaEntityResolver;
+import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
@@ -49,6 +50,7 @@ import ws.quokka.core.version.Version;
 import ws.quokka.core.version.VersionRangeUnion;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 import java.net.URL;
 
@@ -56,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 
 /**
@@ -200,23 +201,24 @@ public class ProjectParser {
             }
         }
 
-        // TODO: Add system wide RC properties
         // User properties
-        File file = new File(new File(new File(System.getProperty("user.home")), ".quokka"), "quokka.properties");
+        final File file = new File(new File(new File(System.getProperty("user.home")), ".quokka"), "quokka.properties");
 
-        if (file.exists()) {
-            properties.putAll(getProperties(URLs.toURL(file)));
-        } else {
+        if (!file.exists()) {
             File parentFile = file.getParentFile();
             System.out.println("Creating default properties: " + file.getAbsolutePath());
             Assert.isTrue(parentFile.exists() || parentFile.mkdirs(),
                 "Cannot create quokka defaults dir: " + parentFile.getAbsolutePath());
 
-            Properties defaults = new IOUtils().loadProperties(ProjectParser.class.getResourceAsStream(
-                        "quokka.default.properties"));
-            properties.putAll(defaults);
-            new IOUtils().saveProperties(file, defaults);
+            new VoidExceptionHandler() {
+                    public void run() throws Exception {
+                        new IOUtils().copyStream(ProjectParser.class.getClassLoader().getResourceAsStream("quokkadefaults.properties"),
+                            new FileOutputStream(file));
+                    }
+                };
         }
+
+        properties.putAll(getProperties(URLs.toURL(file)));
 
         // Ant properties ... those set by command line
         properties.putAll(antProperties);
