@@ -38,6 +38,7 @@ public abstract class AbstractLogger implements Logger {
 
     private Project project;
     private int level = Project.MSG_DEBUG;
+    private DefaultLogger defaultLogger;
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
@@ -54,6 +55,7 @@ public abstract class AbstractLogger implements Logger {
 
             if (listener instanceof DefaultLogger) {
                 level = getLevel(listener);
+                defaultLogger = (DefaultLogger)listener;
 
                 break;
             }
@@ -110,5 +112,13 @@ public abstract class AbstractLogger implements Logger {
 
     protected void log(Target target, String message, int level) {
         project.log(target, message, level);
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public DefaultLogger getDefaultLogger() {
+        return defaultLogger;
     }
 }
