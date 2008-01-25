@@ -744,7 +744,8 @@ public class DefaultProjectModel implements ProjectModel {
                 } else {
                     // Conflict
                     Assert.isTrue(autoFix,
-                        "A conflict has between " + artifact.getId().toShortString() + " and " + id.getVersion());
+                        "A conflict has occurred between " + artifact.getId().toShortString() + " and "
+                        + id.getVersion());
 
                     return override(id, artifact.getId().getVersion());
                 }

@@ -330,14 +330,20 @@ public class ProjectHelper extends ProjectHelper2 {
 
     private void setTypeClassLoader(Project antProject, Collection typeDefinitions, Path path) {
         Map classLoaders = new HashMap();
+        antProject.log("Adding " + path.toString() + " to type definition class loaders", Project.MSG_DEBUG);
+
+        ClassLoader sharedLoader = antProject.createClassLoader(path);
 
         for (Iterator i = typeDefinitions.iterator(); i.hasNext();) {
             AntTypeDefinition definition = (AntTypeDefinition)i.next();
             ClassLoader currentLoader = definition.getClassLoader();
+            antProject.log("Setting " + definition.getName() + ", className=" + definition.getClassName()
+                + ", classLoader=" + currentLoader, Project.MSG_DEBUG);
 
-            //            Assert.isTrue(currentLoader != null, "Classloader null for ant type definition: " + definition.getName());
             if (currentLoader == null) {
-                continue; // Not sure when and how this occurs, but has appeared with a type definition of "string"
+                definition.setClassLoader(sharedLoader);
+
+                continue;
             }
 
             ClassLoader newLoader = (ClassLoader)classLoaders.get(currentLoader);
