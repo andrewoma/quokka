@@ -35,6 +35,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -94,7 +95,7 @@ public class URLs {
     }
 
     private static void validateFile(File file) {
-        Assert.isTrue(file.exists() && (file.isDirectory() || file.getAbsolutePath().toLowerCase().endsWith(".jar")),
+        Assert.isTrue(file.exists() && (file.isDirectory() || file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".jar")),
             "File specified must be an existing .jar file or directory: " + file.getPath());
     }
 
@@ -109,7 +110,7 @@ public class URLs {
             JarEntry entry = (JarEntry)e.nextElement();
 
             if (entry.getName().startsWith(path)) {
-                String key = entry.getName().substring(path.length()).toLowerCase();
+                String key = entry.getName().substring(path.length());
 
                 if (!key.equals("")) { // Don't add the root itself
                     entries.put(key, new URL("jar:" + toURL(file) + "!/" + entry.getName()));
@@ -140,11 +141,11 @@ public class URLs {
             File file = files[i];
 
             if (file.isDirectory()) {
-                entries.put(file.getAbsolutePath().substring(rootDir.getAbsolutePath().length() + 1).toLowerCase()
+                entries.put(file.getAbsolutePath().substring(rootDir.getAbsolutePath().length() + 1)
                     .replace('\\', '/') + "/", toURL(file));
                 addEntries(rootDir, entries, file);
             } else {
-                entries.put(file.getAbsolutePath().substring(rootDir.getAbsolutePath().length() + 1).toLowerCase()
+                entries.put(file.getAbsolutePath().substring(rootDir.getAbsolutePath().length() + 1)
                     .replace('\\', '/'), toURL(file));
             }
         }

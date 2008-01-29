@@ -107,7 +107,7 @@ public class AntRunner {
             helper.parse(project, buildFile);
 
             // Add any plugin state
-            PluginState state = (PluginState)project.getReference("quokka.pluginstate");
+            PluginState state = (PluginState)project.getReference("quokka.pluginState");
 
             for (Iterator i = pluginState.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();

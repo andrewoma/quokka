@@ -183,7 +183,7 @@ public class DefaultProjectModelTest extends TestCase {
             projectModel.resolvePath(getTarget("test"), "classpath", true);
             fail("Exception expected");
         } catch (BuildException e) {
-            assertTrue(e.getMessage().toLowerCase().indexOf("conflict") != -1);
+            assertTrue(e.getMessage().indexOf("conflict") != -1);
         }
     }
 

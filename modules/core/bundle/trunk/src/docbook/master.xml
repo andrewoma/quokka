@@ -2526,10 +2526,10 @@ myTarget.*=defaults</programlisting>
         powerful defaults handling. For example, the xml plugin defines the
         following properties in the plugin:</para>
 
-        <programlisting>quokka.xml.transform.defaults.transformclasspath=xml-transform
-quokka.xml.transform.defaults.catalogpath=xml-catalog
-quokka.xml.transform.defaults.targetdir${quokka.project.targetdir}/xml
-quokka.xml.transform.defaults.sourcedir=${quokka.project.sourcedir}/xml
+        <programlisting>quokka.xml.transform.defaults.transformClassPath=xml-transform
+quokka.xml.transform.defaults.catalogPath=xml-catalog
+quokka.xml.transform.defaults.targetDir${quokka.project.targetDir}/xml
+quokka.xml.transform.defaults.sourceDir=${quokka.project.sourceDir}/xml
 
 prefix.defs=${<literal>ifdef</literal> prefix.defaults ? prefix.defaults : 'quokka.xml.transform.defaults'}
 prefix.*=${prefix.defs}</programlisting>
@@ -2556,7 +2556,7 @@ prefix.*=${prefix.defs}</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>quokka.project.targetdir</term>
+              <term>quokka.project.targetDir</term>
 
               <listitem>
                 <para>The root directory of all generated output. Defaults to
@@ -2565,7 +2565,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.sourcedir</term>
+              <term>quokka.project.sourceDir</term>
 
               <listitem>
                 <para>The root directory of all source related files. Defaults
@@ -2574,7 +2574,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.resourcesdir</term>
+              <term>quokka.project.resourcesDir</term>
 
               <listitem>
                 <para>The root directory of all project resources. Defaults to
@@ -3839,7 +3839,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
                 </varlistentry>
 
                 <varlistentry>
-                  <term>todir</term>
+                  <term>toDir</term>
 
                   <listitem>
                     <para>Mandatory. The directory to copy the files from the

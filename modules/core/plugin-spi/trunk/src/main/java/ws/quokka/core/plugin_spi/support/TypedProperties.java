@@ -84,7 +84,7 @@ public class TypedProperties {
     }
 
     private String getProperty(String key, boolean mandatory) {
-        String value = (String)properties.get(prefix.toLowerCase() + key.toLowerCase());
+        String value = (String)properties.get(prefix + key);
         Assert.isTrue(!mandatory || (value != null), "Mandatory property '" + key + "' has not been set.");
 
         return value;
@@ -182,8 +182,8 @@ public class TypedProperties {
         Setter setter = new Setter(setProperties);
         setter.set(fileSet,
             new String[] {
-                "dir", "file", "defaultexcludes", "includes", "includesfile", "excludes", "excludesfile",
-                "casesensitive", "followsymlinks"
+                "dir", "file", "defaultExcludes", "includes", "includesFile", "excludes", "excludesFile",
+                "caseSensitive", "followSymLinks"
             });
 
         if (fileSet.getDir(project) == null) {
@@ -204,7 +204,7 @@ public class TypedProperties {
             Map.Entry entry = (Map.Entry)i.next();
             String key = (String)entry.getKey();
 
-            String prefix = this.prefix + root.toLowerCase() + "[";
+            String prefix = this.prefix + root + "[";
 
             if (key.startsWith(prefix)) {
                 int keyEnd = key.indexOf(']');
@@ -263,7 +263,7 @@ public class TypedProperties {
         }
     }
 
-    public List getList(String root, boolean mandatory, boolean inheritable, Class valueType, boolean allowSparse) {
+    public List getList(String root, boolean mandatory, Class valueType, boolean allowSparse) {
         Map map = getMap(root, mandatory, valueType);
         SortedMap intMap = new TreeMap();
         int maxIndex = -1;

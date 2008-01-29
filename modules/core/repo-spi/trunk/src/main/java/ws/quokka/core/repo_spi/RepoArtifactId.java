@@ -217,6 +217,7 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
     }
 
     public boolean isSnapShot() {
-        return (version.getQualifier() != null) && version.getQualifier().endsWith("-ss");
+        return (version.getQualifier() != null)
+        && (version.getQualifier().equals("ss") || version.getQualifier().endsWith("-ss"));
     }
 }

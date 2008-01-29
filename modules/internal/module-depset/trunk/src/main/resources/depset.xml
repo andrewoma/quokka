@@ -1,23 +1,23 @@
 <dependency-set>
     <profile id="skiptest" description="Skips tests, disabling all test-related targets"/>
-    <dependency-set group="quokka.depset.jar" version="1.0-m01-ss"/>
-    <plugin group="quokka.plugin.junit" version="1.0-m01-ss" profiles="-skiptest"/>
-    <plugin group="quokka.plugin.junitreport" version="1.0-m01-ss" use-defaults="false" profiles="-skiptest">
+    <dependency-set group="quokka.depset.jar" version="0.1"/>
+    <plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/>
+    <plugin group="quokka.plugin.junitreport" version="0.1" use-defaults="false" profiles="-skiptest">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
     </plugin>
-    <plugin group="quokka.plugin.cobertura" version="1.0-m01-ss" use-defaults="false" profiles="-skiptest">
+    <plugin group="quokka.plugin.cobertura" version="0.1" use-defaults="false" profiles="-skiptest">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
     </plugin>
-    <plugin group="quokka.plugin.help" version="1.0-m01-ss" use-defaults="false">
+    <plugin group="quokka.plugin.help" version="0.1" use-defaults="false">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
         <target name="generate-help"/>
         <target name="help"/>
     </plugin>
-    <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
-    <plugin group="quokka.plugin.jalopy" version="1.0-m01-ss"/>
-    <plugin group="quokka.plugin.release" version="1.0-m01-ss"/>
-    <plugin group="quokka.plugin.subversion" version="1.0-m01-ss"/>
+    <plugin group="quokka.plugin.devreport" version="0.1"/>
+    <plugin group="quokka.plugin.jalopy" version="0.1"/>
+    <plugin group="quokka.plugin.release" version="0.1"/>
+    <plugin group="quokka.plugin.subversion" version="0.1"/>
 </dependency-set>

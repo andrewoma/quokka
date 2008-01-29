@@ -103,7 +103,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
             if (key.startsWith(prefix)) {
                 String idString = key.substring(prefix.length(), key.length());
                 RepoArtifactId id = RepoArtifactId.parse(idString);
-                overrides.put(id.toPathString().toLowerCase(), entry.getValue());
+                overrides.put(id.toPathString(), entry.getValue());
             }
         }
     }
@@ -115,8 +115,8 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
 
     public RepoArtifact resolve(RepoArtifactId artifactId) {
         // Check for a specific override
-        if (overrides.containsKey(artifactId.toPathString().toLowerCase())) {
-            String override = ((String)overrides.get(artifactId.toPathString().toLowerCase())).trim();
+        if (overrides.containsKey(artifactId.toPathString())) {
+            String override = ((String)overrides.get(artifactId.toPathString())).trim();
             File dir = new File(override);
             project.log("Resolve: using specific override for " + artifactId + ", dir=" + dir.getAbsolutePath(),
                 Project.MSG_DEBUG);
@@ -128,7 +128,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         String prefix = "quokka.";
 
         if (artifactId.getGroup().startsWith(prefix) && !artifactId.getGroup().equals("quokka.bundle.core")) {
-            String moduleHome = (String)properties.get("quokka.core.itest.modulehome");
+            String moduleHome = (String)properties.get("quokka.core.itest.moduleHome");
             moduleHome = new File(moduleHome).getParentFile().getParentFile().getAbsolutePath();
             moduleHome += (
                 "/" + artifactId.getGroup().substring(prefix.length()).replace('.', '/') + "/target/compile"

@@ -48,6 +48,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -66,11 +67,12 @@ public class BootStrapResourcesParser extends XmlParser {
 
     protected List getAvailableLibraries(File libDir) {
         List availableLibraries = new ArrayList();
+        Assert.isTrue(libDir.exists(), "Library directory does not exist: " + libDir.getPath());
 
         for (int i = 0; i < libDir.listFiles().length; i++) {
             File file = libDir.listFiles()[i];
 
-            if (file.getName().toLowerCase().endsWith(".jar")) {
+            if (file.getName().toLowerCase(Locale.US).endsWith(".jar")) {
                 DependencyResource dependency = DependencyResource.parse(file.getName());
                 availableLibraries.add(dependency);
             }

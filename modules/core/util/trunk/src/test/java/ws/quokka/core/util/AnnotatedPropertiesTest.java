@@ -196,20 +196,6 @@ public class AnnotatedPropertiesTest extends AbstractTest {
         assertEquals("${some.prefix.key2}/temp", properties.get("some.prefix.key1"));
     }
 
-    public void testMixedCase() {
-        properties.put("mixedCase", "someValue");
-        properties.put("someKey", "${@mixedCase}");
-        properties.put("otherKey", "${mixedCase}");
-        properties.put("thirdKey", "${MIXEDCASE}");
-        properties = properties.evaluateReferences(true);
-        assertEquals("someValue", properties.get("someKey"));
-        assertEquals("someValue", properties.get("somekey"));
-        assertEquals("someValue", properties.get("SOMEKEY"));
-        assertEquals("someValue", properties.get("otherKey"));
-        assertEquals("someValue", properties.get("OtherKEY"));
-        assertEquals("someValue", properties.get("thirdKey"));
-    }
-
     protected String replaceRefs(String value) {
         return AnnotatedProperties.replaceReferences(new PropertyProvider() {
                 public String getProperty(String key) {
@@ -237,7 +223,7 @@ public class AnnotatedPropertiesTest extends AbstractTest {
     }
 
     public void testRemove() {
-        properties.put("UPPER", "value");
+        properties.put("upper", "value");
         properties.remove("upper");
         assertEquals(0, properties.size());
     }

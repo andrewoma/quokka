@@ -34,9 +34,9 @@
             <jdk java-version="jdk-default-1"/>
         </jdks>
 
-        <dependency group="group-default" version="1"/>
-        <dependency group="group-p1" version="1" profiles="p1"/>
-        <dependency group="group-p2" version="1" profiles="p2"/>
+        <boot-dependency group="group-default" version="1"/>
+        <boot-dependency group="group-p1" version="1" profiles="p1"/>
+        <boot-dependency group="group-p2" version="1" profiles="p2"/>
     </bootstrap>
 
     <bootstrap profiles="p2"/>

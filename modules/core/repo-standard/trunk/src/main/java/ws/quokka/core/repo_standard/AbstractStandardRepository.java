@@ -21,7 +21,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Checksum;
-import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.Input;
 import org.apache.tools.ant.util.FileUtils;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -100,7 +99,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         installSnapshots = getBoolean("installSnapshots", snapshots);
         releases = getBoolean("releases", true);
         installReleases = getBoolean("installReleases", releases);
-        supports = Strings.commaSepList(getProperty("supports", false));
+        supports = Strings.commaSepList(getProperty("supports", null));
         installSupports = Strings.commaSepList(getProperty("installSupports", null));
         installSupports.addAll((installSupports.size() == 0) ? supports : Collections.EMPTY_LIST);
 
@@ -212,47 +211,30 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected void copy(File source, File destination, boolean overwrite, boolean preserveLastModified) {
-        Copy copy = (Copy)getProject().createTask("copy");
-        copy.setFile(source);
-        copy.setTofile(destination);
-        copy.setOverwrite(overwrite);
-        copy.setPreserveLastModified(preserveLastModified);
-        copy.perform();
+        try {
+            getProject().log("Copying " + source.getPath() + " to " + destination.getPath(), Project.MSG_DEBUG);
+            getFileUtils().copyFile(source, destination, null, overwrite, preserveLastModified);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
     }
 
     protected boolean confirmImport(RepoArtifactId id, Repository parent) {
         String from = parent.getName();
-        System.out.println(id + " is not available in repository '" + getName() + "'. Import from '" + from + "'? ");
+        Input input = (Input)getProject().createTask("input");
+        input.setValidargs("y,n");
+        input.setDefaultvalue("y");
+        input.setAddproperty("result");
+        input.setMessage(id.toShortString() + " is not available in repository '" + getName() + "'. Import from '"
+            + from + "'? ");
+        input.execute();
 
-        String input;
-
-        try {
-            input = new BufferedReader(new InputStreamReader(System.in)).readLine();
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
-
-        return "y".equals(input);
-
-        //        Project tempProject = new Project();
-        //        tempProject.setInputHandler(project.getInputHandler());
-        //        tempProject.setDefaultInputStream(project.getDefaultInputStream());
-        //        tempProject.init();
-        //        Input input = (Input) tempProject.createTask("input");
-        //        input.setValidargs("y,n");
-        //        input.setDefaultvalue("y");
-        //        input.setAddproperty("result");
-        //        String from = "parent";
-        //        if (parent instanceof AbstractStandardRepository) {
-        //            from = ((AbstractStandardRepository) parent).getName();
-        //        }
-        //        input.setMessage(id + " is not available in repository '" + getName() + "'. Import from '" + from + "'? ");
-        //        input.execute();
-        //        return ("y".equals(tempProject.getProperty("result")));
+        return ("y".equals(getProject().getProperty("result")));
     }
 
     protected void importArtifact(RepoArtifact artifact, File artifactFile, File repositoryFile, Repository parent) {
-        log.info("Importing artfiact '" + artifact.getId() + "' to '" + getName() + "'");
+        log.info("Importing artifact from " + parent.getName() + " to " + getName() + ": "
+            + artifact.getId().toShortString());
 
         // Copy artifact
         if (artifactFile != null) {
@@ -262,12 +244,6 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         // Persist the repository.xml
         if (repositoryFile != null) {
             writeRepositoryFile(artifact, repositoryFile);
-        }
-
-        // Remove the temporary artfiact file if importing from a UrlRepository
-        if (parent instanceof UrlRepository) {
-            Assert.isTrue(artifact.getLocalCopy().delete(),
-                "Unable to delete temporary artifact after importing: " + artifact.getLocalCopy().getAbsolutePath());
         }
     }
 

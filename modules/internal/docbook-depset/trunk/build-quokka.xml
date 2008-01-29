@@ -2,13 +2,13 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="internal.docbook-depset">
-    <artifacts group="quokka.internal.docbook-depset" version="1.0-m01-ss">
+    <artifacts group="quokka.internal.docbook-depset" version="0.1">
         <artifact/>
     </artifacts>
 
     <dependency-set>
-        <dependency-set group="quokka.depset.resourcebundle" version="1.0-m01-ss"/>
-        <plugin group="quokka.plugin.devreport" version="1.0-m01-ss"/>
-        <plugin group="quokka.plugin.help" version="1.0-m01-ss"/>
+        <dependency-set group="quokka.depset.resourcebundle" version="0.1"/>
+        <plugin group="quokka.plugin.devreport" version="0.1"/>
+        <plugin group="quokka.plugin.help" version="0.1"/>
     </dependency-set>
 </project>

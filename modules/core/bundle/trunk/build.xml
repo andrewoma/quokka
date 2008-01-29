@@ -18,18 +18,23 @@
     </target>
 
     <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
-        <property name="distdir" location="${quokka.project.targetdir}/dist"/>
+        <property name="distdir" location="${quokka.project.targetDir}/dist/quokka-${quokka.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}">
-            <fileset dir="${quokka.project.sourcedir}/distribution"/>
+            <fileset dir="${quokka.project.sourceDir}/distribution"/>
         </copy>
         <mkdir dir="${distdir}/lib"/>
-        <echo>dist=${quokka.project.path.dist}</echo>
         <copy-path id="dist" todir="${distdir}/lib" pattern="#{group}_#{name}_#{type}_#{version}.#{extension}"/>
         <copy todir="${distdir}/lib"
-              file="${quokka.lifecycle.packageoutput}/${quokka.project.artifact.group}_core_jar_${quokka.project.artifact.version}.jar"/>
-        <property name="distfile" location="${quokka.project.targetdir}/quokka-${quokka.project.artifact.version}.zip"/>
+              file="${quokka.lifecycle.packageOutput}/${quokka.project.artifact.group}_core_jar_${quokka.project.artifact.version}.jar"/>
+        <property name="distfile" location="${quokka.project.targetDir}/quokka-${quokka.project.artifact.version}.zip"/>
         <copy todir="${distdir}" file="${docbook-pdf.out}"/>
-        <zip destfile="${distfile}" basedir="${distdir}"/>
+
+        <!-- Make a zip file, fixing cr and permisisons for quokka script -->
+        <fixcrlf srcdir="${distdir}" includes="**/quokka" cr="remove"/>
+        <zip destfile="${distfile}">
+            <fileset dir="${distdir}/.." excludes="**/quokka"/>
+            <zipfileset dir="${distdir}/.." filemode="755" includes="**/quokka"/>
+        </zip>
     </target>
 </project>

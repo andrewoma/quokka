@@ -129,10 +129,10 @@ public class AnnotatedProperties extends Properties {
     }
 
     public Object setProperty(String key, String value, Annotations annotations) {
-        Object object = super.setProperty(key.toLowerCase(), value);
+        Object object = super.setProperty(key, value);
 
         if (annotations != null) {
-            this.annotations.put(key.toLowerCase(), annotations);
+            this.annotations.put(key, annotations);
         }
 
         return object;
@@ -150,22 +150,22 @@ public class AnnotatedProperties extends Properties {
         }
     }
 
-    public synchronized Object get(Object key) {
-        return super.get(((String)key).toLowerCase());
-    }
+//    public synchronized Object get(Object key) {
+//        return super.get(((String)key).toLowerCase());
+//    }
 
-    public String getProperty(String key) {
-        return super.getProperty(key.toLowerCase());
-    }
+//    public String getProperty(String key) {
+//        return super.getProperty(key.toLowerCase());
+//    }
 
-    public synchronized Object remove(Object key) {
-        return super.remove(key.toString().toLowerCase());
-    }
+//    public synchronized Object remove(Object key) {
+//        return super.remove(key.toString().toLowerCase());
+//    }
 
     public synchronized Object put(Object key, Object value) {
         Assert.isTrue(value != null, "Value is null for key=" + key);
 
-        return super.put(((String)key).toLowerCase(), value);
+        return super.put(key, value);
     }
 
     public AnnotatedProperties replaceReferences(PropertyProvider provider) {
@@ -417,7 +417,7 @@ public class AnnotatedProperties extends Properties {
                 result = prefix + tokens[1];
             }
 
-            return result.toLowerCase();
+            return result;
         }
     }
 

@@ -36,8 +36,8 @@
             <sysproperty name="def1" value="value3"/>
         </jdk>
 
-        <dependency group="group1" name="name1" version="version1" type="type1" extension="extension1"/>
-        <dependency group="group2" name="name2" version="version2" type="type2" extension="extension2"/>
+        <boot-dependency group="group1" name="name1" version="version1" type="type1" extension="extension1"/>
+        <boot-dependency group="group2" name="name2" version="version2" type="type2" extension="extension2"/>
     </bootstrap>
 
     <someotherelement/>

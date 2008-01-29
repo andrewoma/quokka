@@ -64,7 +64,7 @@ public class Setter {
      * often will not verify all attributes.
      */
     private void verifyAttributes(IntrospectionHelper helper, String[] attributes) {
-        if ("true".equals(properties.getProject().getProperty("quokka.internal.verifysetterattributes"))) {
+        if ("true".equals(properties.getProject().getProperty("quokka.internal.verifySetterAttributes"))) {
             Map actualAttributes = helper.getAttributeMap();
 
             for (int i = 0; i < attributes.length; i++) {

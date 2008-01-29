@@ -198,7 +198,7 @@ public class ProjectHelper extends ProjectHelper2 {
         // TODO: add content-based detection (check for quokka header)
         String name = buildFile.getName();
 
-        if (name.toLowerCase().indexOf("quokka") != -1) {
+        if (name.indexOf("quokka") != -1) {
             return buildFile;
         }
 
@@ -248,7 +248,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
         Map antTargets = addTargets(projectModel, antProject, projectModel.getTargets());
 
-        String tempDir = antProject.getProperty("quokka.project.targetdir");
+        String tempDir = antProject.getProperty("quokka.project.targetDir");
         tempDir = (tempDir == null) ? (antProject.getBaseDir() + "/target") : tempDir;
 
         File dir = FileUtils.getFileUtils().normalize(tempDir + "/temp/buildresources");

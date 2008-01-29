@@ -42,6 +42,19 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         sysproperties.put(key, new JdkConstraint.SystemPropertyValue(required, value));
     }
 
+    public void testParsingShorthand() {
+        BootStrapContraintsParser parser = new BootStrapContraintsParser(getTestCaseResource(
+                    "bootstrap-quokka-shorthand.xml"), Collections.EMPTY_SET);
+        BootStrapConstraints bootStrap = parser.parse();
+        List cores = bootStrap.getCoreConstraints();
+        assertEquals(1, cores.size());
+        assertCore("1.1", (CoreConstraint)cores.get(0));
+
+        List jdks = bootStrap.getJdkConstraints();
+        assertEquals(1, jdks.size());
+        assertJdk(null, null, null, null, "[1.4,1.6]", null, new HashMap(), (JdkConstraint) jdks.get(0));
+    }
+
     public void testParsingWithDefaults() {
         BootStrapContraintsParser parser = new BootStrapContraintsParser(getTestCaseResource(
                     "bootstrap-quokka-defaults.xml"), Collections.EMPTY_SET);

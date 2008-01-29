@@ -11,7 +11,7 @@ home=`dirname "$home"`
 maxMemory=1024m
 launcherCp=$home/lib/apache.ant_ant-launcher_jar_1.7.jar
 quokkaCp=$home/lib/apache.ant_ant_jar_1.7.jar
-quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_1.0-m01-ss.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_0.1.jar
 # =========================================================================
 
 # Get the java command

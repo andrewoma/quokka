@@ -17,13 +17,13 @@
     <!--</bootstrap>-->
 
     <dependency-set>
-        <plugin group="quokka.plugin.standard-lifecycle" version="1.0-m01-ss"/>
-        <plugin group="quokka.plugin.cobertura" version="1.0-m01-ss" use-defaults="false"
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.1"/>
+        <plugin group="quokka.plugin.cobertura" version="0.1" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.junitreport" version="1.0-m01-ss" use-defaults="false"
+        <plugin group="quokka.plugin.junitreport" version="0.1" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.help" version="1.0-m01-ss" use-defaults="false"
+        <plugin group="quokka.plugin.help" version="0.1" use-defaults="false"
                 targets="aggregate-report, help"/>
-        <plugin group="quokka.plugin.devreport" version="1.0-m01-ss" use-defaults="false" targets="reports"/>
+        <plugin group="quokka.plugin.devreport" version="0.1" use-defaults="false" targets="reports"/>
     </dependency-set>
 </project>

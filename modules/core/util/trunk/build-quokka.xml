@@ -2,16 +2,16 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="core.util">
-    <artifacts group="quokka.core.util" version="1.0-m01-ss">
+    <artifacts group="quokka.core.util" version="0.1">
         <artifact/>
     </artifacts>
 
     <dependency-set>
-        <dependency group="quokka.core.bootstrap-util" version="1.0-m01-ss" paths="compile, runtime"/>
+        <dependency group="quokka.core.bootstrap-util" version="0.1" paths="compile, runtime"/>
         <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
         <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="compile, runtime"/>
 
-        <dependency group="quokka.core.test" version="1.0-m01-ss" paths="test-compile(junit)"/>
-        <dependency-set group="quokka.internal.module-depset" version="1.0-m01-ss"/>
+        <dependency group="quokka.core.test" version="0.1" paths="test-compile(junit)"/>
+        <dependency-set group="quokka.internal.module-depset" version="0.1"/>
     </dependency-set>
 </project>

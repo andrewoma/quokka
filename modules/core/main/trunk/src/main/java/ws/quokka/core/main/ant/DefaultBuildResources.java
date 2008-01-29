@@ -87,7 +87,7 @@ public class DefaultBuildResources implements BuildResources {
     }
 
     private String toKey(String key) {
-        return key.replace('\\', '/').toLowerCase();
+        return key.replace('\\', '/');
     }
 
     /**

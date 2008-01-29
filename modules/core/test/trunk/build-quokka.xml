@@ -2,12 +2,12 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="core.test">
-    <artifacts group="quokka.core.test" version="1.0-m01-ss">
+    <artifacts group="quokka.core.test" version="0.1">
         <artifact paths="runtime"/>
     </artifacts>
 
     <dependency-set>
         <dependency group="junit" version="3.8.1" paths="compile, runtime"/>
-        <dependency-set group="quokka.internal.module-depset" version="1.0-m01-ss"/>
+        <dependency-set group="quokka.internal.module-depset" version="0.1"/>
     </dependency-set>
 </project>

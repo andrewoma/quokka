@@ -3,8 +3,8 @@
 
     <target name="site"
             depends="transform-html, transform-docbook, transform-docbook-html, transform-temp-html, extract-resources, help">
-        <copy todir="${quokka.project.targetdir}/site/help-example">
-            <fileset dir="${quokka.project.targetdir}/help"/>
+        <copy todir="${quokka.project.targetDir}/site/help-example">
+            <fileset dir="${quokka.project.targetDir}/help"/>
         </copy>
     </target>
 
@@ -31,15 +31,15 @@
     </macrodef>
 
     <target name="deploy-site">
-        <zip destfile="${quokka.project.targetdir}/quokka.ws.zip">
-            <fileset dir="${quokka.project.targetdir}/site"/>
+        <zip destfile="${quokka.project.targetDir}/quokka.ws.zip">
+            <fileset dir="${quokka.project.targetDir}/site"/>
         </zip>
 
-        <deploy file="${quokka.project.targetdir}/quokka.ws.zip" script="deploy-site"/>
+        <deploy file="${quokka.project.targetDir}/quokka.ws.zip" script="deploy-site"/>
     </target>
 
     <target name="deploy-snapshot-repo">
-        <property name="snapshotRepoTemp" location="${quokka.project.targetdir}/snapshot-repo.zip"/>
+        <property name="snapshotRepoTemp" location="${quokka.project.targetDir}/snapshot-repo.zip"/>
         <zip destfile="${snapshotRepoTemp}">
             <fileset dir="${quokka.repo.snapshot.rootdir}" includes="quokka/**"/>
         </zip>
@@ -48,7 +48,7 @@
     </target>
 
     <target name="deploy-reports">
-        <property name="reportsTemp" location="${quokka.project.targetdir}/reports.zip"/>
+        <property name="reportsTemp" location="${quokka.project.targetDir}/reports.zip"/>
         <zip destfile="${reportsTemp}">
             <fileset dir="../../internal/master/target/dev-reports"/>
         </zip>
@@ -57,7 +57,7 @@
     </target>
 
     <target name="deploy-repo">
-        <property name="repoTemp" location="${quokka.project.targetdir}/repo.zip"/>
+        <property name="repoTemp" location="${quokka.project.targetDir}/repo.zip"/>
         <zip destfile="${repoTemp}">
             <fileset dir="${quokka.repo.localrelease.rootdir}"/>
         </zip>

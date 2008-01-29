@@ -31,7 +31,7 @@ for %%i in ("%~dp0..") do set QUOKKA_HOME=%%~fi
 set _MAX_MEMORY=1024m
 set _LAUNCHER_CP=%QUOKKA_HOME%\lib\apache.ant_ant-launcher_jar_1.7.jar
 set _QUOKKA_CP=%QUOKKA_HOME%\lib\apache.ant_ant_jar_1.7.jar
-set _QUOKKA_CP=%_QUOKKA_CP%;%QUOKKA_HOME%\lib\quokka.bundle_core_jar_1.0-m01-ss.jar
+set _QUOKKA_CP=%_QUOKKA_CP%;%QUOKKA_HOME%\lib\quokka.bundle_core_jar_0.1.jar
 @rem =========================================================================
 
 @rem === Get the command line arguments

@@ -81,8 +81,8 @@ public abstract class IntegrationTest extends AbstractTest {
      */
     protected void ant(String testProject, String[] targets) {
         // Override the output to go to this module's output
-        //        if (!properties.containsKey("quokka.project.targetdir")) {
-        properties.put("quokka.project.targetdir", getTargetDir(testProject));
+        //        if (!properties.containsKey("quokka.project.targetDir")) {
+        properties.put("quokka.project.targetDir", getTargetDir(testProject));
 
         //        }
         ant(getBuildFile(testProject), targets);
@@ -135,7 +135,7 @@ public abstract class IntegrationTest extends AbstractTest {
 
             originalRepositoryClass = properties.getProperty(QUOKKA_REPOSITORY);
             properties.setProperty(QUOKKA_REPOSITORY, "ws.quokka.core.itest.IntegrationTestRepository");
-            properties.put("quokka.core.itest.modulehome", getModuleHome().getAbsolutePath());
+            properties.put("quokka.core.itest.moduleHome", getModuleHome().getAbsolutePath());
 
             if (originalRepositoryClass != null) {
                 properties.setProperty(QUOKKA_ITEST_REPOSITORY, originalRepositoryClass);
@@ -152,7 +152,7 @@ public abstract class IntegrationTest extends AbstractTest {
             }
 
             // Set up URLs
-            FilteredClassLoader loader = new FilteredClassLoader(getCoreClassPath(getITestProperties().getProperty("itest.classpath")),
+            FilteredClassLoader loader = new FilteredClassLoader(getCoreClassPath(getITestProperties().getProperty("itest.classPath")),
                     getClass().getClassLoader(), getClassLoaderFilter());
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 

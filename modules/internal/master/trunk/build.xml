@@ -6,12 +6,12 @@
 
     <buildpath id="buildpath">
         <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
-                 excludes="plugin/archetype/**, internal/master/**"/>
+                 excludes="internal/master/**"/>
     </buildpath>
 
     <buildpath id="buildpath-code">
         <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
-                 excludes="plugin/archetype/**, internal/**, depset/**, xmlcat/**, archetype/**, core/bundle/**"/>
+                 excludes="internal/**, depset/**, xmlcat/**, archetype/**, core/bundle/**"/>
     </buildpath>
 
     <!-- Iterate over 1 or more file lists, calling the target specified via subant -->
@@ -92,6 +92,43 @@
     <target name="rollback-install-quokka">
         <copy todir="C:\Data\Dev\Projects\stable-repository">
             <fileset dir="C:\Data\Dev\Projects\repository-backups\rollback"/>
+        </copy>
+    </target>
+
+    <target name="update-release-repo">
+        <copy todir="${quokka.repo.localRelease.rootDir}">
+            <fileset dir="${quokka.repo.localRelease.installRootDir}"/>
+        </copy>
+    </target>
+
+    <target name="full-release-1">
+        <antcall target="clean-all"/>
+        <antcall target="install-all"/>
+        <antcall target="reports-all"/>
+        <antcall target="update-release-repo"/>
+    </target>
+
+    <target name="full-release-2">
+        <subant buildpath="${home}/core/bundle" target="install"/>
+        <subant buildpath="${home}/core/bundle" target="dist"/>
+        <subant buildpath="${home}/internal/site" target="clean"/>
+        <subant buildpath="${home}/internal/site" target="site"/>
+
+        <!-- Copy dtds to site -->
+        <property name="site" location="${home}/internal/site/target/site/"/>
+        <mkdir dir="${site}/dtd"/>
+        <copy todir="${site}/dtd">
+            <fileset dir="${home}/core/main/src/main/resources/META-INF/quokka.ws/dtd/"/>
+        </copy>
+        <copy todir="${site}/dtd">
+            <fileset dir="${home}/core/repo-spi/src/main/resources/META-INF/quokka.ws/dtd/"/>
+        </copy>
+
+        <!-- Copy distribution & manual -->
+        <mkdir dir="${site}/downloads"/>
+        <copy todir="${site}/downloads">
+            <fileset dir="${home}/core/bundle/target" includes="*.zip"/>
+            <fileset dir="${home}/core/bundle/target/docbook" includes="*.pdf"/>
         </copy>
     </target>
 </project>

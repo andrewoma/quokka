@@ -64,7 +64,8 @@ public class BootStrapContraintsParser extends XmlParser {
 
         Element bootStrapEl = (Element)bootStrapEls.iterator().next();
 
-        BootStrapConstraints bootStrap = new BootStrapConstraints();
+        BootStrapConstraints bootStrap = parseShortHand(bootStrapEl);
+
         parseCores(bootStrapEl, bootStrap);
         parseJdks(bootStrapEl, bootStrap);
         parseDependencies(bootStrapEl, bootStrap);
@@ -72,9 +73,27 @@ public class BootStrapContraintsParser extends XmlParser {
         return bootStrap;
     }
 
+    private BootStrapConstraints parseShortHand(Element bootStrapEl) {
+        // These are shorthand contraints for the common options
+        BootStrapConstraints bootStrap = new BootStrapConstraints();
+        VersionRangeUnion core = parseVersionRange(getAttribute(bootStrapEl,  "core"));
+        if (core != null) {
+            CoreConstraint coreConstraint = new CoreConstraint();
+            coreConstraint.setVersion(core);
+            bootStrap.getCoreConstraints().add(coreConstraint);
+        }
+
+        JdkConstraint jdkConstraint = parseJdkAttributes(bootStrapEl);
+        if (!jdkConstraint.isEmpty()) {
+            bootStrap.getJdkConstraints().add(jdkConstraint);
+        }
+
+        return bootStrap;
+    }
+
     private void parseDependencies(Element bootStrapEl, BootStrapConstraints bootStrap) {
         //        <dependency group="" name="" version="" type="" extension="" profiles=""/>
-        for (Iterator i = applyProfiles(getChildren(bootStrapEl, "dependency", false)).iterator(); i.hasNext();) {
+        for (Iterator i = applyProfiles(getChildren(bootStrapEl, "boot-dependency", false)).iterator(); i.hasNext();) {
             Element dependencyEl = (Element)i.next();
             String group = getAttribute(dependencyEl, "group");
             String name = getAttribute(dependencyEl, "name");
@@ -129,13 +148,7 @@ public class BootStrapContraintsParser extends XmlParser {
     }
 
     private JdkConstraint parseJdk(Element jdkEl) {
-        JdkConstraint jdkConstraint = new JdkConstraint();
-        jdkConstraint.setJavaVendor(getAttribute(jdkEl, "java-vendor"));
-        jdkConstraint.setJavaVersion(parseVersionRange(getAttribute(jdkEl, "java-version")));
-        jdkConstraint.setJvmVersion(parseVersionRange(getAttribute(jdkEl, "jvm-version")));
-        jdkConstraint.setSpecVersion(parseVersionRange(getAttribute(jdkEl, "spec-version")));
-        jdkConstraint.setJavaJvmVendor(getAttribute(jdkEl, "jvm-vendor"));
-        jdkConstraint.setMaxMemory(getAttribute(jdkEl, "max-memory"));
+        JdkConstraint jdkConstraint = parseJdkAttributes(jdkEl);
 
         for (Iterator i = applyProfiles(getChildren(jdkEl, "sysproperty", false)).iterator(); i.hasNext();) {
             Element syspropertyEl = (Element)i.next();
@@ -147,6 +160,17 @@ public class BootStrapContraintsParser extends XmlParser {
             jdkConstraint.getSystemProperties().put(key, propertyValue);
         }
 
+        return jdkConstraint;
+    }
+
+    private JdkConstraint parseJdkAttributes(Element jdkEl) {
+        JdkConstraint jdkConstraint = new JdkConstraint();
+        jdkConstraint.setJavaVendor(getAttribute(jdkEl, "java-vendor"));
+        jdkConstraint.setJavaVersion(parseVersionRange(getAttribute(jdkEl, "java-version")));
+        jdkConstraint.setJvmVersion(parseVersionRange(getAttribute(jdkEl, "jvm-version")));
+        jdkConstraint.setSpecVersion(parseVersionRange(getAttribute(jdkEl, "spec-version")));
+        jdkConstraint.setJavaJvmVendor(getAttribute(jdkEl, "jvm-vendor"));
+        jdkConstraint.setMaxMemory(getAttribute(jdkEl, "max-memory"));
         return jdkConstraint;
     }
 

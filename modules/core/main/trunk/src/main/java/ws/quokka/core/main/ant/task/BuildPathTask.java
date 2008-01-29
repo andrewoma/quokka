@@ -99,7 +99,7 @@ public class BuildPathTask extends Task {
         }
 
         if (cache == null) {
-            cache = utils.normalise(getProject().getProperty("quokka.project.targetdir") + "/build-sequence/" + id
+            cache = utils.normalise(getProject().getProperty("quokka.project.targetDir") + "/build-sequence/" + id
                     + ".txt");
         }
 

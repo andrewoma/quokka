@@ -529,9 +529,9 @@ public class DefaultProjectModel implements ProjectModel {
         AnnotatedProperties resolvedProperties = new AnnotatedProperties();
 
         // Add the global defaults
-        resolvedProperties.put("quokka.project.targetdir", "${basedir}/target");
-        resolvedProperties.put("quokka.project.sourcedir", "${basedir}/src");
-        resolvedProperties.put("quokka.project.resourcesdir", "${basedir}/resources");
+        resolvedProperties.put("quokka.project.targetDir", "${basedir}/target");
+        resolvedProperties.put("quokka.project.sourceDir", "${basedir}/src");
+        resolvedProperties.put("quokka.project.resourcesDir", "${basedir}/resources");
 
         // Add artifact related properties
         if (project.getArtifacts().size() > 0) {
@@ -1076,7 +1076,7 @@ public class DefaultProjectModel implements ProjectModel {
 
             if (actualPlugin instanceof ResourcesAware) {
                 resources = new DefaultResources(this, target, antProject,
-                        (PluginState)antProject.getReference("quokka.pluginstate"), logger);
+                        (PluginState)antProject.getReference("quokka.pluginState"), logger);
                 ((ResourcesAware)actualPlugin).setResources(resources);
             }
 

@@ -62,7 +62,7 @@ public class PropertiesHelperTest extends AbstractTest {
         p.put("list[0]", "value1");
         p.put("list[1]", "value2");
 
-        List result = ph.getList("list", true, true, String.class, false);
+        List result = ph.getList("list", true, String.class, false);
         assertEquals(2, result.size());
         assertEquals("value1", result.get(0));
         assertEquals("value2", result.get(1));
@@ -72,7 +72,7 @@ public class PropertiesHelperTest extends AbstractTest {
         p.put("list[0]fork", "true");
         p.put("list[0]rc.set.dir", "C:\\");
 
-        List result = ph.getList("list", true, true, null, false);
+        List result = ph.getList("list", true, null, false);
         assertEquals(1, result.size());
 
         TypedProperties value = (TypedProperties)result.iterator().next();

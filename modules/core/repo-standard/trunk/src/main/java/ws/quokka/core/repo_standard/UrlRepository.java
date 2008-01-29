@@ -18,14 +18,16 @@
 package ws.quokka.core.repo_standard;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Get;
+import org.apache.tools.ant.util.Base64Converter;
 
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
+import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.UnresolvedArtifactException;
 import ws.quokka.core.util.AnnotatedProperties;
-import ws.quokka.core.util.URLs;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.Collection;
+import java.util.Locale;
 
 
 /**
@@ -53,7 +56,8 @@ public class UrlRepository extends AbstractStandardRepository {
         super.initialise(project, properties);
 
         try {
-            String url = getProperty("url", false);
+            String url = getProperty("url", true);
+            url = url.endsWith("/") ? url : (url + "/"); // Force trailing slash
             this.url = (url == null) ? null : new URL(url);
         } catch (MalformedURLException e) {
             throw new BuildException(e);
@@ -69,8 +73,10 @@ public class UrlRepository extends AbstractStandardRepository {
         File repositoryFile;
 
         try {
-            artifactFile = File.createTempFile(id.toPathString(), getType(id.getType()).getExtension());
+            artifactFile = File.createTempFile(id.toPathString(), "." + getType(id.getType()).getExtension());
+            artifactFile.deleteOnExit();
             repositoryFile = File.createTempFile(id.toPathString(), "_repository.xml");
+            repositoryFile.deleteOnExit();
         } catch (IOException e) {
             throw new BuildException(e);
         }
@@ -80,8 +86,6 @@ public class UrlRepository extends AbstractStandardRepository {
 
             if (getRemoteRepositoryFile(id, repositoryFile)) {
                 artifact = parse(id, repositoryFile);
-                Assert.isTrue(repositoryFile.delete(),
-                    "Unable to delete temporary repository file: " + repositoryFile.getAbsolutePath());
             }
 
             artifact.setLocalCopy(artifactFile);
@@ -90,15 +94,20 @@ public class UrlRepository extends AbstractStandardRepository {
         }
 
         // Artifact doesn't exist
-        throw new UnresolvedArtifactException(id, URLs.toURL(artifactFile));
+        throw new UnresolvedArtifactException(id);
     }
 
     private boolean getRemoteRepositoryFile(RepoArtifactId id, File repositoryFile) {
-        return getRemoteFile(getRelativePath(id, "_repository.xml"), repositoryFile);
+        RepoType type = getType(id.getType());
+
+        return getRemoteFile(getRelativePath(id, type.getId() + "_repository.xml"), repositoryFile);
     }
 
     private boolean getRemoteArtifact(RepoArtifactId id, File artifactFile) {
-        return getRemoteFile(getRelativePath(id, "." + getType(id.getType()).getExtension()), artifactFile);
+        RepoType type = getType(id.getType());
+        String extension = type.getId() + "." + type.getExtension();
+
+        return getRemoteFile(getRelativePath(id, extension), artifactFile);
     }
 
     private boolean getRemoteFile(String relativePath, File detination) {
@@ -115,16 +124,17 @@ public class UrlRepository extends AbstractStandardRepository {
         get.setUsername(user);
         get.setPassword(password);
         get.setDest(detination);
-        get.setUseTimestamp(true);
+        get.setUseTimestamp(false);
         get.setIgnoreErrors(false);
 
         try {
-            get.execute();
-        } catch (BuildException e) {
+            // Get is incredibly noisy ... this limits it's logging to verbose level only
+            get.doGet(Project.MSG_VERBOSE, null);
+        } catch (Exception e) {
             if (notFound(url)) {
                 return false;
             } else {
-                throw e;
+                throw new BuildException("Unable to get " + url.toString() + ": " + e.getMessage(), e);
             }
         }
 
@@ -133,12 +143,12 @@ public class UrlRepository extends AbstractStandardRepository {
 
     /**
      * Tries to work out if the error is because the url is not found versus other errors.
-     * Currently only supports HTTP
-     * TODO: Add support for other protocols such as FTP by checking if the root url is accessible
-     * and assuming that if it is the error is not found.
+     * Currently only supports HTTP.
+     * <p/>
+     * TODO: Reimplement get so that reconnection isn't required to check the not found case.
      */
     protected boolean notFound(URL url) {
-        if (!url.getProtocol().toLowerCase().equals("http")) {
+        if (!url.getProtocol().toLowerCase(Locale.US).equals("http")) {
             return false;
         }
 
@@ -146,6 +156,11 @@ public class UrlRepository extends AbstractStandardRepository {
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 
             try {
+                if ((user != null) || (password != null)) {
+                    String encoding = new Base64Converter().encode((user + ":" + password).getBytes());
+                    connection.setRequestProperty("Authorization", "Basic " + encoding);
+                }
+
                 return connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND;
             } finally {
                 connection.disconnect();

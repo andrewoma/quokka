@@ -270,7 +270,7 @@ public class BootStrapper {
         File bootStrapDefaultDir = new File(antHome, "bootstrap");
 
         if (librariesDir == null) {
-            librariesDir = new File(new File(antHome), "libs");
+            librariesDir = new File(new File(antHome), "lib");
         }
 
         Log.get().verbose("   librariesDir -> " + librariesDir.getAbsolutePath());
