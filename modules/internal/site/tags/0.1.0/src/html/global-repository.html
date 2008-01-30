@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+<h1>Global Repository</h1>
+
+<p>Quokka makes use of a global repository for artifacts, such as .jar files. The main reason for it is so
+    that common libraries have well known ids. This enables quokka to detect class path conflicts
+    between libraries. It also has the advantage that common libaries need to be downloaded only once.
+</p>
+
+<h2><a name="accessing"><span/></a>Accessing the Global Repository</h2>
+
+<p>
+    The default quokka installation is configured to access the global repository automatically.
+    However, you can browse the repository at <a href="http://quokka.ws/repository/">http://quokka.ws/repository/</a>
+</p>
+
+<p><b>Warning:</b> The global repository artifacts and repository data will not be frozen until
+quokka 1.0 is released. After 1.0 all repository artifacts will be immutable and any modifications
+will result in a new revision in the repository.</p>
+
+<h2>What if my library is not in the Global Repository?</h2>
+
+<p> There are 2 options: </p>
+<ul>
+    <li>You may attempt to add it to the Global Repository.<br/>
+        <b>Note:</b> While quokka is in beta the
+        only .jars accepted into the global repository will be those required by quokka itself ant its extensions
+        such as plugins. This is both to reduce the impact on users should the repository structure
+        change in an incompatible way, and also pending a process to management the global repository in
+        a distributed manner.
+    </li>
+    <li>Alternatively, you can configure a local project repository. This allows you
+        to place the jars along side your source under version control. Or if you are in a corporate environment,
+        you may configure a corporate-wide repository. The key point is that you do not need to have all your
+        dependencies in the global repository to use quokka.
+    </li>
+</ul>
+
+<h2><a name="standards"><span/></a>Naming Standards</h2>
+
+<p>If you ever intend to submit libraries to the global repository, or wish to migrate to the global
+    repository versions when they become available, the must adhere to the
+    <a href="repositories.html#naming-standards">naming standards</a>.</p>
+
+<!--
+<p><b>Once an artifact is deployed to the Global Repository it cannot be changed.</b>
+If a mistake has been made, the a separate revision must be provided.</p>
+
+<p>If you aren't turned off by the above requirements, feel free create an issue assigned to the "global-repository"
+    component and attach the zipped up repository entries.</p>
+
+<p>When time permits, a maintenance system will be put in place to allow automated submission and approvals.
+At this point, submissions may be relaxed somewhat.</p>
+-->
+
+</body>
+</html>
