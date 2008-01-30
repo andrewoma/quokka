@@ -1,0 +1,33 @@
+<!--
+   DTD for quokka repository files. See http://quokka.ws/project-reference.html for more information.
+
+   PUBLIC "quokka.ws/dtd/repository-1.0-m01"
+   SYSTEM "http://quokka.ws/dtd/repository-1.0-m01.dtd"
+-->
+<!ELEMENT artifact ( dependencies?, paths? ) >
+<!ATTLIST artifact group NMTOKEN #REQUIRED >
+<!ATTLIST artifact name NMTOKEN #IMPLIED >
+<!ATTLIST artifact type NMTOKEN #IMPLIED >
+<!ATTLIST artifact version CDATA #REQUIRED >
+
+<!ELEMENT dependencies ( dependency+ ) >
+
+<!ELEMENT dependency ( path-spec* ) >
+<!ATTLIST dependency group NMTOKEN #REQUIRED >
+<!ATTLIST dependency name NMTOKEN #IMPLIED >
+<!ATTLIST dependency paths CDATA #IMPLIED >
+<!ATTLIST dependency type NMTOKEN #IMPLIED>
+<!ATTLIST dependency version CDATA #REQUIRED >
+
+<!ELEMENT path EMPTY >
+<!ATTLIST path description CDATA #REQUIRED >
+<!ATTLIST path id NMTOKEN #REQUIRED >
+
+<!ELEMENT path-spec EMPTY >
+<!ATTLIST path-spec descend NMTOKEN #IMPLIED >
+<!ATTLIST path-spec from NMTOKEN #IMPLIED >
+<!ATTLIST path-spec mandatory NMTOKEN #IMPLIED >
+<!ATTLIST path-spec options CDATA #IMPLIED >
+<!ATTLIST path-spec to NMTOKEN #IMPLIED >
+
+<!ELEMENT paths ( path+ ) >
