@@ -41,7 +41,7 @@
     <target name="deploy-snapshot-repo">
         <property name="snapshotRepoTemp" location="${quokka.project.targetDir}/snapshot-repo.zip"/>
         <zip destfile="${snapshotRepoTemp}">
-            <fileset dir="${quokka.repo.snapshot.rootdir}" includes="quokka/**"/>
+            <fileset dir="${quokka.repo.snapshot.rootDir}" includes="quokka/**"/>
         </zip>
 
         <deploy file="${snapshotRepoTemp}" script="deploy-snapshot-repo"/>
@@ -59,11 +59,11 @@
     <target name="deploy-repo">
         <property name="repoTemp" location="${quokka.project.targetDir}/repo.zip"/>
         <zip destfile="${repoTemp}">
-            <fileset dir="${quokka.repo.localrelease.rootdir}"/>
+            <fileset dir="${quokka.repo.localRelease.rootDir}"/>
         </zip>
 
         <deploy file="${repoTemp}" script="deploy-repo"/>
     </target>
 
-    <target name="deploy-all" depends="deploy-site, deploy-snapshot-repo, deploy-repo"/>
+    <target name="deploy-all" depends="deploy-site, deploy-snapshot-repo, deploy-repo, deploy-reports"/>
 </project>
