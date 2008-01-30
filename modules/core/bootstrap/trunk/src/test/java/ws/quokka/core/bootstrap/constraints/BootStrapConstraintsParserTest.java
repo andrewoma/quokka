@@ -52,7 +52,7 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
 
         List jdks = bootStrap.getJdkConstraints();
         assertEquals(1, jdks.size());
-        assertJdk(null, null, null, null, "[1.4,1.6]", null, new HashMap(), (JdkConstraint) jdks.get(0));
+        assertJdk(null, null, null, null, "[1.4,1.6]", null, new HashMap(), (JdkConstraint)jdks.get(0));
     }
 
     public void testParsingWithDefaults() {

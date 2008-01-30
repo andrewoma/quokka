@@ -153,15 +153,12 @@ public class AnnotatedProperties extends Properties {
 //    public synchronized Object get(Object key) {
 //        return super.get(((String)key).toLowerCase());
 //    }
-
 //    public String getProperty(String key) {
 //        return super.getProperty(key.toLowerCase());
 //    }
-
 //    public synchronized Object remove(Object key) {
 //        return super.remove(key.toString().toLowerCase());
 //    }
-
     public synchronized Object put(Object key, Object value) {
         Assert.isTrue(value != null, "Value is null for key=" + key);
 

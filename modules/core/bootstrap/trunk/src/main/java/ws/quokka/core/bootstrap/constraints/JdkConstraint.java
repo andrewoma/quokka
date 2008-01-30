@@ -178,6 +178,11 @@ public class JdkConstraint {
         return matches;
     }
 
+    public boolean isEmpty() {
+        return (javaJvmVendor == null) && (javaVendor == null) && (javaVersion == null) && (jvmVersion == null)
+        && (maxMemory == null) && (systemProperties.size() == 0) && (specVersion == null);
+    }
+
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
     public static class SystemPropertyValue {
@@ -222,10 +227,5 @@ public class JdkConstraint {
 
             return result;
         }
-    }
-
-    public boolean isEmpty() {
-        return javaJvmVendor == null && javaVendor == null && javaVersion == null && jvmVersion == null
-                && maxMemory == null && systemProperties.size() == 0 && specVersion == null;
     }
 }

@@ -76,7 +76,8 @@ public class BootStrapContraintsParser extends XmlParser {
     private BootStrapConstraints parseShortHand(Element bootStrapEl) {
         // These are shorthand contraints for the common options
         BootStrapConstraints bootStrap = new BootStrapConstraints();
-        VersionRangeUnion core = parseVersionRange(getAttribute(bootStrapEl,  "core"));
+        VersionRangeUnion core = parseVersionRange(getAttribute(bootStrapEl, "core"));
+
         if (core != null) {
             CoreConstraint coreConstraint = new CoreConstraint();
             coreConstraint.setVersion(core);
@@ -84,6 +85,7 @@ public class BootStrapContraintsParser extends XmlParser {
         }
 
         JdkConstraint jdkConstraint = parseJdkAttributes(bootStrapEl);
+
         if (!jdkConstraint.isEmpty()) {
             bootStrap.getJdkConstraints().add(jdkConstraint);
         }
@@ -171,6 +173,7 @@ public class BootStrapContraintsParser extends XmlParser {
         jdkConstraint.setSpecVersion(parseVersionRange(getAttribute(jdkEl, "spec-version")));
         jdkConstraint.setJavaJvmVendor(getAttribute(jdkEl, "jvm-vendor"));
         jdkConstraint.setMaxMemory(getAttribute(jdkEl, "max-memory"));
+
         return jdkConstraint;
     }
 
