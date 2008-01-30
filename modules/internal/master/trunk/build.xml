@@ -133,11 +133,55 @@
     </target>
 
     <target name="release-and-tag">
-        <buildpath id="releasepath">
-            <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
-                     excludes="internal/master/**, internal/site/**, plugin/xml/**, plugin/javadoc/**"/>
-        </buildpath>
-        
-
+        <path id="releasepath">
+            <!--<path location="${home}/archetype/depset"/>-->
+            <!--<path location="${home}/archetype/jar"/>-->
+            <!--<path location="${home}/archetype/multiproject"/>-->
+            <!--<path location="${home}/core/bootstrap"/>-->
+            <!--<path location="${home}/core/bootstrap-util"/>-->
+            <!--<path location="${home}/core/bundle"/>-->
+            <!--<path location="${home}/core/itest"/>-->
+            <!--<path location="${home}/core/main"/>-->
+            <!--<path location="${home}/core/metadata"/>-->
+            <!--<path location="${home}/core/model"/>-->
+            <!--<path location="${home}/core/plugin-spi"/>-->
+            <!--<path location="${home}/core/repo-spi"/>-->
+            <!--<path location="${home}/core/repo-standard"/>-->
+            <!--<path location="${home}/core/test"/>-->
+            <!--<path location="${home}/core/util"/>-->
+            <!--<path location="${home}/core/version"/>-->
+            <!--<path location="${home}/depset/jar"/>-->
+            <!--<path location="${home}/depset/resourcebundle"/>-->
+            <!--<path location="${home}/internal/docbook-depset"/>-->
+            <!--<path location="${home}/internal/master"/>-->
+            <!--<path location="${home}/internal/module-depset"/>-->
+            <!--<path location="${home}/internal/plugin-depset"/>-->
+            <!--<path location="${home}/internal/site"/>-->
+            <!--<path location="${home}/plugin/cobertura"/>-->
+            <!--<path location="${home}/plugin/devreport"/>-->
+            <!--<path location="${home}/plugin/fop"/>-->
+            <!--<path location="${home}/plugin/help"/>-->
+            <!--<path location="${home}/plugin/jalopy"/>-->
+            <!--<path location="${home}/plugin/jar"/>-->
+            <!--<path location="${home}/plugin/jarbundle"/>-->
+            <!--<path location="${home}/plugin/javac"/>-->
+            <!--<path location="${home}/plugin/javadoc"/>-->
+            <!--<path location="${home}/plugin/junit"/>-->
+            <!--<path location="${home}/plugin/junitreport"/>-->
+            <!--<path location="${home}/plugin/lifecycle"/>-->
+            <!--<path location="${home}/plugin/release"/>-->
+            <!--<path location="${home}/plugin/resources"/>-->
+            <!--<path location="${home}/plugin/standard-lifecycle"/>-->
+            <!--<path location="${home}/plugin/subversion"/>-->
+            <!--<path location="${home}/plugin/versioncontrol"/>-->
+            <!--<path location="${home}/plugin/xml"/>-->
+            <!--<path location="${home}/xmlcat/docbook-dtd-4-5"/>-->
+            <!--<path location="${home}/xmlcat/docbook-xsl-1-72-0"/>-->
+            <!--<path location="${home}/xmlcat/site-naut05-custom"/>-->
+            <!--<path location="${home}/xmlcat/xhtml1-20020801"/>-->
+        </path>
+        <subant buildpathref="releasepath" target="release">
+            <property name="quokka.release.rolloverVersion" value="0.1.1-ss"/>
+        </subant>
     </target>
 </project>
