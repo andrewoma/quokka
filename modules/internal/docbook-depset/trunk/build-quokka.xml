@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.internal.docbook-depset" version="0.1">
+    <artifacts group="quokka.internal.docbook-depset" version="0.1.0">
         <artifact/>
     </artifacts>
 
