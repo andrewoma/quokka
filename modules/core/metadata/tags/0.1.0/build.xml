@@ -1,0 +1,3 @@
+<project name="core.metadata.ext">
+    <import file="../../internal/master/ide-parent.xml"/>
+</project>
