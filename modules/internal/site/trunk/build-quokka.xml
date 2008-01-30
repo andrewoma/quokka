@@ -42,6 +42,7 @@
         <plugin group="quokka.plugin.resources" version="0.1">
             <target name="extract-resources" template="extract" prefix="extract-resources"/>
         </plugin>
+        <plugin group="quokka.plugin.subversion" version="0.1"/>
 
     </dependency-set>
 </project>
