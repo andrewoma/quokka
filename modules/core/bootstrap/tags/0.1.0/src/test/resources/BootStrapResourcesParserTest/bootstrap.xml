@@ -1,0 +1,6 @@
+<bootstrap>
+    <jdks>
+        <jdk location="C:\Program Files\Java\jdk1.6.0\bin\java.exe"/>
+        <jdk location="C:\Program Files\Java\jrockit-R27.3.1-jdk1.6.0_01\bin\java.exe"/>
+    </jdks>
+</bootstrap>
