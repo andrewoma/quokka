@@ -25,5 +25,6 @@
         <plugin group="quokka.plugin.help" version="0.1" use-defaults="false"
                 targets="aggregate-report, help"/>
         <plugin group="quokka.plugin.devreport" version="0.1" use-defaults="false" targets="reports"/>
+        <plugin group="quokka.plugin.subversion" version="0.1"/>
     </dependency-set>
 </project>
