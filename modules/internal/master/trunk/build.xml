@@ -131,4 +131,13 @@
             <fileset dir="${home}/core/bundle/target/docbook" includes="*.pdf"/>
         </copy>
     </target>
+
+    <target name="release-and-tag">
+        <buildpath id="releasepath">
+            <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
+                     excludes="internal/master/**, internal/site/**, plugin/xml/**, plugin/javadoc/**"/>
+        </buildpath>
+        
+
+    </target>
 </project>

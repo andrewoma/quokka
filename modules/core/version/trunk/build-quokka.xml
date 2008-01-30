@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
-<project name="core.version">
+<project>
     <artifacts group="quokka.core.version" version="0.1">
         <artifact paths="runtime"/>
     </artifacts>
+
+    <bootstrap core="[0.1,0.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <dependency group="quokka.core.test" version="0.1" paths="test-compile(junit)"/>
