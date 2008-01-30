@@ -1,0 +1,187 @@
+<project name="internal.master.ext">
+    <property name="home" location="../.."/>
+
+    <!-- Default to building all -->
+    <property name="modules" value="*"/>
+
+    <buildpath id="buildpath">
+        <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
+                 excludes="internal/master/**"/>
+    </buildpath>
+
+    <buildpath id="buildpath-code">
+        <fileset dir="${home}" includes="${modules}/*/build-quokka.xml"
+                 excludes="internal/**, depset/**, xmlcat/**, archetype/**, core/bundle/**"/>
+    </buildpath>
+
+    <!-- Iterate over 1 or more file lists, calling the target specified via subant -->
+    <macrodef name="iterate">
+        <attribute name="target"/>
+        <attribute name="master" default="none"/>
+        <attribute name="buildpathref" default="buildpath"/>
+        <sequential>
+            <subant target="@{target}" buildpathref="@{buildpathref}"/>
+            <if>
+                <not><equals arg1="@{master}" arg2="none"/></not>
+                <then>
+                    <run-target target="@{master}"/>
+                </then>
+            </if>
+        </sequential>
+    </macrodef>
+
+    <target name="install-all" description="Install all modules">
+        <iterate target="install"/>
+    </target>
+
+    <target name="process-test-resources-all">
+        <iterate target="process-test-resources"/>
+    </target>
+
+    <target name="process-resources-all">
+        <iterate target="process-resources"/>
+    </target>
+
+    <target name="package-all">
+        <iterate target="package"/>
+    </target>
+
+    <target name="clean-all">
+        <iterate target="clean" master="clean"/>
+    </target>
+
+    <target name="help-report-all">
+        <iterate target="quokka.help:collect" master="quokka.help:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="cobertura-all">
+        <iterate target="quokka.cobertura:collect" master="quokka.cobertura:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="junitreport-all">
+        <iterate target="quokka.junitreport:collect" master="quokka.junitreport:aggregate-report" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="format-all">
+        <iterate target="format" buildpathref="buildpath-code"/>
+    </target>
+
+    <target name="reports-all">
+        <iterate target="quokka.devreport:generate" master="quokka.devreport:reports"/>
+    </target>
+
+    <target name="install-quokka">
+        <tstamp>
+            <format property="backup" pattern="'C:/Data/Dev/Projects/repository-backups/'yyyy-MM-dd-HHmmss"/>
+        </tstamp>
+        <copy todir="${backup}">
+            <fileset dir="C:\Data\Dev\Projects\stable-repository"/>
+        </copy>
+
+        <delete dir="C:\Data\Dev\Projects\repository-backups\rollback"/>
+        <copy todir="C:\Data\Dev\Projects\repository-backups\rollback">
+            <fileset dir="C:\Data\Dev\Projects\stable-repository"/>
+        </copy>
+
+        <!--<delete dir="C:\Documents and Settings\Administrator\My Documents\Development\NewProjects\stable-repository"/>-->
+        <copy todir="C:\Data\Dev\Projects\stable-repository">
+            <fileset dir="C:\Data\Dev\Projects\snapshot-repository"/>
+        </copy>
+    </target>
+
+    <target name="rollback-install-quokka">
+        <copy todir="C:\Data\Dev\Projects\stable-repository">
+            <fileset dir="C:\Data\Dev\Projects\repository-backups\rollback"/>
+        </copy>
+    </target>
+
+    <target name="update-release-repo">
+        <copy todir="${quokka.repo.localRelease.rootDir}">
+            <fileset dir="${quokka.repo.localRelease.installRootDir}"/>
+        </copy>
+    </target>
+
+    <target name="full-release-1">
+        <antcall target="clean-all"/>
+        <antcall target="install-all"/>
+        <antcall target="reports-all"/>
+        <antcall target="update-release-repo"/>
+    </target>
+
+    <target name="full-release-2">
+        <subant buildpath="${home}/core/bundle" target="install"/>
+        <subant buildpath="${home}/core/bundle" target="dist"/>
+        <subant buildpath="${home}/internal/site" target="clean"/>
+        <subant buildpath="${home}/internal/site" target="site"/>
+
+        <!-- Copy dtds to site -->
+        <property name="site" location="${home}/internal/site/target/site/"/>
+        <mkdir dir="${site}/dtd"/>
+        <copy todir="${site}/dtd">
+            <fileset dir="${home}/core/main/src/main/resources/META-INF/quokka.ws/dtd/"/>
+        </copy>
+        <copy todir="${site}/dtd">
+            <fileset dir="${home}/core/repo-spi/src/main/resources/META-INF/quokka.ws/dtd/"/>
+        </copy>
+
+        <!-- Copy distribution & manual -->
+        <mkdir dir="${site}/downloads"/>
+        <copy todir="${site}/downloads">
+            <fileset dir="${home}/core/bundle/target" includes="*.zip"/>
+            <fileset dir="${home}/core/bundle/target/docbook" includes="*.pdf"/>
+        </copy>
+    </target>
+
+    <target name="release-and-tag">
+        <path id="releasepath">
+            <!--<path location="${home}/archetype/depset"/>-->
+            <!--<path location="${home}/archetype/jar"/>-->
+            <!--<path location="${home}/archetype/multiproject"/>-->
+            <!--<path location="${home}/core/bootstrap"/>-->
+            <!--<path location="${home}/core/bootstrap-util"/>-->
+            <!--<path location="${home}/core/bundle"/>-->
+            <!--<path location="${home}/core/itest"/>-->
+            <!--<path location="${home}/core/main"/>-->
+            <!--<path location="${home}/core/metadata"/>-->
+            <!--<path location="${home}/core/model"/>-->
+            <!--<path location="${home}/core/plugin-spi"/>-->
+            <!--<path location="${home}/core/repo-spi"/>-->
+            <!--<path location="${home}/core/repo-standard"/>-->
+            <!--<path location="${home}/core/test"/>-->
+            <!--<path location="${home}/core/util"/>-->
+            <!--<path location="${home}/core/version"/>-->
+            <!--<path location="${home}/depset/jar"/>-->
+            <!--<path location="${home}/depset/resourcebundle"/>-->
+            <!--<path location="${home}/internal/docbook-depset"/>-->
+            <!--<path location="${home}/internal/master"/>-->
+            <!--<path location="${home}/internal/module-depset"/>-->
+            <!--<path location="${home}/internal/plugin-depset"/>-->
+            <!--<path location="${home}/internal/site"/>-->
+            <!--<path location="${home}/plugin/cobertura"/>-->
+            <!--<path location="${home}/plugin/devreport"/>-->
+            <!--<path location="${home}/plugin/fop"/>-->
+            <!--<path location="${home}/plugin/help"/>-->
+            <!--<path location="${home}/plugin/jalopy"/>-->
+            <!--<path location="${home}/plugin/jar"/>-->
+            <!--<path location="${home}/plugin/jarbundle"/>-->
+            <!--<path location="${home}/plugin/javac"/>-->
+            <!--<path location="${home}/plugin/javadoc"/>-->
+            <!--<path location="${home}/plugin/junit"/>-->
+            <!--<path location="${home}/plugin/junitreport"/>-->
+            <!--<path location="${home}/plugin/lifecycle"/>-->
+            <!--<path location="${home}/plugin/release"/>-->
+            <!--<path location="${home}/plugin/resources"/>-->
+            <!--<path location="${home}/plugin/standard-lifecycle"/>-->
+            <!--<path location="${home}/plugin/subversion"/>-->
+            <!--<path location="${home}/plugin/versioncontrol"/>-->
+            <!--<path location="${home}/plugin/xml"/>-->
+            <!--<path location="${home}/xmlcat/docbook-dtd-4-5"/>-->
+            <!--<path location="${home}/xmlcat/docbook-xsl-1-72-0"/>-->
+            <!--<path location="${home}/xmlcat/site-naut05-custom"/>-->
+            <!--<path location="${home}/xmlcat/xhtml1-20020801"/>-->
+        </path>
+        <subant buildpathref="releasepath" target="release">
+            <property name="quokka.release.rolloverVersion" value="0.1.1-ss"/>
+        </subant>
+    </target>
+</project>
