@@ -420,13 +420,6 @@
         <root url="intellijad://intellijad" />
       </SOURCES>
     </library>
-    <library name="cobertura-1.9">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/cobertura/1.9/cobertura_jar.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
   </component>
 </project>
 
