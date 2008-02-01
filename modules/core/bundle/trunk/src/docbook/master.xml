@@ -309,7 +309,7 @@ quokka.jar:package:
 
 BUILD SUCCESSFUL                    </screen>
 
-          <para>Congratulations! You now have a how a .jar file in your
+          <para>Congratulations! You now have a .jar file in your
           <literal>target/package</literal> directory ready for use. Looking
           at the console output, you can see that the build generated some
           resources (more on this later), compiled the source code,
