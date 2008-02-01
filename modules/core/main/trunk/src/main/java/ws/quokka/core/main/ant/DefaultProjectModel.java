@@ -850,10 +850,17 @@ public class DefaultProjectModel implements ProjectModel {
         RepoArtifactId core = (RepoArtifactId)coreClassPath.get(toUnversionedId(id));
 
         if (core != null) {
-            Assert.isTrue(core.getVersion().equals(id.getVersion()), id.getLocator(),
-                "The dependency conflicts with the core version: dependency=" + id.toShortString() + ", coreVersion="
-                + core.getVersion());
-            log.debug("Dropping " + id.toShortString() + " from path as it exists in the core");
+            boolean conflict = !core.getVersion().equals(id.getVersion());
+
+            if (conflict) {
+                String message = "conflict with the core: dependency=" + id.toShortString() + ", core="
+                    + core.getVersion();
+                boolean overrideCore = "true".equals(antProject.getProperty("quokka.project.overrideCore"));
+                Assert.isTrue(overrideCore, id.getLocator(), message);
+                log.verbose("Overriding " + message);
+            }
+
+            log.verbose("Dropping " + id.toShortString() + " from path as it exists in the core");
         }
 
         return core != null;

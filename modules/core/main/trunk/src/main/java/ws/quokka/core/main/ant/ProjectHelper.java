@@ -386,24 +386,27 @@ public class ProjectHelper extends ProjectHelper2 {
             bootStrapper.setArguments(arguments);
             bootStrapper.setProfiles(new HashSet(profiles.getElements()));
             bootStrapper.setQuokkaFile(quokkaFile);
-            bootStrapper.initialise();
 
             String enabled = (String)properties.get("quokka.bootstrap.enabled");
 
-            if (bootStrapper.isBootStrapRequired() && ((enabled == null) || enabled.equals("true"))) {
-                Assert.isTrue(topLevel,
-                    "Cannot bootstrap '" + quokkaFile.getAbsolutePath() + "' as this is not a top level project. "
-                    + "Either standardise the bootstrap options between parents and children, or launch the "
-                    + "descendents using <bootstrap> tasks from within parent projects build.xml file.");
+            if ((enabled == null) || enabled.equals("true")) {
+                bootStrapper.initialise();
 
-                int code;
+                if (bootStrapper.isBootStrapRequired()) {
+                    Assert.isTrue(topLevel,
+                        "Cannot bootstrap '" + quokkaFile.getAbsolutePath() + "' as this is not a top level project. "
+                        + "Either standardise the bootstrap options between parents and children, or launch the "
+                        + "descendents using <bootstrap> tasks from within parent projects build.xml file.");
 
-                try {
-                    code = bootStrapper.bootStrap();
-                    System.exit(code);
-                } catch (Exception e) {
-                    antProject.fireBuildFinished(e);
-                    System.exit(1);
+                    int code;
+
+                    try {
+                        code = bootStrapper.bootStrap();
+                        System.exit(code);
+                    } catch (Exception e) {
+                        antProject.fireBuildFinished(e);
+                        System.exit(1);
+                    }
                 }
             }
 
@@ -561,8 +564,6 @@ public class ProjectHelper extends ProjectHelper2 {
             task.setLocation(Location.UNKNOWN_LOCATION);
             task.setDescription("plugin target task for " + target.getName());
             task.setTaskName("plugin");
-
-            //            task.setTaskName(target.getName());
             task.setPluginTarget(target);
             task.setProjectModel(project);
             antTarget.addTask(task);
@@ -636,6 +637,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
         // Built in types
         repository.registerType(new RepoType("jar", "Java Archive (.jar) file", "jar"));
+        repository.registerType(new RepoType("license", "License file", "txt"));
         antProject.addReference("quokka.project.repository", repository);
 
         return repository;
