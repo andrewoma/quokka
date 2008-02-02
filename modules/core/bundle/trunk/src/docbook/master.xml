@@ -1174,8 +1174,8 @@ quokka.project.java.target=1.5                    </programlisting>
     <chapter id="project-reference">
       <title>Project Reference</title>
 
-      <para>This section describes a quokka project definition in detail.
-      </para>
+      <para>This section describes a quokka project definition in
+      detail.</para>
 
       <para>A project is defined by one or more files, but is usually:</para>
 
@@ -2716,16 +2716,16 @@ prefix.*=${prefix.defs}</programlisting>
           </varlistentry>
         </variablelist>
 
-        <para>Examples of valid versions are: <literal>1, 1.2, 1.0.2.3,
-        0.1, 2.2:2</literal></para>
+        <para>Examples of valid versions are: <literal>1, 1.2, 1.0.2.3, 0.1,
+        2.2:2</literal></para>
 
         <para>When versions are compared the numeric portion is compared as
         you expect (as if there were padded zeroes when any value is not
         supplied). The important thing to note that if two versions are
         otherwise equal, but one has a qualifier and the other doesn't the
         version with the qualifier is lesser. e.g. <literal>1.0</literal> &gt;
-        <literal>0.1</literal>. (This is in accordance with JSR 277, but
-        the opposite to OSGi).</para>
+        <literal>0.1</literal>. (This is in accordance with JSR 277, but the
+        opposite to OSGi).</para>
 
         <para>Also note that qualifier are compared via string comparisons, so
         take care to pad numerics and order qualifiers in a string-wise
@@ -3915,7 +3915,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         This effectively provides a quick a dirty way of writing plugins using
         nothing but Ant tasks. See <link
         linkend="creating-dependency-sets">Creating Dependency Sets</link> for
-        more information. TODO: Not implemented yet.</para>
+        more information. </para>
       </sect1>
     </chapter>
 
@@ -3949,6 +3949,12 @@ src/
       <para>Once done, type <literal>"quokka"</literal> to build your
       dependency set an include it in the repository. You can then include it
       in other projects or dependency sets as a nested dependency set.</para>
+
+      <para>A standard Ant project may also be included in a dependency set.
+      It will be automatically imported into the project when the dependency
+      set is included. To do this, create a file called
+      <literal>import.xml</literal> along side the
+      <literal>depset.xml</literal> file.</para>
     </chapter>
 
     <chapter id="ides">

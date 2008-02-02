@@ -396,7 +396,6 @@ public class ProjectParser {
             for (Iterator i = dependencySetEls.iterator(); i.hasNext();) {
                 Element nestedSetEl = (Element)i.next();
 
-                // TODO: Handle overrides
                 // Get the dependency set from the repository
                 converter = getConverter(RepoArtifactId.class);
 
@@ -432,6 +431,10 @@ public class ProjectParser {
                 // Set the build resources
                 nestedSet.addBuildResources(URLs.toURLEntries(artifact.getLocalCopy(),
                         "META-INF/quokka/" + nestedSet.getArtifact().getId().toPathString() + "/resources/"));
+
+                // Add imported ANT project
+                nestedSet.setImportURL(URLs.toURL(artifact.getLocalCopy(),
+                        "META-INF/quokka/" + nestedSet.getArtifact().getId().toPathString() + "/import.xml"));
             }
 
             // Dependencies
@@ -456,18 +459,11 @@ public class ProjectParser {
 
             // Location of top level project properties, imports and resources are different to nested depsets
             if (dependencySet.getParent() == null) {
-                // Set the properties
-                //                URL url = getProjectProperties(projectFile);
-                //                if (url != null) {
-                //                    dependencySet.setProperties(url);
-                //                }
                 // Set the import file
                 String name = projectFile.getAbsolutePath();
                 File importFile = new File(name.substring(0, name.lastIndexOf("-quokka")) + ".xml");
 
-                //                System.out.println("Looking for import: " + importFile.getAbsolutePath());
                 if (importFile.exists()) {
-                    //                    System.out.println("Import found");
                     dependencySet.setImportURL(URLs.toURL(importFile));
                 }
 

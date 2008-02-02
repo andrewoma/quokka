@@ -26,7 +26,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.input.InputHandler;
 import org.apache.tools.ant.input.InputRequest;
 
-import ws.quokka.core.main.ant.ProjectHelper;
 import ws.quokka.core.plugin_spi.PluginState;
 
 import java.io.BufferedReader;
@@ -93,7 +92,7 @@ public class AntRunner {
             project.setUserProperty((String)entry.getKey(), (String)entry.getValue());
         }
 
-        RuntimeException exception = null;
+        Exception exception = null;
 
         try {
             project.fireBuildStarted();
@@ -102,7 +101,11 @@ public class AntRunner {
             project.setUserProperty("ant.version", "1.7.0");
             project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 
-            org.apache.tools.ant.ProjectHelper helper = new ProjectHelper();
+            // Remove hard dependency on core.main to allow integration tests to be
+            // done within the core.main package. This is ok as AntRunner is loaded via the integration
+            // test class loader.
+            org.apache.tools.ant.ProjectHelper helper = (org.apache.tools.ant.ProjectHelper)getClass().getClassLoader()
+                .loadClass("ws.quokka.core.main.ant.ProjectHelper").newInstance();
             project.addReference("ant.projectHelper", helper);
             helper.parse(project, buildFile);
 
@@ -130,9 +133,14 @@ public class AntRunner {
             results.put("antProperties", new HashMap(project.getProperties()));
 
             return results;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             exception = e;
-            throw e;
+
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            } else {
+                throw new BuildException(e);
+            }
         } finally {
             //            System.setOut(out);
             //            System.setErr(err);

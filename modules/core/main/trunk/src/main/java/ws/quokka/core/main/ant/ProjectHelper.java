@@ -40,6 +40,8 @@ import org.xml.sax.SAXParseException;
 
 import ws.quokka.core.bootstrap.BootStrapper;
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.bootstrap_util.ExceptionHandler;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Log;
 import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.bootstrap_util.PropertiesUtil;
@@ -65,6 +67,8 @@ import ws.quokka.core.util.ServiceFactory;
 import ws.quokka.core.util.Strings;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import java.lang.reflect.Field;
 
@@ -248,7 +252,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
         Map antTargets = addTargets(projectModel, antProject, projectModel.getTargets());
 
-        String tempDir = antProject.getProperty("quokka.project.targetDir");
+        String tempDir = getTargetDir(antProject);
         tempDir = (tempDir == null) ? (antProject.getBaseDir() + "/target") : tempDir;
 
         File dir = FileUtils.getFileUtils().normalize(tempDir + "/temp/buildresources");
@@ -264,11 +268,35 @@ public class ProjectHelper extends ProjectHelper2 {
         return projectModel;
     }
 
+    private String getTargetDir(Project antProject) {
+        return antProject.getProperty("quokka.project.targetDir");
+    }
+
+    /**
+     * Converts a URL to a file, copying it to a temporary file if necessary
+     */
+    private File extractFile(final URL url) {
+        return (File)new ExceptionHandler() {
+                public Object run() throws IOException {
+                    if (url.toString().startsWith("file:/")) {
+                        return new File(Locator.fromURI(url.toString()));
+                    }
+
+                    File file = File.createTempFile("import", ".xml");
+                    file.deleteOnExit();
+                    new IOUtils().copyStream(url.openStream(), new FileOutputStream(file));
+
+                    return file;
+                }
+            }.soften();
+    }
+
     private void processImports(Project antProject, DefaultProjectModel projectModel, Map antTargets) {
         for (Iterator i = projectModel.getResolvedImports().iterator(); i.hasNext();) {
             URL importURL = (URL)i.next();
 
-            //            System.out.println("importURL=" + importURL);
+            antProject.log("Importing " + importURL.toString(), Project.MSG_VERBOSE);
+
             ImportTask importTask = new ImportTask();
             importTask.setProject(antProject);
 
@@ -277,8 +305,7 @@ public class ProjectHelper extends ProjectHelper2 {
             dummy.setProject(antProject);
             importTask.setOwningTarget(dummy); // Requires a target with name of ""
 
-            // TODO: Support from within JARS - refactor URL copy from BuildResources
-            String file = Locator.fromURI(importURL.toString());
+            String file = extractFile(importURL).getAbsolutePath();
             importTask.setFile(file);
             importTask.setLocation(new Location(file));
             importTask.execute();

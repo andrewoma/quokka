@@ -23,6 +23,7 @@
     <orderEntry type="library" name="junit-3.8.1" level="project" />
     <orderEntry type="module" module-name="core.bootstrap-util" />
     <orderEntry type="module" module-name="core.version" />
+    <orderEntry type="module" module-name="core.itest" />
     <orderEntryProperties />
   </component>
 </module>

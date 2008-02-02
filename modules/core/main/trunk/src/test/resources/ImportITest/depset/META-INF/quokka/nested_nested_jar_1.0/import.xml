@@ -1,0 +1,5 @@
+<project name="depset-import-test">
+    <target name="depset-import">
+        <echo>depset import</echo>
+    </target>
+</project>

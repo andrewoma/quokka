@@ -15,17 +15,17 @@
  */
 
 
-package ws.quokka.core.main.ant;
-
-import ws.quokka.core.test.AbstractTest;
+package ws.quokka.core.itest;
 
 
 /**
  *
  */
-public class ProjectHelperTest extends AbstractTest {
+public class ImportITest extends IntegrationTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void test1() {
+    public void testImport() {
+        properties.put("itest.override.nested:nested:jar:1.0", getTestCaseResource("depset").getAbsolutePath());
+        ant(new String[] { "toplevel-import", "depset-import" });
     }
 }
