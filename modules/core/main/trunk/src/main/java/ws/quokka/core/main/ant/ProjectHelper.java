@@ -94,6 +94,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
     private static final String BUILD_RESOURCES_PREFIX = "quokka.project.resources[";
     private static final Map SPECIAL_TARGETS = new HashMap();
+    private static final String BUILD_RESOURCES_LISTENER = "quokka.project.buildResourcesListener";
 
     static {
         SPECIAL_TARGETS.put("archetype", ArchetypeTask.class);
@@ -255,8 +256,14 @@ public class ProjectHelper extends ProjectHelper2 {
         String tempDir = getTargetDir(antProject);
         tempDir = (tempDir == null) ? (antProject.getBaseDir() + "/target") : tempDir;
 
-        File dir = FileUtils.getFileUtils().normalize(tempDir + "/temp/buildresources");
-        ((DefaultBuildResources)projectModel.getBuildResources()).setTempDir(dir);
+        // Initialise build resources, including listener to extract resources if they are cleaned
+        File dir = normalise(new File(tempDir + "/temp/buildresources"));
+        DefaultBuildResources buildResources = (DefaultBuildResources)projectModel.getBuildResources();
+        buildResources.setTempDir(dir);
+
+        BuildResourcesListener buildResourcesListener = new BuildResourcesListener(buildResources, antProject);
+        antProject.addReference(BUILD_RESOURCES_LISTENER, buildResourcesListener);
+        antProject.addBuildListener(buildResourcesListener);
 
         loadProperties(projectModel, antProject); // Must load after basedir set
 
@@ -481,10 +488,8 @@ public class ProjectHelper extends ProjectHelper2 {
     }
 
     private void loadProperties(DefaultProjectModel projectModel, Project antProject) {
-        //        System.out.println("ProjectHelper.loadProperties: " + antProject.getName());
         AnnotatedProperties properties = projectModel.getProperties();
 
-        //        properties.list(System.out);
         // User properties specified on the CLI (or via subant property elements) over-ride all others
         // Other properties defined in the parent will be inherited
         properties.putAll(antProject.getUserProperties());
@@ -516,7 +521,7 @@ public class ProjectHelper extends ProjectHelper2 {
         }
     }
 
-    private AnnotatedProperties evaluateProperties(AnnotatedProperties properties, Project antProject,
+    private AnnotatedProperties evaluateProperties(AnnotatedProperties properties, final Project antProject,
         boolean failIfUnreferenced, final DefaultProjectModel projectModel) {
         return properties.evaluateReferences(new AnnotatedProperties.PropertyEvaluator() {
                 public boolean canEvaluate(String key) {
@@ -528,12 +533,24 @@ public class ProjectHelper extends ProjectHelper2 {
                         return null; // Can only evaluate build resources when the project is available
                     }
 
-                    File resource = projectModel.getBuildResources().getFileOrDir(key.substring(
-                                BUILD_RESOURCES_PREFIX.length(), key.length() - 1).trim());
+                    String resourceKey = key.substring(BUILD_RESOURCES_PREFIX.length(), key.length() - 1).trim();
+                    File resource = normalise(projectModel.getBuildResources().getFileOrDir(resourceKey));
 
-                    return FileUtils.getFileUtils().normalize(resource.getAbsolutePath()).getAbsolutePath();
+                    // If the resource required to be extracted, add it to the listener to restore on demand
+                    BuildResourcesListener listener = (BuildResourcesListener)antProject.getReference(BUILD_RESOURCES_LISTENER);
+
+                    if (resource.getPath().startsWith(listener.getBuildResources().getTempDir().getPath())) {
+                        antProject.log("Adding resource to BuildResourcesListener: " + resourceKey, Project.MSG_DEBUG);
+                        listener.addResource(resourceKey);
+                    }
+
+                    return resource.getAbsolutePath();
                 }
             }, failIfUnreferenced);
+    }
+
+    private File normalise(File file) {
+        return FileUtils.getFileUtils().normalize(file.getAbsolutePath());
     }
 
     private void setProperty(Project antProject, String key, String value, boolean debug) {

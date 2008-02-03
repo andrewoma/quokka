@@ -23,10 +23,9 @@ import org.apache.tools.ant.util.FileUtils;
 
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.ExceptionHandler;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.plugin_spi.BuildResources;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,6 +52,10 @@ public class DefaultBuildResources implements BuildResources {
 
     public void setTempDir(File tempDir) {
         this.tempDir = tempDir;
+    }
+
+    public File getTempDir() {
+        return tempDir;
     }
 
     public URL getURL(String key) {
@@ -204,35 +207,7 @@ public class DefaultBuildResources implements BuildResources {
         Assert.isTrue(!tempFile.exists() || tempFile.delete(), "Unable to delete file: " + tempFile.getPath());
 
         // Not a valid file URL, so retrieve data from URL and write to a file
-        BufferedInputStream in = null;
-        BufferedOutputStream out = null;
-
-        try {
-            in = new BufferedInputStream(url.openStream());
-            out = new BufferedOutputStream(new FileOutputStream(tempFile));
-
-            byte[] buffer = new byte[4096];
-
-            while (true) {
-                int bytes = in.read(buffer);
-
-                if (bytes == -1) {
-                    break;
-                }
-
-                out.write(buffer, 0, bytes);
-            }
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-        }
+        new IOUtils().copyStream(url.openStream(), new FileOutputStream(tempFile));
 
         Assert.isTrue(tempFile.renameTo(file), "Unable to rename " + tempFile.getPath() + " to " + file.getPath());
     }
