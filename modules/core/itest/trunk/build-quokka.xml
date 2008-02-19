@@ -14,6 +14,7 @@
         <dependency group="quokka.core.repo-spi" version="0.1" paths="compile"/>
         <dependency group="quokka.core.repo-standard" version="0.1" paths="compile"/>
         <dependency group="quokka.core.util" version="0.1" paths="compile"/>
+        <dependency group="quokka.core.version" version="0.1" paths="compile"/>
         <dependency group="quokka.core.plugin-spi" version="0.1" paths="compile, runtime"/>
 
         <dependency-set group="quokka.internal.module-depset" version="0.1"/>

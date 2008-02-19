@@ -25,6 +25,7 @@
         <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
         <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="compile, runtime"/>
         <dependency group="quokka.core.test" version="0.1" paths="test-compile(junit)"/>
+        <dependency group="quokka.core.itest" version="0.1" paths="itest"/>
 
         <plugin group="quokka.plugin.devreport" version="0.1"/>
         <plugin group="quokka.plugin.help" version="0.1"/>

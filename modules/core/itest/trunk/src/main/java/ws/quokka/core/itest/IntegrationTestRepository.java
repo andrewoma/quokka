@@ -31,8 +31,13 @@ import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.ServiceFactory;
 import ws.quokka.core.util.URLs;
 import ws.quokka.core.util.xml.Document;
+import ws.quokka.core.version.Version;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.URL;
 
@@ -138,24 +143,52 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
 
             //                    System.out.println(artifactClasses.getAbsolutePath());
             if (artifactClasses.exists()) {
-                project.log("Resolve: using relative override for " + artifactId + ", dir="
-                    + artifactClasses.getAbsolutePath(), Project.MSG_DEBUG);
+                Properties properties = getProperties(artifactClasses, artifactId);
+                String version = properties.getProperty("artifact.id.version");
 
-                return resolveFromDir(artifactId, artifactClasses);
+                if (version == null) {
+                    throw new BuildException("Version not found for " + artifactId.toShortString());
+                }
+
+                if (Version.parse(version).equals(artifactId.getVersion())) {
+                    project.log("Resolve: using relative override for " + artifactId + ", dir="
+                        + artifactClasses.getAbsolutePath(), Project.MSG_DEBUG);
+
+                    return resolveFromDir(artifactId, artifactClasses);
+                }
+            } else {
+                System.out.println("In project: " + project.getName());
+                throw new BuildException("Override not found for " + artifactId); // These should always be available
             }
-
-            System.out.println("In project: " + project.getName());
-            throw new BuildException("Override not found for " + artifactId); // These should always be available
-        }
-
-        if (artifactId.getGroup().startsWith("sf.quokka")) {
-            throw new BuildException("Using old version for " + artifactId);
         }
 
         RepoArtifact repoArtifact = repository.resolve(artifactId);
         project.log("Resolve: using parent, file=" + repoArtifact.getLocalCopy().getAbsolutePath(), Project.MSG_DEBUG);
 
         return repoArtifact;
+    }
+
+    private Properties getProperties(File base, RepoArtifactId id) {
+        Properties properties = new Properties();
+        String name = "META-INF/quokka/" + id.getGroup() + "_" + id.getName() + "_" + id.getType()
+            + "_artifacts.properties";
+        File file = new File(base, name.replace('/', File.separatorChar));
+
+        if (file.exists()) {
+            try {
+                InputStream in = new BufferedInputStream(new FileInputStream(file));
+
+                try {
+                    properties.load(in);
+                } finally {
+                    in.close();
+                }
+            } catch (IOException e) {
+                throw new BuildException(e);
+            }
+        }
+
+        return properties;
     }
 
     private RepoArtifact resolveFromDir(RepoArtifactId artifactId, File dir) {

@@ -41,7 +41,7 @@ public class DefaultBuildResourcesTest extends AbstractTest {
 
     protected void setUp() throws Exception {
         super.setUp();
-        resources.setTempDir(new File("C:\\Temp\\buildresources"));
+        resources.setTempDir(new File(normalise(getModuleHome().getPath() + "/target/test/DefaultBuildResourcesTest")));
 
         Map entries = URLs.toURLEntries(getTestCaseResource("resources\\root1"), "");
         entries.putAll(URLs.toURLEntries(getTestCaseResource("resources\\root2"), ""));

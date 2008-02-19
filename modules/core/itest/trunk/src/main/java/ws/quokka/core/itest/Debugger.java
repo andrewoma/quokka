@@ -33,16 +33,19 @@ public class Debugger {
     public static void main(String[] args) throws Exception {
         DebuggerTest debugger = new DebuggerTest();
         debugger.setUp();
-        debugger.setLogLevel(Project.MSG_INFO);
+        debugger.setLogLevel(Project.MSG_DEBUG);
+        debugger.properties.put("quokka.bootstrap.enabled", "false");
+        debugger.properties.put("quokka.project.overrideCore", "true");
 
 //        debugger.properties.put("profiles", "skiptest");
 //        debugger.debug("plugin\\xml", "install");
 //        debugger.debug("core\\itest", "install");
 //        debugger.debug("core\\repo-spi", "install");
 //        debugger.debug("plugin\\jalopy", "install");
-//        debugger.debug("core\\main", "install");
+        debugger.debug("core\\main", "install");
+
 //
-//        debugger.debug("core\\main", "install");
+//        debugger.debug("internal\\site", "clean", "site");
 //        debugger.debug("plugin\\junit", "install");
 //        debugger.debug("core\\bundle", "docbook-pdf");
 //        debugger.debug("core\\util", "install");
@@ -51,9 +54,8 @@ public class Debugger {
 //        debugger.debug("internal\\site", "site");
 //        debugger.debug("core\\bundle", "install-quokka");
 //        debugger.debug("internal\\master", "install-all");
-        debugger.debug("internal\\master", "update-release-repo");
-        debugger.debug("core\\bundle", "install-quokka");
-
+//        debugger.debug("internal\\master", "update-release-repo");
+//        debugger.debug("core\\bundle", "install-quokka");
 //
 //        debugger.debug("internal\\master", "install-quokka");
 //        debugger.debug("xmlcat\\docbook-dtd-4-5", "install");
@@ -77,7 +79,7 @@ public class Debugger {
         }
 
         public void ant(String module, String[] targets) {
-            ant(new File("C:\\Data\\Dev\\Projects\\quokka-google\\all\\trunks\\" + module + "\\build.xml"), targets);
+            ant(new File(normalise(getModuleHome().getAbsolutePath() + "/../../" + module + "/build.xml")), targets);
         }
 
         public void ant(String module, String target1, String target2) {
