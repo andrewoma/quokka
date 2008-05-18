@@ -70,21 +70,21 @@ public class PropertiesHelperTest extends AbstractTest {
 
     public void testListComplex() {
         p.put("list[0]fork", "true");
-        p.put("list[0]rc.set.dir", "C:\\");
+        p.put("list[0]rc.set.dir", "C:\\SomeDir");
 
         List result = ph.getList("list", true, null, false);
         assertEquals(1, result.size());
 
         TypedProperties value = (TypedProperties)result.iterator().next();
         assertEquals(true, value.getBoolean("fork"));
-        assertEquals(new File("C:\\"), value.getFileSet("rc").getDir());
+        assertTrue(value.getFileSet("rc").getDir().getPath().contains("SomeDir"));
     }
 
     public void testMapFileSet() {
-        p.put("map[set1]set.dir", "C:\\");
+        p.put("map[set1]set.dir", "C:\\SomeDir");
 
         Map result = ph.getMap("map", true, FileSet.class);
         FileSet fileSet = (FileSet)result.get("set1");
-        assertEquals(new File("C:\\"), fileSet.getDir());
+        assertTrue(fileSet.getDir().getPath().contains("SomeDir"));
     }
 }

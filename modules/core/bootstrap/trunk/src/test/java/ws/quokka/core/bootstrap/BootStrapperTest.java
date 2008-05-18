@@ -38,14 +38,16 @@ import java.util.Properties;
 public class BootStrapperTest extends AbstractTest {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    BootStrapper bootStrapper = new BootStrapper();
-    Jdk jdk = new Jdk();
-    JdkConstraint jdkConstraint = new JdkConstraint();
+    private BootStrapper bootStrapper = new BootStrapper();
+    private Jdk jdk = new Jdk();
+    private JdkConstraint jdkConstraint = new JdkConstraint();
+    private String root;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     protected void setUp() throws Exception {
         Log.set(new ProjectLogger(new Project()));
+        root = File.separatorChar == '\\' ? "C:\\" : "/";
 
         Properties properties = new Properties();
         properties.setProperty("prop1", "value1");
@@ -53,7 +55,7 @@ public class BootStrapperTest extends AbstractTest {
         properties.setProperty("prop2", "value2\" quote");
         bootStrapper.setProperties(properties);
 
-        System.setProperty("ant.home", "C:\\ant home");
+        System.setProperty("ant.home", normalise(root + "ant home"));
 
         List targets = new ArrayList();
         targets.add("clean");
@@ -71,7 +73,7 @@ public class BootStrapperTest extends AbstractTest {
         jdkProperties.setProperty("sprop2", "value2");
         jdk.setProperties(jdkProperties);
 
-        jdk.setLocation(new File("C:\\SomeDir\\java.exe"));
+        jdk.setLocation(new File(normalise(root + "javahome/java.exe")));
         jdkConstraint.setMaxMemory("1024m");
     }
 
@@ -79,11 +81,17 @@ public class BootStrapperTest extends AbstractTest {
         jdk.setMatchedConstraint(jdkConstraint);
 
         List path = new ArrayList();
-        path.add(new File("C:\\libs\\jar1.jar"));
-        path.add(new File("C:\\libs\\jar1.jar"));
+        path.add(new File(normalise(root + "libs/jar1.jar")));
+        path.add(new File(normalise(root + "libs/jar1.jar")));
 
         String command = bootStrapper.createCommandLine(jdk, path);
-        assertEquals("C:\\SomeDir\\java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=C:\\ant home\" \"-Dant.library.dir=C:\\ant home\\antlib\" -Dquokka.bootstrap.maxMemory=1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
-            command);
+        if (File.separatorChar == '\\') {
+            assertEquals("C:\\javahome\\java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=C:\\ant home\" \"-Dant.library.dir=C:\\ant home\\antlib\" -Dquokka.bootstrap.maxMemory=1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
+                    command);
+
+        } else {
+            assertEquals("/javahome/java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=/ant home\" \"-Dant.library.dir=/ant home/antlib\" -Dquokka.bootstrap.maxMemory=1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
+                    command);
+        }
     }
 }

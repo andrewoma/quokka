@@ -312,7 +312,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../xmlcat/xhtml1-20020801/xmlcat.xhtml1-20020801.iml" filepath="$PROJECT_DIR$/../../xmlcat/xhtml1-20020801/xmlcat.xhtml1-20020801.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="false" jdk-15="false" project-jdk-name="1.6 (1)" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" assert-keyword="false" jdk-15="false" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="RUBY_DOC_SETTINGS">
@@ -360,6 +360,7 @@
       <JAVADOC />
       <SOURCES>
         <root url="file://$PROJECT_DIR$/../../../../../../Apps/apache-ant-1.7.0/src/main" />
+        <root url="file:///Volumes/NewDataDisk/Dev/Apps/apache-ant-1.7.0/src/main" />
       </SOURCES>
     </library>
     <library name="junit-3.8.1">

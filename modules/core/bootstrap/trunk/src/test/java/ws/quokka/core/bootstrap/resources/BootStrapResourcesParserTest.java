@@ -20,6 +20,13 @@ package ws.quokka.core.bootstrap.resources;
 import ws.quokka.core.test.AbstractTest;
 
 import java.io.File;
+import java.io.Writer;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.tools.ant.util.JavaEnvUtils;
 
 
 /**
@@ -28,12 +35,31 @@ import java.io.File;
 public class BootStrapResourcesParserTest extends AbstractTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void testParse() {
+    public void testParse() throws IOException {
         File cacheDir = new File(normalise(getModuleHome().getAbsolutePath()
                     + "/target/test/BootStrapResourcesParserTest"));
         BootStrapResourcesParser parser = new BootStrapResourcesParser();
-        BootStrapResources resources = parser.parse(getTestCaseResource("bootstrap.xml"), getTestCaseResource("libs"),
+        BootStrapResources resources = parser.parse(getBootstrapXml(), getTestCaseResource("libs"),
                 cacheDir);
-        System.out.println(resources.toString());
+        assertEquals(3, resources.getAvailableLibraries().size());
+        assertEquals(System.getProperty("os.arch"), ((Jdk)resources.getJdks().get(0)).getProperties().getProperty("os.arch"));
+    }
+
+    public File getBootstrapXml() throws IOException {
+        String java = JavaEnvUtils.getJreExecutable("java");
+        String xml =  "<bootstrap>\n" +
+                "    <jdks>\n" +
+                "        <jdk location=\"" + java + "\"/>\n" +
+                "    </jdks>\n" +
+                "</bootstrap>";
+        File file = File.createTempFile("bootstrap", ".xml");
+        file.deleteOnExit();
+        Writer writer = new FileWriter(file);
+        try {
+            writer.write(xml);
+        } finally {
+            writer.close();
+        }
+        return file;
     }
 }

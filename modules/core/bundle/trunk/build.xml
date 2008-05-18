@@ -1,22 +1,5 @@
 <project name="core.bundle.ext">
 
-    <target name="install-quokka" depends="dist">
-        <tstamp>
-            <format property="distbackup" pattern="'C:/Data/Dev/Projects/dist-backups/'yyyy-MM-dd-HHmmss"/>
-        </tstamp>
-        <mkdir dir="${distbackup}"/>
-        <property name="distloc" location="C:\Data\Dev\Projects\quokka\dist"/>
-        <mkdir dir="${distloc}"/>
-        <copy todir="${distbackup}">
-            <fileset dir="${distloc}"/>
-        </copy>
-        <!--<delete dir="${distloc}"/>-->
-        <!--<mkdir dir="${distloc}"/>-->
-        <copy todir="${distloc}">
-            <fileset dir="${distdir}"/>
-        </copy>
-    </target>
-
     <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
         <property name="distdir" location="${quokka.project.targetDir}/dist/quokka-${quokka.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>

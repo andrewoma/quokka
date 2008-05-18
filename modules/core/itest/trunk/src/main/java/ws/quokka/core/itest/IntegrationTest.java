@@ -201,24 +201,16 @@ public abstract class IntegrationTest extends AbstractTest {
             };
     }
 
-    //    public void addOverrides(Properties properties) {
-    //        for (Iterator i = getITestProperties().entrySet().iterator(); i.hasNext();) {
-    //            Map.Entry entry = (Map.Entry) i.next();
-    //            if (((String) entry.getKey()).startsWith("itest.override.")) {
-    //                properties.put(entry.getKey(), entry.getValue());
-    //            }
-    //        }
-    //    }
     private URL[] getCoreClassPath(String path) {
         List urls = new ArrayList();
-        StringTokenizer tokenizer = new StringTokenizer(path, File.pathSeparator);
+        StringTokenizer tokenizer = new StringTokenizer(path, ";" + File.pathSeparator);
 
         //        System.out.println("\n\nIntegration test class path:");
         try {
             while (tokenizer.hasMoreTokens()) {
                 String pathElement = tokenizer.nextToken();
 
-                //                System.out.println(pathElement);
+//                                System.out.println(pathElement);
                 assertTrue(new File(normalise(pathElement)).exists());
                 urls.add(new File(pathElement).toURL());
             }
@@ -278,7 +270,7 @@ public abstract class IntegrationTest extends AbstractTest {
         }
 
         if (!toolsJar.exists()) {
-            System.out.println("Unable to locate tools.jar. " + "Expected to find it in " + toolsJar.getPath());
+//            System.out.println("Unable to locate tools.jar. " + "Expected to find it in " + toolsJar.getPath());
 
             return null;
         }
