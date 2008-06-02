@@ -1,7 +1,7 @@
 <dependency-set>
     <profile id="skiptest" description="Skips tests, disabling all test-related targets"/>
     <dependency-set group="quokka.depset.jar" version="0.1"/>
-    <plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/>
+    <plugin group="quokka.plugin.junit" version="0.1.1" profiles="-skiptest"/>
     <plugin group="quokka.plugin.junitreport" version="0.1" use-defaults="false" profiles="-skiptest">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
