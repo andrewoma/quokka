@@ -11,7 +11,7 @@
     <dependency-set>
         <dependency-set group="quokka.depset.resourcebundle" version="0.1"/>
         <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <!--<plugin group="quokka.plugin.help" version="0.1" targets="generate-help"/>-->
+        <!--<plugin group="quokka.plugin.help" version="0.1.1" targets="generate-help"/>-->
         <plugin group="quokka.plugin.release" version="0.1"/>
         <plugin group="quokka.plugin.subversion" version="0.1"/>
     </dependency-set>
