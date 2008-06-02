@@ -20,6 +20,8 @@ package ws.quokka.core.main.ant;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 
+import org.xml.sax.Locator;
+
 import ws.quokka.core.bootstrap.BootStrapper;
 import ws.quokka.core.bootstrap.resources.DependencyResource;
 import ws.quokka.core.bootstrap_util.ArtifactPropertiesParser;
@@ -56,10 +58,7 @@ import ws.quokka.core.repo_spi.RepoPathSpec;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryAware;
-import ws.quokka.core.util.AnnotatedProperties;
-import ws.quokka.core.util.Annotations;
-import ws.quokka.core.util.PropertyProvider;
-import ws.quokka.core.util.Strings;
+import ws.quokka.core.util.*;
 import ws.quokka.core.version.Version;
 
 import java.util.ArrayList;
@@ -725,14 +724,15 @@ public class DefaultProjectModel implements ProjectModel {
 
         // TODO: Simplify this mess ... so that the plugin artifact is never added in the first place
         int size = path.size();
-        resolvePath(path, pathSpec, options, true, plugin.getArtifact().getId(), mergeWithCore, flatten);
+        resolvePath(pathId, path, pathSpec, options, true, plugin.getArtifact().getId(), mergeWithCore, flatten);
 
         if (!containsPlugin) {
             path.remove(size);
         }
     }
 
-    private RepoArtifactId handleConflict(List path, RepoArtifactId id, boolean autoFix, boolean flatten) {
+    private RepoArtifactId handleConflict(String pathId, List path, RepoArtifactId id, boolean autoFix,
+        boolean flatten, RepoArtifactId declaredBy) {
         RepoArtifactId unversioned = toUnversionedId(id);
 
         for (Iterator i = path.iterator(); i.hasNext();) {
@@ -745,7 +745,9 @@ public class DefaultProjectModel implements ProjectModel {
                     // Conflict
                     Assert.isTrue(autoFix,
                         "A conflict has occurred between " + artifact.getId().toShortString() + " and "
-                        + id.getVersion());
+                        + id.getVersion() + " for path '" + pathId + "'" + "\n\t" + artifact.getId().getVersion()
+                        + " <- " + getDeclarations((RepoArtifactId)artifact.getId().getAnnotations().get("declaredBy"))
+                        + "\n\t" + id.getVersion() + " <- " + getDeclarations(declaredBy));
 
                     return override(id, artifact.getId().getVersion());
                 }
@@ -755,8 +757,38 @@ public class DefaultProjectModel implements ProjectModel {
         return id;
     }
 
-    private void resolvePath(List path, RepoPathSpec pathSpec, Set options, boolean force, RepoArtifactId declaredBy,
-        boolean mergeWithCore, boolean flatten) {
+//    private String getLocation(AnnotatedObject annotatedObject) {
+//        Locator locator = annotatedObject.getLocator();
+//        if (locator == null) {
+//            return "unknown";
+//        } else {
+//            return locator.toString();
+//        }
+//    }
+    private String getDeclarations(RepoArtifactId id) {
+        if (id == null) {
+            return "project";
+        }
+
+        StringBuffer sb = new StringBuffer();
+        getDeclarations(id, sb);
+
+        return sb.toString();
+    }
+
+    private void getDeclarations(RepoArtifactId id, StringBuffer sb) {
+        sb.append(id.toShortString());
+
+        RepoArtifactId declaredBy = (RepoArtifactId)id.getAnnotations().get("declaredBy");
+
+        if (declaredBy != null) {
+            sb.append(" <- ");
+            getDeclarations(declaredBy, sb);
+        }
+    }
+
+    private void resolvePath(String pathId, List path, RepoPathSpec pathSpec, Set options, boolean force,
+        RepoArtifactId declaredBy, boolean mergeWithCore, boolean flatten) {
         if (path.size() > 150) {
             System.err.println("Cycle detected!");
 
@@ -779,7 +811,7 @@ public class DefaultProjectModel implements ProjectModel {
 
         // Add the artifact to the path
         RepoArtifact artifact = getArtifact(pathSpec.getDependency().getId());
-        RepoArtifactId id = handleConflict(path, artifact.getId(), false, flatten);
+        RepoArtifactId id = handleConflict(pathId, path, artifact.getId(), false, flatten, declaredBy);
 
         if (id != null) {
             artifact = id.equals(artifact.getId()) ? artifact : getArtifact(id);
@@ -822,7 +854,7 @@ public class DefaultProjectModel implements ProjectModel {
 
                     if (pathSpec.isDescend().booleanValue() || (matchingOptions.size() > 0)) {
                         if (!mergeWithCore || !isCore(dependency.getId())) {
-                            resolvePath(path, dependencyPathSpec, nextLevelOptions(matchingOptions),
+                            resolvePath(pathId, path, dependencyPathSpec, nextLevelOptions(matchingOptions),
                                 matchingOptions.size() > 0, artifact.getId(), mergeWithCore, flatten);
                         }
                     }
@@ -971,6 +1003,7 @@ public class DefaultProjectModel implements ProjectModel {
 
     public List getProjectPath(String id, boolean mergeWithCore, boolean flatten) {
         ArrayList path = new ArrayList();
+        log.debug("Getting project path: id=" + id + ", mergeWithCore=" + mergeWithCore + ", flatten=" + flatten);
         resolveProjectPath(path, id, project.getDependencySet(), mergeWithCore, flatten);
 
         return path;
@@ -993,13 +1026,13 @@ public class DefaultProjectModel implements ProjectModel {
         }
     }
 
-    private void resolveProjectPath(List path, String id, Dependency dependency, RepoArtifactId declaredBy,
+    private void resolveProjectPath(List path, String pathId, Dependency dependency, RepoArtifactId declaredBy,
         boolean mergeWithCore, boolean flatten) {
         for (Iterator i = dependency.getPathSpecs().iterator(); i.hasNext();) {
             RepoPathSpec pathSpec = (RepoPathSpec)i.next();
 
-            if (pathSpec.getTo().equals(id)) {
-                resolvePath(path, pathSpec, new HashSet(), false, declaredBy, mergeWithCore, flatten);
+            if (pathSpec.getTo().equals(pathId)) {
+                resolvePath(pathId, path, pathSpec, new HashSet(), false, declaredBy, mergeWithCore, flatten);
             }
         }
     }

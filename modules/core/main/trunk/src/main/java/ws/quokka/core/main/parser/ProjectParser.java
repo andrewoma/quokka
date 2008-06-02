@@ -17,6 +17,8 @@
 
 package ws.quokka.core.main.parser;
 
+import org.xml.sax.Locator;
+
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
@@ -36,10 +38,7 @@ import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
 import ws.quokka.core.repo_spi.Repository;
-import ws.quokka.core.util.AnnotatedProperties;
-import ws.quokka.core.util.Annotations;
-import ws.quokka.core.util.Strings;
-import ws.quokka.core.util.URLs;
+import ws.quokka.core.util.*;
 import ws.quokka.core.util.xml.Converter;
 import ws.quokka.core.util.xml.Document;
 import ws.quokka.core.util.xml.Element;
@@ -152,6 +151,23 @@ public class ProjectParser {
         return elements;
     }
 
+    private void addProperties(AnnotatedProperties properties, String prefix, Element el) {
+        for (Iterator i = applyProfiles(el.getChildren("property")).iterator(); i.hasNext();) {
+            Element propertyEl = (Element)i.next();
+            String name = propertyEl.getAttribute("name");
+            String value = propertyEl.getAttribute("value");
+            String text = propertyEl.getText();
+            Locator locator = LocatorDomParser.getLocator(propertyEl.getElement());
+            Assert.isTrue(((value == null) && (text.length() != 0)) || ((value != null) && (text.length() == 0)),
+                locator, "Property must either have text content or a value attribute, but not both");
+            value = (value == null) ? text : value;
+
+            Annotations annotations = new Annotations();
+            annotations.put(AnnotatedObject.LOCATOR, locator);
+            properties.setProperty(prefix + name, value, annotations);
+        }
+    }
+
     private RepoArtifactId override(RepoArtifactId id, String scope) {
         for (Iterator i = project.getOverrides().iterator(); i.hasNext();) {
             Override override = (Override)i.next();
@@ -181,6 +197,7 @@ public class ProjectParser {
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
         resolver.addVersion("project", "0.1");
 
+//        resolver.addVersion("project", new String[] {"0.1", "0.2"});
         Document document = Document.parse(projectFile, resolver);
         Project project = (Project)converter.fromXml(Project.class, document.getRoot());
         project.setProjectFile(projectFile);
@@ -235,7 +252,7 @@ public class ProjectParser {
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
-    public static class PluginDependendencyTargetConverter extends AbstractProjectConverter {
+    public class PluginDependendencyTargetConverter extends AbstractProjectConverter {
         public PluginDependendencyTargetConverter(Class clazz) {
             super(clazz);
         }
@@ -248,6 +265,8 @@ public class ProjectParser {
                 String dependency = (String)i.next();
                 target.addDependency(dependency);
             }
+
+            addProperties(projectProperties, (target.getPrefix() == null) ? "" : (target.getPrefix() + "."), element);
 
             return target;
         }
@@ -357,6 +376,9 @@ public class ProjectParser {
             if (dependencySet.getArtifact() != null) {
                 traversedDependencySets.add(dependencySet.getArtifact().getId());
             }
+
+            // Properties
+            addProperties(projectProperties, "", dependencySetEl);
 
             // Profiles
             for (Iterator i = applyProfiles(dependencySetEl.getChildren("profile")).iterator(); i.hasNext();) {

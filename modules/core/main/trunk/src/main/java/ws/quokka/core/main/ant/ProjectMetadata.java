@@ -73,7 +73,7 @@ public class ProjectMetadata implements Metadata {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public List getProjectPath(String id) {
-        return projectModel.getProjectPath(id, true, true);
+        return projectModel.getProjectPath(id, false, true);
     }
 
     public RepoType getType(String id) {
@@ -252,7 +252,7 @@ public class ProjectMetadata implements Metadata {
         // Project paths
         for (Iterator i = projectModel.getProjectPaths().keySet().iterator(); i.hasNext();) {
             String id = (String)i.next();
-            List path = projectModel.getProjectPath(id, true, true);
+            List path = projectModel.getProjectPath(id, false, true);
             addDependencies(dependencies, path);
         }
 

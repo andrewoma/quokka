@@ -110,6 +110,8 @@ public class StandardPluginParser implements PluginParser {
         xmlConverter.addContext("artifact", artifact);
 
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
+
+//        resolver.addVersion("plugin", new String[] {"0.1"});
         resolver.addVersion("plugin", "0.1");
 
         return (Plugin)xmlConverter.fromXml(Plugin.class, Document.parse(url, resolver).getRoot());

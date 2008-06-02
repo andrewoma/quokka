@@ -93,7 +93,7 @@ public class DefaultResources implements Resources {
     }
 
     public Path getProjectPath(String name) {
-        return projectModel.toAntPath(projectModel.getProjectPath(name, true, true));
+        return projectModel.toAntPath(projectModel.getProjectPath(name, false, true));
     }
 
     public String getPrefix() {

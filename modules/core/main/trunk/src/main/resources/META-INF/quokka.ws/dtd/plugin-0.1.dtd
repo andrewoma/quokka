@@ -9,6 +9,7 @@
 <!ELEMENT path-group EMPTY >
 <!ATTLIST path-group id NMTOKEN #REQUIRED >
 <!ATTLIST path-group paths CDATA #REQUIRED >
+<!ATTLIST path-group merge-with-core CDATA #IMPLIED >
 
 <!ELEMENT plugin ( description*, targets, properties* ) >
 <!ATTLIST plugin class NMTOKEN #IMPLIED >
