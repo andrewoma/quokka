@@ -1,0 +1,5 @@
+<project name="import-test">
+    <target name="toplevel-import">
+        <echo>Top level import</echo>
+    </target>
+</project>
