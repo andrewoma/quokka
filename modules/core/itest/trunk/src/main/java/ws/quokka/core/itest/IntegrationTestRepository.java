@@ -155,6 +155,8 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
                         + artifactClasses.getAbsolutePath(), Project.MSG_DEBUG);
 
                     return resolveFromDir(artifactId, artifactClasses);
+                } else {
+                    project.log("Resolve: using repository for " + artifactId, Project.MSG_DEBUG);
                 }
             } else {
                 System.out.println("In project: " + project.getName());

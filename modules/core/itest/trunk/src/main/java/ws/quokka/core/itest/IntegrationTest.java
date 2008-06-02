@@ -271,7 +271,6 @@ public abstract class IntegrationTest extends AbstractTest {
 
         if (!toolsJar.exists()) {
 //            System.out.println("Unable to locate tools.jar. " + "Expected to find it in " + toolsJar.getPath());
-
             return null;
         }
 
