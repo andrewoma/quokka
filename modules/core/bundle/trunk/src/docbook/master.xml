@@ -2210,7 +2210,7 @@ quokka.project.java.target=1.5                    </programlisting>
         &lt;core version="0.1"/&gt;
     &lt;/cores&gt;
     &lt;jdks&gt;
-        &lt;jdk max-memory="512m" spec-version="[1.6, 1.6]"&gt;
+        &lt;jdk jvm-args="512m" spec-version="[1.6, 1.6]"&gt;
             &lt;sysproperty name="os.arch" value="Windows" required="true"/&gt;
         &lt;/jdk&gt;
     &lt;/jdks&gt;
@@ -2253,7 +2253,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>maxMemory</term>
+              <term>jvmArgs</term>
 
               <listitem>
                 <para>Optional. Checks that the maximum heap size matches the

@@ -1,18 +1,38 @@
 #!/bin/sh
 # This script is designed to launch multiple versions of quokka via
-# quokka's bootstrapping mechanism.
-home=`dirname "$0"`
-home=`dirname "$home"`
+# quokka's bootstrapping mechanism. Set the following to match your most commonly used
+# configuration to prevent bootstrapping from forking another JVM:
 
-# Edit the following section to set the default quokka version.
-# Cygwin users: do not leave trailing slashes on any paths
-# =========================================================================
+defaultQuokka="0.1.1"
+defaultAnt="1.7"
+defaultOpts="-Xmx512m"
 #JAVACMD=</path/to your most commonly used jdk/java>
-maxMemory=1024m
-launcherCp=$home/lib/apache.ant_ant-launcher_jar_1.7.jar
-quokkaCp=$home/lib/apache.ant_ant_jar_1.7.jar
-quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_0.1.jar
+
 # =========================================================================
+
+# Resolve home, allowing for symbolic links
+home="$0"
+while [ -h "$home" ] ; do
+  ls=`ls -ld "$home"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    home="$link"
+  else
+    home=`dirname "$home"`"/$link"
+  fi
+done
+home="`dirname "$home"`/.."
+home=`cd "$home" && pwd`
+
+# Cygwin users: do not leave trailing slashes on any paths
+#JAVACMD=</path/to your most commonly used jdk/java>
+if [ -z "$QUOKKA_OPTS" ] ; then
+    QUOKKA_OPTS=$defaultOpts
+fi
+launcherCp=$home/lib/apache.ant_ant-launcher_jar_$defaultAnt.jar
+quokkaCp=$home/lib/apache.ant_ant_jar_$defaultAnt.jar
+#quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_$defaultQuokka.jar
 
 # Get the java command
 if [ -z "$JAVACMD" ] ; then
@@ -51,7 +71,7 @@ case "`uname`" in
   ;;
 esac
 
-standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\" -Dquokka.bootstrap.maxMemory=$maxMemory -Xmx$maxMemory"
+standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\" -Dquokka.bootstrap.maxMemory=512m -Dquokka.bootstrap.jmvArgs=$QUOKKA_OPTS"
 standardArgs="-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib"
 cmd="\"$JAVACMD\" $standardOpts $QUOKKA_OPTS -classpath \"$launcherCp\" \"-Dant.home=$home\" org.apache.tools.ant.launch.Launcher $standardArgs $QUOKKA_ARGS -cp \"$quokkaCp\" $@"
 eval $cmd

@@ -12,10 +12,11 @@
         <path id="dist" description="Libraries required for the runtime distribution"/>
         <dependency group="apache.ant" version="1.7.0" paths="dist+"/>
         <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="dist+"/>
+        <!--<dependency group="quokka.core.ant-optional" version="1.7.0" paths="dist+"/>-->
 
         <!-- Libraries for the core bundle -->
         <plugin group="quokka.plugin.jarbundle" version="0.1" targets="package"/>
-        <dependency group="quokka.core.main" version="0.1" paths="jarbundle+"/>
+        <dependency group="quokka.core.main" version="0.1.1" paths="jarbundle+"/>
         <dependency group="quokka.core.metadata" version="0.1" paths="jarbundle+"/>
         <dependency group="quokka.core.model" version="0.1" paths="jarbundle+"/>
         <dependency group="quokka.core.plugin-spi" version="0.1" paths="jarbundle+"/>
@@ -36,7 +37,7 @@
             <target name="docbook-pdf" template="transform" prefix="docbook-pdf" depends="docbook"/>
         </plugin>
         <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <plugin group="quokka.plugin.help" version="0.1"/>
+        <plugin group="quokka.plugin.help" version="0.1.1"/>
         <plugin group="quokka.plugin.release" version="0.1"/>
         <plugin group="quokka.plugin.subversion" version="0.1"/>
     </dependency-set>
