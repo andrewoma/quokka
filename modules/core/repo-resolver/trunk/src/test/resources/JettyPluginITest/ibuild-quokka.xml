@@ -1,0 +1,20 @@
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<project name="itest">
+    <artifacts group="group1" version="someversion">
+        <artifact  name="name1" type="jar"/>
+    </artifacts>
+
+    <dependency-set>
+        <path id="plugin"/>
+        <dependency group="mortbay.jetty" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jetty-naming" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jetty-management" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jetty-plus" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jsp-2.1" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jetty-annotations" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jetty-annotations" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="start" version="6.1.11" paths="plugin"/>
+        <dependency group="mortbay.jetty" name="jsp-2.0" version="6.1.11" paths="plugin"/>
+        <!--<plugin group="quokka.plugin.jar" version="0.1.1-ss"/>-->
+    </dependency-set>
+</project>
