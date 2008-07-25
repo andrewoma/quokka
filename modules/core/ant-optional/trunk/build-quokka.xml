@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+
+<project default-target="package">
+    <artifacts group="quokka.core.ant-optional-1-7-0" version="1.0-ss">
+        <artifact paths="jarbundle:bundle"/>
+    </artifacts>
+
+    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]"/>
+
+    <dependency-set>
+        <!-- Bundle all of the ANT optional jars into a single .jar file for easier management -->
+        <plugin group="quokka.plugin.jarbundle" version="0.1" targets="package"/>
+
+        <dependency group="apache.ant" version="1.7.0" name="antlr" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="apache-oro" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="apache-regexp" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="apache-resolver" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="bcel" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="bsf" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="commons-logging" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="commons-net" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="jai" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="javamail" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="jdepend" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="jmf" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="jsch" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="junit" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="log4j" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="netrexx" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="nodeps" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="starteam" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="stylebook" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="swing" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="testutil" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="trax" paths="jarbundle+"/>
+        <dependency group="apache.ant" version="1.7.0" name="weblogic" paths="jarbundle+"/>
+
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.1"/>
+        <plugin group="quokka.plugin.devreport" version="0.1"/>
+        <plugin group="quokka.plugin.help" version="0.1.1"/>
+        <plugin group="quokka.plugin.release" version="0.1"/>
+        <plugin group="quokka.plugin.subversion" version="0.1"/>
+    </dependency-set>
+</project>
