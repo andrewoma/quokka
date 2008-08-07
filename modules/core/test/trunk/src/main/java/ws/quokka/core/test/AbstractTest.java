@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 /**
@@ -242,6 +244,20 @@ public class AbstractTest extends TestCase {
                     in2.close();
                 }
             }
+        }
+    }
+
+    public void assertContainsEntries(File file, String[] entries) {
+        try {
+            JarFile jarFile = new JarFile(file);
+
+            for (int i = 0; i < entries.length; i++) {
+                String entry = entries[i];
+                JarEntry jarEntry = jarFile.getJarEntry(entry);
+                assertNotNull("Cannot find entry '" + entry + "' in " + file.getPath(), jarEntry);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
