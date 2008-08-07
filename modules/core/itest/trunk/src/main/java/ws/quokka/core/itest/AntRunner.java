@@ -152,7 +152,7 @@ public class AntRunner {
     private DefaultLogger createLogger(String level) {
         NoBannerLogger logger = new NoBannerLogger();
 
-        //        DefaultLogger logger = new DefaultLogger();
+        //        DefaultLogger log = new DefaultLogger();
         logger.setMessageOutputLevel((level == null) ? Project.MSG_INFO : Integer.parseInt(level));
         logger.setOutputPrintStream(System.out);
         logger.setErrorPrintStream(System.err);

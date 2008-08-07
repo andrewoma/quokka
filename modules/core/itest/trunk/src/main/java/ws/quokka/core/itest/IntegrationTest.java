@@ -42,11 +42,6 @@ import java.util.StringTokenizer;
  *
  */
 public abstract class IntegrationTest extends AbstractTest {
-    //~ Static fields/initializers -------------------------------------------------------------------------------------
-
-    private static final String QUOKKA_REPOSITORY = "ws.quokka.core.repo_spi.Repository";
-    private static final String QUOKKA_ITEST_REPOSITORY = "quokka.itest.repository";
-
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     protected Map results;
@@ -81,10 +76,10 @@ public abstract class IntegrationTest extends AbstractTest {
      */
     protected void ant(String testProject, String[] targets) {
         // Override the output to go to this module's output
-        //        if (!properties.containsKey("quokka.project.targetDir")) {
         properties.put("quokka.project.targetDir", getTargetDir(testProject));
+        properties.put("quokka.repositoryOverride", "itest");
+        properties.put("quokka.repo.itest.url", "ws.quokka.core.itest.IntegrationTestRepository");
 
-        //        }
         ant(getBuildFile(testProject), targets);
     }
 
@@ -126,20 +121,11 @@ public abstract class IntegrationTest extends AbstractTest {
      * Runs the given targets for the test project specified
      */
     protected void ant(File buildFile, String[] targets) {
-        String originalRepositoryClass = null;
         String moduleClassPathId = "quokka.classpath." + getModuleId(getClass().getName());
 
         try {
             properties.putAll(getITestProperties());
             addProperties(properties);
-
-            originalRepositoryClass = properties.getProperty(QUOKKA_REPOSITORY);
-            properties.setProperty(QUOKKA_REPOSITORY, "ws.quokka.core.itest.IntegrationTestRepository");
-            properties.put("quokka.core.itest.moduleHome", getModuleHome().getAbsolutePath());
-
-            if (originalRepositoryClass != null) {
-                properties.setProperty(QUOKKA_ITEST_REPOSITORY, originalRepositoryClass);
-            }
 
             // Set up a system property to add instrumented classes and their associated .jar if specified
             String testPath = System.getProperty("quokka.junit.instrumentCompiledOutput");
@@ -180,12 +166,6 @@ public abstract class IntegrationTest extends AbstractTest {
             }
         } finally {
             System.setProperty(moduleClassPathId, "");
-
-            if (originalRepositoryClass == null) {
-                properties.remove(QUOKKA_REPOSITORY);
-            } else {
-                properties.put(QUOKKA_REPOSITORY, originalRepositoryClass);
-            }
         }
     }
 

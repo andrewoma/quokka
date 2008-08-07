@@ -23,12 +23,9 @@ import org.apache.tools.ant.Project;
 import ws.quokka.core.repo_spi.AbstractRepository;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
-import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
 import ws.quokka.core.repo_spi.Repository;
-import ws.quokka.core.repo_standard.DelegatingRepository;
 import ws.quokka.core.util.AnnotatedProperties;
-import ws.quokka.core.util.ServiceFactory;
 import ws.quokka.core.util.URLs;
 import ws.quokka.core.util.xml.Document;
 import ws.quokka.core.version.Version;
@@ -61,42 +58,22 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object project, AnnotatedProperties properties) {
-        this.project = (Project)project;
-        this.properties = properties;
+    public void initialise() {
+        properties = getFactory().getProperties();
+        project = getFactory().getProject();
 
-        try {
-            getRepository(properties);
-        } catch (Exception e) {
-            throw new BuildException(e);
+        // Try 'project' repository, then 'shared'
+        repository = getFactory().getOrCreate("project");
+
+        if (repository == null) {
+            repository = getFactory().getOrCreate("shared");
         }
 
-        repository.initialise(project, properties);
+        if (repository == null) {
+            throw new BuildException("Either a 'project' or 'shared' repository must be defined");
+        }
+
         addOverrides(properties);
-    }
-
-    private void getRepository(AnnotatedProperties properties) {
-        String original;
-
-        try {
-            original = properties.getProperty("quokka.itest.repository");
-
-            if (original == null) {
-                properties.remove(Repository.class.getName());
-                System.setProperty(Repository.class.getName(), "");
-            } else {
-                properties.setProperty(Repository.class.getName(), original);
-                System.setProperty(Repository.class.getName(), original);
-            }
-
-            repository = (Repository)new ServiceFactory().getService(Repository.class, properties);
-
-            if (repository == null) {
-                repository = new DelegatingRepository();
-            }
-        } finally {
-            System.setProperty(Repository.class.getName(), this.getClass().getName());
-        }
     }
 
     private void addOverrides(Properties properties) {
@@ -111,11 +88,6 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
                 overrides.put(id.toPathString(), entry.getValue());
             }
         }
-    }
-
-    public void registerType(RepoType type) {
-        super.registerType(type);
-        repository.registerType(type);
     }
 
     public RepoArtifact resolve(RepoArtifactId artifactId) {
@@ -133,7 +105,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         String prefix = "quokka.";
 
         if (artifactId.getGroup().startsWith(prefix) && !artifactId.getGroup().equals("quokka.bundle.core")) {
-            String moduleHome = (String)properties.get("quokka.core.itest.moduleHome");
+            String moduleHome = (String)properties.get("moduleHome");
             moduleHome = new File(moduleHome).getParentFile().getParentFile().getAbsolutePath();
             moduleHome += (
                 "/" + artifactId.getGroup().substring(prefix.length()).replace('.', '/') + "/target/compile"
@@ -233,11 +205,11 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         return repository.supportsInstall(artifactId);
     }
 
-    public String getName() {
-        return getClass().getName();
+    public RepoArtifact updateSnapshot(RepoArtifact artifact) {
+        return repository.updateSnapshot(artifact);
     }
 
-    public Collection getReferencedRepositories() {
-        return repository.getReferencedRepositories();
+    public Collection availableVersions(String group, String name, String type) {
+        return repository.availableVersions(group, name, type);
     }
 }
