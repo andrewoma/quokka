@@ -23,6 +23,7 @@ import ws.quokka.core.repo_spi.RepoType;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.File;
 
 
 /**
@@ -65,4 +66,17 @@ public interface Metadata {
      * does not affect the running instance's version, only the file.
      */
     void rolloverVersion(String version);
+
+    /**
+     * Translates an id into a string, using the pattern supplied.
+     * e.g. #{group}_#{name}_#{type}_#{version}.#{extension}
+     */
+    String translate(RepoArtifactId id, String pattern);
+
+    /**
+     * Copies a path to a destination
+     * @param path a list of RepoArtifacts
+     * @param pattern as per translate above, may be null then defaults to #{group}_#{name}_#{type}_#{version}.#{extension}
+     */
+    void copyPath(List path, File destination, String pattern);
 }
