@@ -17,6 +17,7 @@
 
 package ws.quokka.core.repo_spi;
 
+import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.util.AnnotatedObject;
 import ws.quokka.core.util.Annotations;
 import ws.quokka.core.util.StringGenerator;
@@ -27,12 +28,12 @@ import ws.quokka.core.version.Version;
 /**
  *
  */
-public class RepoArtifactId extends AnnotatedObject implements Cloneable {
+public class RepoArtifactId extends AnnotatedObject implements Cloneable, Comparable {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
 
     public static final String ID_SEPARATOR = ":";
     public static final String PATH_SEPARATOR = "_";
-    private static final String RESERVED_CHARS = "_ !:@;/\\*,%?<>+=#`(){}[]";
+    private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-";
 
     static {
         STRING_GENERATOR.add(new StringGenerator.Generator() {
@@ -67,6 +68,7 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
         this.name = name;
         this.version = version;
         this.type = type;
+        validate();
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -97,9 +99,13 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
     }
 
     public RepoArtifactId mergeDefaults() {
+        return _merge(new RepoArtifactId(group, defaultName(group), "jar", version));
+    }
+
+    public static String defaultName(String group) {
         String[] tokens = Strings.split(group, ".");
 
-        return _merge(new RepoArtifactId(group, tokens[tokens.length - 1], "jar", version));
+        return tokens[tokens.length - 1];
     }
 
     private String applyDefault(String value, String defaultValue) {
@@ -110,28 +116,21 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
         return (value != null) ? value : defaultValue;
     }
 
-    public boolean isValid() {
-        return isValid(group) && isValid(name) && isValid(type);
+    public void validate() {
+        validate(group);
+        validate(name);
+        validate(type);
     }
 
-    private boolean isValid(String value) {
-        if (value == null) {
-            return false;
-        }
+    private void validate(String string) {
+        if (string != null) {
+            int length = string.length();
 
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-
-            for (int j = 0; j < RESERVED_CHARS.length(); j++) {
-                char reserved = RESERVED_CHARS.charAt(j);
-
-                if (ch == reserved) {
-                    return false;
-                }
+            for (int i = 0; i < length; i++) {
+                Assert.isTrue(VALID_CHARS.indexOf(string.charAt(i)) != -1, this.getLocator(),
+                    "There are invalid characters in the id: " + string);
             }
         }
-
-        return true;
     }
 
     public String toShortString() {
@@ -141,18 +140,19 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
 
     public String toPathString() {
         return noNull(group) + PATH_SEPARATOR + noNull(name) + PATH_SEPARATOR + noNull(type) + PATH_SEPARATOR
-        + noNull(version);
+        + ((version == null) ? "" : version.toString());
     }
 
     public static RepoArtifactId parse(String idString) {
-        String[] tokens = Strings.trim(Strings.split(idString, ID_SEPARATOR));
+        String[] tokens = Strings.trim(Strings.splitPreserveAllTokens(idString, ID_SEPARATOR));
+        Assert.isTrue(tokens.length <= 4,
+            "id string is not is the format 'group" + ID_SEPARATOR + "name" + ID_SEPARATOR + "type" + ID_SEPARATOR
+            + "version. value is " + idString);
 
-        if ((tokens == null) || !(tokens.length == 4)) {
-            throw new RuntimeException("id string is not is the format 'group" + ID_SEPARATOR + "name" + ID_SEPARATOR
-                + "type" + ID_SEPARATOR + "version. value is " + idString);
-        }
+        int len = tokens.length;
 
-        return new RepoArtifactId(toNull(tokens[0]), toNull(tokens[1]), toNull(tokens[2]), new Version(tokens[3]));
+        return new RepoArtifactId((len >= 1) ? toNull(tokens[0]) : null, (len >= 2) ? toNull(tokens[1]) : null,
+            (len >= 3) ? toNull(tokens[2]) : null, (len >= 4) ? new Version(tokens[3]) : null);
     }
 
     private String noNull(Object object) {
@@ -216,8 +216,25 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable {
         }
     }
 
-    public boolean isSnapShot() {
-        return (version.getQualifier() != null)
-        && (version.getQualifier().equals("ss") || version.getQualifier().endsWith("-ss"));
+    public int compareTo(Object o) {
+        RepoArtifactId other = (RepoArtifactId)o;
+        int result = nullSafeCompare(group, other.group);
+        result = (result == 0) ? nullSafeCompare(name, other.name) : result;
+        result = (result == 0) ? nullSafeCompare(type, other.type) : result;
+        result = (result == 0) ? nullSafeCompare(version, other.version) : result;
+
+        return result;
+    }
+
+    private int nullSafeCompare(Comparable lhs, Comparable rhs) {
+        if ((lhs == null) && (rhs == null)) {
+            return 0;
+        } else if (lhs == null) {
+            return -1;
+        } else if (rhs == null) {
+            return 1;
+        } else {
+            return lhs.compareTo(rhs);
+        }
     }
 }

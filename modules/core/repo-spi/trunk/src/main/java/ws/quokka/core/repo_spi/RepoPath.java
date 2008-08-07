@@ -78,6 +78,14 @@ public class RepoPath extends AnnotatedObject {
         return id;
     }
 
+    public void setDescendDefault(boolean descendDefault) {
+        this.descendDefault = descendDefault;
+    }
+
+    public void setMandatoryDefault(boolean mandatoryDefault) {
+        this.mandatoryDefault = mandatoryDefault;
+    }
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;

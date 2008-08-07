@@ -17,19 +17,31 @@
 
 package ws.quokka.core.repo_spi;
 
+import org.apache.tools.ant.BuildException;
+
 import ws.quokka.core.bootstrap_util.Assert;
-import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
+import ws.quokka.core.bootstrap_util.ExceptionHandler;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.util.xml.Converter;
 import ws.quokka.core.util.xml.Element;
 import ws.quokka.core.util.xml.ReflectionConverter;
 import ws.quokka.core.util.xml.XmlConverter;
 import ws.quokka.core.version.Version;
+import ws.quokka.core.version.VersionRangeUnion;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 
 /**
@@ -47,6 +59,7 @@ public class RepoXmlConverter {
         xmlConverter.add(new RepoPathConverter(RepoPath.class));
         xmlConverter.add(new RepoDependencyConverter(RepoDependency.class));
         xmlConverter.add(new RepoArtifactConverter(RepoArtifact.class));
+        xmlConverter.add(new RepoOverrideConverter(RepoOverride.class));
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -55,16 +68,50 @@ public class RepoXmlConverter {
         return xmlConverter;
     }
 
-    public static Writer toXml(RepoArtifact artifact, final Writer writer) {
-        new VoidExceptionHandler() {
-                // TODO: revist all XML DOCTYPE and encoding handling ...
-                public void run() throws Exception {
-                    writer.write("<?xml version=\"1.0\"?>\n"
-                        + "<!DOCTYPE artifact PUBLIC \"quokka.ws/dtd/repository-0.1\" \"http://quokka.ws/dtd/repository-0.1.dtd\">\n");
-                }
-            };
+    public static Writer toXml(final RepoArtifact artifact, final File file) {
+        return (Writer)new ExceptionHandler() {
+                public Object run() throws IOException {
+                    Writer writer = new BufferedWriter(new FileWriter(file));
 
-        return getXmlConverter().toXml(artifact, writer, "artifact");
+                    try {
+                        toXml(artifact, writer);
+                    } finally {
+                        writer.close();
+                    }
+
+                    return writer;
+                }
+            }.soften();
+    }
+
+    public static Writer toXml(RepoArtifact artifact, final Writer writer) {
+        return getXmlConverter().toXml(artifact, writer, "artifact", "quokka.ws/dtd/repository-0.2",
+            "http://quokka.ws/dtd/repository-0.2.dtd");
+    }
+
+    private static RepoPathSpec createPathSpec(XmlConverter xmlConverter, String pathSpec, boolean toRequired) {
+        RepoPathSpec spec = createPathSpec(xmlConverter);
+        spec.parseShorthand(pathSpec, toRequired);
+
+        return spec;
+    }
+
+    private static RepoPathSpec createPathSpec(XmlConverter xmlConverter) {
+        ReflectionConverter converter = (ReflectionConverter)xmlConverter.getConverter(RepoPathSpec.class);
+
+        return (RepoPathSpec)converter.construct();
+    }
+
+    private static RepoPathSpec createPathSpec(XmlConverter xmlConverter, String fromPath, String toPath,
+        String options, Boolean descend, Boolean mandatory) {
+        RepoPathSpec spec = createPathSpec(xmlConverter);
+        spec.setFrom(fromPath);
+        spec.setTo(toPath);
+        spec.setOptions(options);
+        spec.setDescend(descend);
+        spec.setMandatory(mandatory);
+
+        return spec;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
@@ -115,7 +162,7 @@ public class RepoXmlConverter {
             dependency.setId(((RepoArtifactId)converter.fromXml(dependencyEl)).mergeDefaults());
 
             // Add path specs added in long form
-            List pathSpecEls = dependencyEl.getChildren(PATH_SPEC_EL);
+            List pathSpecEls = filter(dependencyEl.getChildren(PATH_SPEC_EL));
 
             for (Iterator i = pathSpecEls.iterator(); i.hasNext();) {
                 Element pathSpecEl = (Element)i.next();
@@ -135,6 +182,13 @@ public class RepoXmlConverter {
             return dependency;
         }
 
+        /**
+         * Allows descendents to filter the pathspecs (e.g. get rid of some matching certain profiles)
+         */
+        public List filter(List pathSpecEls) {
+            return pathSpecEls;
+        }
+
         public void toXml(Object object, Element element) {
             super.toXml(object, element);
 
@@ -144,87 +198,43 @@ public class RepoXmlConverter {
 
             converter = getConverter(RepoPathSpec.class);
 
+            RepoArtifact artifact = (RepoArtifact)getContext("artifact");
+            StringBuffer pathSpecs = new StringBuffer();
+
             for (Iterator i = dependency.getPathSpecs().iterator(); i.hasNext();) {
                 RepoPathSpec pathSpec = (RepoPathSpec)i.next();
-                converter.toXml(pathSpec, element.addChild(PATH_SPEC_EL));
+                pathSpecs.append(pathSpec.toShortHand(artifact.getPath(pathSpec.getTo())));
+
+                if (i.hasNext()) {
+                    pathSpecs.append(", ");
+                }
+
+                element.setAttribute("paths", pathSpecs.toString());
+
+//                converter.toXml(pathSpec, element.addChild(PATH_SPEC_EL));
             }
         }
 
-        private void parseShorthand(RepoDependency dependency, String pathsSpecsAttr) {
+        public void parseShorthand(RepoDependency dependency, String pathsSpecsAttr) {
             String[] pathSpecs = Strings.trim(Strings.splitTopLevel(pathsSpecsAttr, '(', ')', ','));
+            RepoArtifact artifact = (RepoArtifact)getContext("artifact");
 
             for (int i = 0; i < pathSpecs.length; i++) {
-                RepoPathSpec pathSpec = parseShorthand(pathSpecs[i]);
+                RepoPathSpec pathSpec = createPathSpec(getXmlConverter(), pathSpecs[i], toRequired());
+
+                if (artifact != null) {
+                    pathSpec.mergeDefaults(artifact.getPath(pathSpec.getTo()));
+                }
+
                 dependency.addPathSpec(pathSpec);
             }
         }
 
         /**
-         * Creates a path specification from the shorthand form. Care should be taken to only override the defaults
-         * when a value is actually specified.
+         * Override to control how the path specification should be parsed
          */
-        public RepoPathSpec parseShorthand(String pathSpec) {
-            RepoPathSpec pathSpecification = new RepoPathSpec();
-
-            String[] tokens = Strings.trim(Strings.splitIncludeDelimiters(pathSpec, "<+"));
-            assertPathSpec((tokens.length >= 1) && (tokens.length <= 3), pathSpec);
-            assertPathSpec(!isDelimeter(tokens[0], "<+") && !Strings.isBlank(tokens[0]), pathSpec);
-
-            String toId = tokens[0];
-            assertPathSpec(!toId.equals("?"), pathSpec);
-
-            if (toId.endsWith("?")) {
-                pathSpecification.setMandatory(Boolean.FALSE);
-                toId = toId.substring(0, toId.length() - 1);
-            }
-
-            // toId[?][+|<][fromId][(options)]
-            pathSpecification.setTo(toId);
-
-            if (tokens.length >= 2) {
-                assertPathSpec(isDelimeter(tokens[1], "<+"), pathSpec);
-                pathSpecification.setDescend((tokens[1].equals("<")) ? Boolean.TRUE : Boolean.FALSE);
-            }
-
-            if (tokens.length == 3) {
-                assertPathSpec(!isDelimeter(tokens[2], "<+") && !Strings.isBlank(tokens[0]), pathSpec);
-
-                int optionsStart = tokens[2].indexOf('(');
-
-                if (optionsStart == -1) {
-                    if (!Strings.isBlank(tokens[2])) {
-                        pathSpecification.setFrom(tokens[2]);
-                    }
-                } else {
-                    assertPathSpec(tokens[2].charAt(tokens[2].length() - 1) == ')', pathSpec);
-                    pathSpecification.setOptions(tokens[2].substring(optionsStart + 1, tokens[2].length() - 1).trim());
-
-                    if (optionsStart != 0) {
-                        pathSpecification.setFrom(tokens[2].substring(0, optionsStart).trim());
-                    }
-                }
-            }
-
-            // Hack until replaced with proper ANTLR grammar. This is the short shorthand form
-            int optionsStart = toId.indexOf('(');
-
-            if (optionsStart != -1) {
-                pathSpecification.setTo(toId.substring(0, optionsStart));
-                pathSpecification.setFrom("runtime");
-                pathSpecification.setOptions(toId.substring(optionsStart + 1, toId.length() - 1).trim());
-            }
-
-            return pathSpecification;
-        }
-
-        private void assertPathSpec(boolean condition, String pathSpec) {
-            Assert.isTrue(condition,
-                "Path spec '" + pathSpec
-                + "' is invalid. Valid syntax is: <toPathId> [<|+] [fromPathId] [(<option1>, ...)]");
-        }
-
-        private boolean isDelimeter(String string, String delimiters) {
-            return (string.length() == 1) && (delimiters.indexOf(string.charAt(0)) != -1);
+        public boolean toRequired() {
+            return true;
         }
     }
 
@@ -232,6 +242,14 @@ public class RepoXmlConverter {
         public RepoArtifactConverter(Class clazz) {
             super(clazz);
             addExclusion("localCopy");
+            addExclusion("description");
+        }
+
+        public DateFormat getDateFormat() {
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+            return format;
         }
 
         public Object fromXml(Element artifactEl) {
@@ -240,6 +258,24 @@ public class RepoXmlConverter {
 
             Converter converter = getConverter(RepoArtifactId.class);
             artifact.setId((RepoArtifactId)converter.fromXml(artifactEl));
+
+            String timestamp = artifactEl.getAttribute("timestamp");
+
+            if (timestamp != null) {
+                try {
+                    artifact.setTimestamp(getDateFormat().parse(timestamp));
+                } catch (ParseException e) {
+                    throw new BuildException(e);
+                }
+            }
+
+            Element originalIdEl = artifactEl.getChild("original-id");
+
+            if (originalIdEl != null) {
+                artifact.setOriginalId(((RepoArtifactId)converter.fromXml(originalIdEl)).merge(
+                        new RepoArtifactId(null, RepoArtifactId.defaultName(artifact.getId().getGroup()),
+                            artifact.getId().getType(), (Version)null)));
+            }
 
             Element pathsEl = artifactEl.getChild("paths");
 
@@ -253,7 +289,11 @@ public class RepoXmlConverter {
 
             if (artifact.getPaths().size() == 0) {
                 // Add a default path
-                RepoPath path = new RepoPath("runtime", "Runtime path", true, true);
+                RepoPath path = (RepoPath)((ReflectionConverter)xmlConverter.getConverter(RepoPath.class)).construct();
+                path.setId("runtime");
+                path.setDescription("Runtime path");
+                path.setMandatoryDefault(true);
+                path.setDescendDefault(true);
                 artifact.addPath(path);
             }
 
@@ -282,11 +322,29 @@ public class RepoXmlConverter {
                             "A path spec must be defined for dependency '" + dependency.getId() + "'");
 
                         RepoPath path = (RepoPath)artifact.getPaths().iterator().next();
-                        dependency.addPathSpec(new RepoPathSpec("runtime", path.getId(),
+                        dependency.addPathSpec(createPathSpec(getXmlConverter(), "runtime", path.getId(), null,
                                 (path.isDescendDefault()) ? Boolean.TRUE : Boolean.FALSE,
                                 (path.isMandatoryDefault()) ? Boolean.TRUE : Boolean.FALSE));
                     }
                 }
+            }
+
+            Element overridesEl = artifactEl.getChild("overrides");
+
+            if (overridesEl != null) {
+                for (Iterator i = overridesEl.getChildren("override").iterator(); i.hasNext();) {
+                    Element overrideEl = (Element)i.next();
+                    converter = getConverter(RepoOverride.class);
+
+                    RepoOverride override = (RepoOverride)converter.fromXml(overrideEl);
+                    artifact.addOverride(override);
+                }
+            }
+
+            Element descriptionEl = artifactEl.getChild("description");
+
+            if (descriptionEl != null) {
+                artifact.setDescription(descriptionEl.getText());
             }
 
             return artifact;
@@ -296,8 +354,33 @@ public class RepoXmlConverter {
             super.toXml(object, artifactEl);
 
             RepoArtifact artifact = (RepoArtifact)object;
+            addContext("artifact", artifact);
+
             Converter converter = getConverter(RepoArtifactId.class);
             converter.toXml(artifact.getId(), artifactEl);
+
+            if (artifact.getTimestamp() != null) {
+                artifactEl.setAttribute("timestamp", getDateFormat().format(artifact.getTimestamp()));
+            }
+
+            if (artifact.getOriginalId() != null) {
+                Element originalIdEl = artifactEl.addChild("original-id");
+                converter.toXml(artifact.getOriginalId(), originalIdEl);
+            }
+
+            if (artifact.getDescription() != null) {
+                artifactEl.addChild("description").addText(artifact.getDescription());
+            }
+
+            if (artifact.getPaths().size() != 0) {
+                converter = getConverter(RepoPath.class);
+
+                Element pathsEl = artifactEl.addChild("paths");
+
+                for (Iterator i = artifact.getPaths().iterator(); i.hasNext();) {
+                    converter.toXml(i.next(), pathsEl.addChild("path"));
+                }
+            }
 
             if (artifact.getDependencies().size() != 0) {
                 converter = getConverter(RepoDependency.class);
@@ -309,14 +392,91 @@ public class RepoXmlConverter {
                 }
             }
 
-            if (artifact.getPaths().size() != 0) {
-                converter = getConverter(RepoPath.class);
+            if (artifact.getOverrides().size() != 0) {
+                converter = getConverter(RepoOverride.class);
 
-                Element pathsEl = artifactEl.addChild("paths");
+                Element overridesEl = artifactEl.addChild("overrides");
 
-                for (Iterator i = artifact.getPaths().iterator(); i.hasNext();) {
-                    converter.toXml(i.next(), pathsEl.addChild("path"));
+                for (Iterator i = artifact.getOverrides().iterator(); i.hasNext();) {
+                    converter.toXml(i.next(), overridesEl.addChild("override"));
                 }
+            }
+        }
+    }
+
+    public static class RepoOverrideConverter extends ReflectionConverter {
+        public RepoOverrideConverter(Class clazz) {
+            super(clazz);
+        }
+
+        public Object fromXml(Element overrideEl) {
+            RepoOverride override = (RepoOverride)super.fromXml(overrideEl);
+            String version = overrideEl.getAttribute("version");
+            override.setVersion((version == null) ? null : VersionRangeUnion.parse(version));
+
+            String with = overrideEl.getAttribute("with");
+            override.setWithVersion((with == null) ? null : Version.parse(with));
+
+            String withPaths = overrideEl.getAttribute("with-paths");
+
+            if (withPaths != null) {
+                String[] pathSpecs = Strings.trim(Strings.splitTopLevel(withPaths, '(', ')', ','));
+
+                for (int i = 0; i < pathSpecs.length; i++) {
+                    RepoPathSpec pathSpec = createPathSpec(getXmlConverter(), pathSpecs[i], false);
+                    override.addWithPathSpec(pathSpec);
+                }
+            }
+
+            // Add path specs added in long form
+            List pathSpecEls = overrideEl.getChildren(PATH_SPEC_EL);
+
+            for (Iterator i = pathSpecEls.iterator(); i.hasNext();) {
+                Element pathSpecEl = (Element)i.next();
+                Converter converter = getConverter(RepoPathSpec.class);
+
+                RepoPathSpec spec = (RepoPathSpec)converter.fromXml(pathSpecEl);
+                Assert.isTrue(spec.getTo() == null, spec.getLocator(), "'to' attribute is not valid for overrides");
+                override.addWithPathSpec(spec);
+            }
+
+            String paths = overrideEl.getAttribute("paths");
+
+            if (paths != null) {
+                for (Iterator i = Strings.commaSepList(paths).iterator(); i.hasNext();) {
+                    String path = (String)i.next();
+                    override.addPath(path);
+                }
+            }
+
+            return override;
+        }
+
+        public void toXml(Object object, Element element) {
+            super.toXml(object, element);
+
+            RepoOverride override = (RepoOverride)object;
+            element.setAttribute("paths", Strings.join(override.getPaths().iterator(), ", "));
+
+            if (override.getVersion() != null) {
+                element.setAttribute("version", override.getVersion().toString());
+            }
+
+            if (override.getWithVersion() != null) {
+                element.setAttribute("with", override.getWithVersion().toString());
+            }
+
+            StringBuffer pathSpecs = new StringBuffer();
+
+            for (Iterator i = override.getWithPathSpecs().iterator(); i.hasNext();) {
+                RepoPathSpec pathSpec = (RepoPathSpec)i.next();
+                pathSpecs.append(pathSpec.toShortHand());
+
+                if (i.hasNext()) {
+                    pathSpecs.append(", ");
+                }
+
+                element.setAttribute("with-paths", pathSpecs.toString());
             }
         }
     }

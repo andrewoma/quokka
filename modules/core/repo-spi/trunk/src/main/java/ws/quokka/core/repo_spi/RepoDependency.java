@@ -48,13 +48,13 @@ public class RepoDependency extends AnnotatedObject {
         return Collections.unmodifiableSet(pathSpecs);
     }
 
-    public Set getPathSpecs(String fromId) {
+    public Set getPathSpecsTo(String toId) {
         Set specs = new HashSet();
 
         for (Iterator i = pathSpecs.iterator(); i.hasNext();) {
             RepoPathSpec pathSpec = (RepoPathSpec)i.next();
 
-            if (pathSpec.getFrom().equals(fromId)) {
+            if (pathSpec.getTo().equals(toId)) {
                 specs.add(pathSpec);
             }
         }
@@ -68,7 +68,7 @@ public class RepoDependency extends AnnotatedObject {
     }
 
     public String toShortString() {
-        return id.toShortString();
+        return (id == null) ? "null" : id.toShortString();
     }
 
     public boolean equals(Object o) {

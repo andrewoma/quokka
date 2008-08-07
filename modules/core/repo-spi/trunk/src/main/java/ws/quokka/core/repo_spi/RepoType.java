@@ -32,6 +32,9 @@ public class RepoType extends AnnotatedObject {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
+    public RepoType() {
+    }
+
     public RepoType(String id, String description, String extension) {
         this.id = id;
         this.description = description;

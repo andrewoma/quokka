@@ -17,35 +17,39 @@
 
 package ws.quokka.core.repo_spi;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  *
  */
 public abstract class AbstractRepository implements Repository {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    public static final String PREFIX = "quokka.repo.";
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    private Map types = new HashMap();
+    private RepositoryFactory factory;
+    private String name;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void registerType(RepoType type) {
-        types.put(type.getId(), type);
+    public RepositoryFactory getFactory() {
+        return factory;
     }
 
-    public RepoType getType(String id) {
-        RepoType type = (RepoType)types.get(id);
-
-        if (type == null) {
-            throw new RuntimeException("Type has not been registered with the repository: " + id);
-        }
-
-        return type;
+    public void setFactory(RepositoryFactory factory) {
+        this.factory = factory;
     }
 
-    protected Map getTypes() {
-        return types;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String prefix() {
+        return PREFIX + name + ".";
     }
 }

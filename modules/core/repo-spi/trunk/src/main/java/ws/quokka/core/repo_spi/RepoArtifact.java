@@ -22,9 +22,12 @@ import ws.quokka.core.util.Annotations;
 
 import java.io.File;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 
@@ -38,6 +41,10 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     private Set dependencies = new HashSet();
     private File localCopy;
     private Set paths = new HashSet();
+    private RepoArtifactId originalId; // The original group, name & type. Should be set if the artifact is renamed
+    private List overrides = new ArrayList();
+    private String description;
+    private Date timestamp; // Only set for snapshots to allow updates from parents
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
@@ -56,6 +63,28 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
 
     public RepoArtifactId getId() {
         return id;
+    }
+
+    /**
+     * The original id should contain the original group, name and type of the artifact when it was
+     * first put in the repository. This should be set when an artifact is renamed. e.g. migrates from
+     * sourceforge to it's own domain. This allows conflict resolution to detect what are essentially
+     * different versions of the same artifact, albeit with different groups, names and/or types.
+     */
+    public RepoArtifactId getOriginalId() {
+        return originalId;
+    }
+
+    public void setOriginalId(RepoArtifactId originalId) {
+        this.originalId = originalId;
+    }
+
+    public void addOverride(RepoOverride override) {
+        overrides.add(override);
+    }
+
+    public List getOverrides() {
+        return Collections.unmodifiableList(overrides);
     }
 
     public Set getDependencies() {
@@ -99,7 +128,7 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     }
 
     /**
-     * Returns a shallow copy, with the exception of annotations, which is cloned.
+     * Returns a shallow copy, with the exception of annotations and id, which are cloned.
      */
     public Object clone() {
         try {
@@ -115,6 +144,22 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         }
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -124,21 +169,41 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
             return false;
         }
 
-        RepoArtifact artifact = (RepoArtifact)o;
+        RepoArtifact that = (RepoArtifact)o;
 
-        if ((dependencies != null) ? (!dependencies.equals(artifact.dependencies)) : (artifact.dependencies != null)) {
+        if ((dependencies != null) ? (!dependencies.equals(that.dependencies)) : (that.dependencies != null)) {
             return false;
         }
 
-        if ((id != null) ? (!id.equals(artifact.id)) : (artifact.id != null)) {
+        if ((description != null) ? (!description.equals(that.description)) : (that.description != null)) {
             return false;
         }
 
-        if ((localCopy != null) ? (!localCopy.equals(artifact.localCopy)) : (artifact.localCopy != null)) {
+        if ((id != null) ? (!id.equals(that.id)) : (that.id != null)) {
             return false;
         }
 
-        return !((paths != null) ? (!paths.equals(artifact.paths)) : (artifact.paths != null));
+        if ((localCopy != null) ? (!localCopy.equals(that.localCopy)) : (that.localCopy != null)) {
+            return false;
+        }
+
+        if ((originalId != null) ? (!originalId.equals(that.originalId)) : (that.originalId != null)) {
+            return false;
+        }
+
+        if ((overrides != null) ? (!overrides.equals(that.overrides)) : (that.overrides != null)) {
+            return false;
+        }
+
+        if ((paths != null) ? (!paths.equals(that.paths)) : (that.paths != null)) {
+            return false;
+        }
+
+        if ((timestamp != null) ? (!timestamp.equals(that.timestamp)) : (that.timestamp != null)) {
+            return false;
+        }
+
+        return true;
     }
 
     public int hashCode() {
@@ -147,7 +212,19 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         result = (31 * result) + ((dependencies != null) ? dependencies.hashCode() : 0);
         result = (31 * result) + ((localCopy != null) ? localCopy.hashCode() : 0);
         result = (31 * result) + ((paths != null) ? paths.hashCode() : 0);
+        result = (31 * result) + ((originalId != null) ? originalId.hashCode() : 0);
+        result = (31 * result) + ((overrides != null) ? overrides.hashCode() : 0);
+        result = (31 * result) + ((description != null) ? description.hashCode() : 0);
+        result = (31 * result) + ((timestamp != null) ? timestamp.hashCode() : 0);
 
         return result;
+    }
+
+    public boolean isNewerThan(RepoArtifact other) {
+        // Comparison shouldn't need to handle nulls, but is useful during migration
+        Date thisDate = (timestamp != null) ? timestamp : new Date(0);
+        Date otherDate = (other.timestamp != null) ? other.timestamp : new Date(0);
+
+        return thisDate.compareTo(otherDate) > 0;
     }
 }

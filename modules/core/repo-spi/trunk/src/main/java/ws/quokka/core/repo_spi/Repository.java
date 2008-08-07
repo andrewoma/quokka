@@ -17,8 +17,6 @@
 
 package ws.quokka.core.repo_spi;
 
-import ws.quokka.core.util.AnnotatedProperties;
-
 import java.util.Collection;
 
 
@@ -28,11 +26,11 @@ import java.util.Collection;
 public interface Repository {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    void initialise(Object antProject, AnnotatedProperties properties);
+    void initialise();
 
-    void registerType(RepoType type);
+    void setFactory(RepositoryFactory factory);
 
-    RepoType getType(String id);
+    RepositoryFactory getFactory();
 
     RepoArtifact resolve(RepoArtifactId artifactId);
 
@@ -48,10 +46,16 @@ public interface Repository {
 
     String getName();
 
+    void setName(String name);
+
     /**
-     * Returns any repositories used by this repository, for example, when delegating to
-     * other repositories internally. Implementations should not to recursively process
-     * references, just return repositories directly referenced by this repository.
+     * Update the snapshot to the latest version available in this repository or any parents
+     *
+     * @param artifact the snapshot artifact to update
+     * @return the updated snapshot, or null if there are no newer artifacts available. If should NOT
+     *         throw UnresolvedArtifactException
      */
-    Collection getReferencedRepositories();
+    RepoArtifact updateSnapshot(RepoArtifact artifact);
+
+    Collection availableVersions(String group, String name, String type);
 }
