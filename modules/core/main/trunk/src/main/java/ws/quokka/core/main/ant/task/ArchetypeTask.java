@@ -29,11 +29,13 @@ import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
 import ws.quokka.core.bootstrap_util.PropertiesUtil;
 import ws.quokka.core.bootstrap_util.TaskLogger;
+import ws.quokka.core.main.ant.ProjectHelper;
 import ws.quokka.core.plugin_spi.support.AntUtils;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryAware;
+import ws.quokka.core.repo_spi.RepositoryFactory;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.util.URLs;
 
@@ -83,6 +85,8 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         RepoArtifactId id = getArtifactId();
         logger.info("Creating project based on artifact: " + id.toShortString());
 
+        selectRepository();
+
         RepoArtifact artifact = repository.resolve(id);
         logger.info("Extracting the following archetype to " + getProject().getBaseDir().getAbsolutePath() + ":");
 
@@ -94,6 +98,22 @@ public class ArchetypeTask extends Task implements RepositoryAware {
 
         displayEntries(localCopy, root);
         copyEntries(localCopy, root);
+    }
+
+    private void selectRepository() {
+        RepositoryFactory factory = (RepositoryFactory)getProject().getReference(ProjectHelper.REPOSITORY_FACTORY);
+        String repositoryUrl = getProject().getProperty("repository");
+
+        if (repositoryUrl != null) {
+            factory.getProperties().put("quokka.repo.archetype.url", repositoryUrl);
+            repository = factory.getOrCreate("archetype");
+        }
+
+        String repositoryId = getProject().getProperty("repositoryId");
+
+        if (repositoryId != null) {
+            repository = factory.getOrCreate(repositoryId);
+        }
     }
 
     private void copyEntries(File localCopy, String root) {
