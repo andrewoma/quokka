@@ -30,13 +30,25 @@ import ws.quokka.core.plugin_spi.ResourcesAware;
 
 import java.io.File;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
 /**
- *
+ * AbstractPlugin provides a useful base class for creating plugins. By default, it expectes a
+ * targets to method of the same name as the target. It also provides access to logs, properties
+ * and other resources.
  */
 public abstract class AbstractPlugin implements Plugin, ResourcesAware {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static final Map RESERVED_WORDS = new HashMap();
+
+    static {
+        RESERVED_WORDS.put("package", "packageIt");
+        RESERVED_WORDS.put("import", "importIt");
+    }
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private Resources resources;
@@ -45,6 +57,7 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
     private Logger logger;
     private AntUtils utils;
     private Map projectProperties;
+    private TypedProperties typedProjectProperties;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -60,6 +73,11 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
         }
 
         globalProperties = createProperties("quokka.project.");
+
+        typedProjectProperties = new TypedProperties("");
+        typedProjectProperties.setProject(resources.getProject());
+        typedProjectProperties.setProperties(projectProperties);
+
         logger = resources.getLogger();
         utils = new AntUtils(getProject());
     }
@@ -68,7 +86,7 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
         return globalProperties.getFile("targetDir");
     }
 
-    public AntUtils getUtils() {
+    public AntUtils utils() {
         return utils;
     }
 
@@ -88,11 +106,11 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
         return resources.getProject();
     }
 
-    public TypedProperties getProperties() {
+    public TypedProperties properties() {
         return properties;
     }
 
-    public Logger logger() {
+    public Logger log() {
         return logger;
     }
 
@@ -125,12 +143,28 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
             }
         }
 
-        return methodName.toString().equals("package") ? "packageIt" : methodName.toString();
+        String name = methodName.toString();
+
+        if (RESERVED_WORDS.containsKey(name)) {
+            name = (String)RESERVED_WORDS.get(name);
+        }
+
+        return name;
     }
 
     public void assertTrue(boolean condition, String message) {
         if (!condition) {
             throw new BuildException(message);
         }
+    }
+
+    public String getShortTargetName() {
+        String name = getResources().getTargetName();
+
+        return name.substring(name.indexOf(":") + 1);
+    }
+
+    public TypedProperties getProjectProperties() {
+        return typedProjectProperties;
     }
 }

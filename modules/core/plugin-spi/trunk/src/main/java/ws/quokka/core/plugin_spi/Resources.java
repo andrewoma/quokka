@@ -22,8 +22,6 @@ import org.apache.tools.ant.types.Path;
 
 import ws.quokka.core.bootstrap_util.Logger;
 
-import java.util.List;
-
 
 /**
  *
@@ -36,8 +34,6 @@ public interface Resources {
     Project getParentProject();
 
     Path getPathGroupAsPath(String name);
-
-    List getPathGroup(String name);
 
     String getNameSpace();
 

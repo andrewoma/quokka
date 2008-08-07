@@ -25,6 +25,7 @@ import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Mkdir;
 import org.apache.tools.ant.types.DirSet;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.util.FileUtils;
 
@@ -37,7 +38,7 @@ import java.util.List;
 
 
 /**
- *
+ * AntUtils provides some helper methods for ANT
  */
 public class AntUtils {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -104,17 +105,36 @@ public class AntUtils {
         return fileSet;
     }
 
-    public Collection filterExisting(List fileSets) {
-        for (Iterator i = fileSets.iterator(); i.hasNext();) {
-            FileSet fileSet = (FileSet)i.next();
+    public Collection filterExisting(Collection rcs) {
+        for (Iterator i = rcs.iterator(); i.hasNext();) {
+            ResourceCollection rc = (ResourceCollection)i.next();
 
-            if (!fileSet.getDir().exists()) {
+            if (!containsFiles(rc, true)) {
                 i.remove();
-                project.log("Skipping fileset as dir does not exist: " + fileSet.getDir().getPath(), Project.MSG_VERBOSE);
             }
         }
 
-        return fileSets;
+        return rcs;
+    }
+
+    public boolean containsFiles(ResourceCollection rc, boolean log) {
+        try {
+            if (!rc.iterator().hasNext()) {
+                if (log) {
+                    project.log("Skipping resource collection as it is empty", Project.MSG_VERBOSE);
+                }
+
+                return false;
+            }
+        } catch (Exception e) {
+            if (log) {
+                project.log("Skipping resource collection as it is invalid: " + e.getMessage(), Project.MSG_VERBOSE);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     public File normalise(String file) {

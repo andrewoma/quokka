@@ -17,9 +17,9 @@
 
 package ws.quokka.core.plugin_spi.support;
 
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.IntrospectionHelper;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileList;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ResourceCollection;
@@ -39,9 +39,21 @@ import java.util.TreeMap;
 
 
 /**
- *
+ * TypedProperties provides convenience methods for acessing properties as types.
+ * It supports simple types such as File and String, as well as more complicated structures
+ * such as Lists, Maps and ResourceCollections. It can also verify that invalid keys
+ * have not been set.
  */
 public class TypedProperties {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static final String REFID = "refid";
+    private static final String[] FILE_SET_ATTRIBUTES = new String[] {
+            "dir", "file", "defaultExcludes", "includes", "includesFile", "excludes", "excludesFile", "caseSensitive",
+            "followSymLinks"
+        };
+    private static final String[] FILE_LIST_ATTRIBUTES = new String[] { "dir", "files" };
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private Map properties;
@@ -135,23 +147,63 @@ public class TypedProperties {
     public ResourceCollection getResourceCollection(String key, boolean mandatory) {
         ResourceCollection rc;
 
+        TypedProperties sub = sub(key + ".");
+
         // Look for a reference first
-        String refId = getString(key + ".refid", null, false);
+        String refId = sub.getString(REFID, null, false);
 
         if (refId != null) {
-            return (ResourceCollection)project.getReference(refId);
+            Object object = project.getReference(refId);
+            Assert.isTrue(object instanceof ResourceCollection,
+                "The object referenced by '" + refId + "' from '" + prefix + key
+                + ".refid' is not a resource collection");
+            sub.verify(new Keys(), new Keys(REFID)); // Should be no other values if refid specified
+
+            return (ResourceCollection)object;
         }
 
         // Try getting a fileset
         rc = getFileSet(key);
 
         if (rc != null) {
+            sub.verify(new Keys(), new Keys("set")); // Should be no other values than set
+
+            return rc;
+        }
+
+        // Try getting a filelist
+        rc = getFileList(key);
+
+        if (rc != null) {
+            sub.verify(new Keys(), new Keys("list")); // Should be no other values than list
+
             return rc;
         }
 
         Assert.isTrue(!mandatory, "Mandatory property '" + key + "' has not been set.");
 
         return null;
+    }
+
+    public FileList getFileList(String key) {
+        return getFileList(key, false);
+    }
+
+    public FileList getFileList(String key, boolean mandatory) {
+        FileList fileList = (FileList)project.createDataType("filelist");
+        TypedProperties setProperties = sub(key + ".list.");
+        Setter setter = new Setter(setProperties);
+        setter.set(fileList, FILE_LIST_ATTRIBUTES);
+
+        if (fileList.getDir(project) == null) {
+            Assert.isTrue(!mandatory, prefix + key + " does not refer to a valid filelist");
+
+            return null; // Neither dir or file attributes have been supplied, so not valid
+        }
+
+        setProperties.verify(new Keys(FILE_LIST_ATTRIBUTES));
+
+        return fileList;
     }
 
     public TypedProperties sub(String suffix) {
@@ -180,19 +232,15 @@ public class TypedProperties {
         FileSet fileSet = (FileSet)project.createDataType("fileset");
         TypedProperties setProperties = sub(key + ".set.");
         Setter setter = new Setter(setProperties);
-        setter.set(fileSet,
-            new String[] {
-                "dir", "file", "defaultExcludes", "includes", "includesFile", "excludes", "excludesFile",
-                "caseSensitive", "followSymLinks"
-            });
+        setter.set(fileSet, FILE_SET_ATTRIBUTES);
 
         if (fileSet.getDir(project) == null) {
-            if (mandatory) {
-                throw new BuildException(prefix + key + " does not refer to a valid fileset");
-            } else {
-                return null; // Neither dir or file attributes have been supplied, so not valid
-            }
+            Assert.isTrue(!mandatory, prefix + key + " does not refer to a valid fileset");
+
+            return null; // Neither dir or file attributes have been supplied, so not valid
         }
+
+        setProperties.verify(new Keys(FILE_SET_ATTRIBUTES));
 
         return fileSet;
     }
@@ -200,11 +248,12 @@ public class TypedProperties {
     public Map getMap(String root, boolean mandatory, Class valueType) {
         Map map = new HashMap();
 
+        String prefix = this.prefix + root + "[";
+        String invalid = this.prefix + root + ".";
+
         for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
             String key = (String)entry.getKey();
-
-            String prefix = this.prefix + root + "[";
 
             if (key.startsWith(prefix)) {
                 int keyEnd = key.indexOf(']');
@@ -221,6 +270,8 @@ public class TypedProperties {
                 String newKey = (key.length() > (keyEnd + 1))
                     ? (((valueType == null) ? "" : "value.") + key.substring(keyEnd + 1, key.length())) : "value";
                 mapValue.properties.put(newKey, entry.getValue());
+            } else {
+                Assert.isTrue(!key.startsWith(invalid), "Invalid property with same root as map or list: '" + key + "'");
             }
         }
 
@@ -307,6 +358,57 @@ public class TypedProperties {
 
     public String toString() {
         return properties.toString();
+    }
+
+    public void verify(Keys keys) {
+        verify(keys, new Keys());
+    }
+
+    public void verify(Keys keys, Keys exclusions) {
+        exclusions = normalise(exclusions);
+
+        for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+
+            if (key.startsWith(prefix)) {
+                String keyVal = key.substring(prefix.length());
+                Assert.isTrue(keys.toSet().contains(keyVal) || exclusion(keyVal, exclusions),
+                    "Property '" + key + "' is not a valid property");
+            }
+        }
+    }
+
+    /**
+     * Makes sure the exclusions have trailing '.' and '[' so that exclusions only apply to
+     * sub properties and/or maps and lists
+     */
+    private Keys normalise(Keys exclusions) {
+        Keys normalised = new Keys();
+
+        for (Iterator i = exclusions.toSet().iterator(); i.hasNext();) {
+            String exclusion = (String)i.next();
+
+            if (exclusion.endsWith(".") || exclusion.endsWith("[")) {
+                exclusion = exclusion.substring(0, exclusion.length() - 1);
+            }
+
+            normalised.add(exclusion + ".");
+            normalised.add(exclusion + "[");
+        }
+
+        return normalised;
+    }
+
+    private boolean exclusion(String keyVal, Keys exclusions) {
+        for (Iterator i = exclusions.toSet().iterator(); i.hasNext();) {
+            String exclusion = (String)i.next();
+
+            if (keyVal.startsWith(exclusion)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------

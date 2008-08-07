@@ -26,7 +26,8 @@ import java.util.Map;
 
 
 /**
- *
+ * Setter provides a mechanism to set fields on an object via reflection from property values.
+ * In general, it is used to conveniently set a large set of optional attributes on an ANT task.
  */
 public class Setter {
     //~ Instance fields ------------------------------------------------------------------------------------------------

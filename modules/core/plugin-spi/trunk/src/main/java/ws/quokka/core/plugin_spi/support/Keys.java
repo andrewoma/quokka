@@ -17,34 +17,55 @@
 
 package ws.quokka.core.plugin_spi.support;
 
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.resources.Resources;
-
-import ws.quokka.core.bootstrap_util.Reflect;
-
-import java.lang.reflect.Method;
-
-import java.util.List;
+import java.util.*;
 
 
 /**
- * ResourcesList that exposes the underlying list of resources
+ * Keys is a helper to aggregrate keys easily for verification via TypedProperties.verify
  */
-public class ResourcesList extends Resources {
-    //~ Static fields/initializers -------------------------------------------------------------------------------------
+public class Keys {
+    //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    private static final Object[] NESTED_PARAMETERS = new Object[] {  };
-    private static final Method NESTED = new Reflect().getMethod(Resources.class, "getNested", new Class[] {  });
+    private Set keys = new HashSet();
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public ResourcesList(Project project) {
-        setProject(project);
+    public Keys() {
+    }
+
+    public Keys(String key) {
+        add(key);
+    }
+
+    public Keys(Collection keys) {
+        add(keys);
+    }
+
+    public Keys(String[] keys) {
+        add(keys);
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public List getNested() {
-        return (List)new Reflect().invoke(NESTED, this, NESTED_PARAMETERS);
+    public Keys add(String[] keys) {
+        this.keys.addAll(Arrays.asList(keys));
+
+        return this;
+    }
+
+    public Keys add(Collection keys) {
+        this.keys.addAll(keys);
+
+        return this;
+    }
+
+    public Keys add(String key) {
+        this.keys.add(key);
+
+        return this;
+    }
+
+    public Set toSet() {
+        return Collections.unmodifiableSet(keys);
     }
 }
