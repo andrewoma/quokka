@@ -49,7 +49,7 @@ public class VersionRangeUnionTest extends AbstractTest {
     }
 
     public void testRepositoryVersions() {
-        Version version = new Version("1.2.3.4-qual:10");
+        Version version = new Version("1.2.3.4-qual~10");
         assertEquals(version.getMajor(), 1);
         assertEquals(version.getMinor(), 2);
         assertEquals(version.getMicro(), 3);
@@ -57,14 +57,14 @@ public class VersionRangeUnionTest extends AbstractTest {
         assertEquals(version.getQualifier(), "qual");
         assertEquals(version.getRepositoryVersion(), 10);
 
-        version = new Version("somecrapthing:10");
+        version = new Version("somecrapthing~10");
         assertEquals(version.getNonStandardString(), "somecrapthing");
         assertEquals(version.getRepositoryVersion(), 10);
 
-        assertInRange("1", "1:1");
-        assertInRange("[1:1,1:1]", "1:1");
-        assertNotInRange("1:1", "1");
-        assertNotInRange("[1:1,1:1]", "1:2");
+        assertInRange("1", "1~1");
+        assertInRange("[1~1,1~1]", "1~1");
+        assertNotInRange("1~1", "1");
+        assertNotInRange("[1~1,1~1]", "1~2");
     }
 
     public void testNotInRange() {

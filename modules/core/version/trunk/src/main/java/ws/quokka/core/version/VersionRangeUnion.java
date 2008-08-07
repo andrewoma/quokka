@@ -18,6 +18,7 @@
 package ws.quokka.core.version;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -35,7 +36,7 @@ public class VersionRangeUnion {
 
     public boolean isInRange(Version version) {
         for (Iterator i = ranges.iterator(); i.hasNext();) {
-            VersionRange range = (VersionRange)i.next();
+            VersionRange range = (VersionRange) i.next();
 
             if (range.isInRange(version)) {
                 return true;
@@ -69,7 +70,7 @@ public class VersionRangeUnion {
         StringBuffer sb = new StringBuffer();
 
         for (Iterator i = ranges.iterator(); i.hasNext();) {
-            VersionRange range = (VersionRange)i.next();
+            VersionRange range = (VersionRange) i.next();
             sb.append(range.toString());
 
             if (i.hasNext()) {
@@ -78,5 +79,24 @@ public class VersionRangeUnion {
         }
 
         return sb.toString();
+    }
+
+    public List getRanges() {
+        return Collections.unmodifiableList(ranges);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VersionRangeUnion that = (VersionRangeUnion) o;
+
+        if (ranges != null ? !ranges.equals(that.ranges) : that.ranges != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        return (ranges != null ? ranges.hashCode() : 0);
     }
 }

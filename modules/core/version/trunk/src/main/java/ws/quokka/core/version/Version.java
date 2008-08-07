@@ -35,6 +35,8 @@ package ws.quokka.core.version;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import ws.quokka.core.bootstrap_util.Assert;
+
 import java.util.StringTokenizer;
 
 
@@ -157,11 +159,12 @@ public class Version implements Comparable {
      *                                  formatted.
      */
     public Version(String version) {
+        Assert.isTrue(version != null, "version is null");
         String original = version;
 
         try {
             // Strip off the repository version
-            int index = version.lastIndexOf(':');
+            int index = version.lastIndexOf('~');
 
             if ((index > 0) && (index < (version.length() - 1))) {
                 repositoryVersion = Integer.parseInt(version.substring(index + 1));
@@ -189,6 +192,13 @@ public class Version implements Comparable {
 
             validate();
         } catch (Exception e) {
+            int length = original.length();
+
+            for (int i = 0; i < length; i++) {
+                if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-".indexOf(original.charAt(i)) == -1) {
+                    throw new IllegalArgumentException("invalid characters in version: " + original);
+                }
+            }
             nonStandardString = original;
             major = 0;
             minor = 0;
@@ -239,7 +249,7 @@ public class Version implements Comparable {
             int length = qualifier.length();
 
             for (int i = 0; i < length; i++) {
-                if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-".indexOf(qualifier.charAt(i)) == -1) { //$NON-NLS-1$
+                if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-".indexOf(qualifier.charAt(i)) == -1) { //$NON-NLS-1$
                     throw new IllegalArgumentException("invalid qualifier"); //$NON-NLS-1$
                 }
             }
@@ -331,12 +341,12 @@ public class Version implements Comparable {
      */
     public String toString() {
         if (nonStandardString != null) {
-            return nonStandardString + ((repositoryVersion == 0) ? "" : (":" + repositoryVersion));
+            return nonStandardString + ((repositoryVersion == 0) ? "" : ("~" + repositoryVersion));
         }
 
         return major + SEPARATOR + minor + (((micro == 0) && (update == 0)) ? "" : (SEPARATOR + micro))
         + ((update == 0) ? "" : (SEPARATOR + update)) + ((qualifier == null) ? "" : ("-" + qualifier))
-        + ((repositoryVersion == 0) ? "" : (":" + repositoryVersion));
+        + ((repositoryVersion == 0) ? "" : ("~" + repositoryVersion));
     }
 
     /**
@@ -484,5 +494,14 @@ public class Version implements Comparable {
         }
 
         return repositoryVersion - other.repositoryVersion;
+    }
+
+    public boolean isSnapShot() {
+        if (qualifier == null) {
+            return false;
+        }
+        String qualifierL = qualifier.toLowerCase();
+
+        return qualifierL.equals("ss") || qualifierL.endsWith("-ss");
     }
 }
