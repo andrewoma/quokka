@@ -33,8 +33,6 @@ import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoPath;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
-import ws.quokka.core.util.AnnotatedObject;
-import ws.quokka.core.util.Annotations;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.util.URLs;
 import ws.quokka.core.util.xml.Converter;
@@ -47,6 +45,7 @@ import ws.quokka.core.util.xml.XmlConverter;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,14 +106,40 @@ public class StandardPluginParser implements PluginParser {
             throw new BuildException(pluginPath + " cannot be found at location " + artifact.getLocalCopy().getPath());
         }
 
-        xmlConverter.addContext("artifact", artifact);
+        Plugin plugin = parsePluginXml(url);
 
+        for (Iterator i = plugin.getTargets().iterator(); i.hasNext();) {
+            Target target = (Target)i.next();
+
+            // Add a default path group for the classpath
+            if (target.getPathGroup("classpath") == null) {
+                int size = artifact.getPaths().size();
+                Assert.isTrue(size <= 1, target.getLocator(),
+                    "A 'classpath' path group must be defined for the target as there are multiple possible paths defined in the repository");
+
+                List paths = new ArrayList();
+                paths.add("plugin");
+
+                if (size != 0) {
+                    paths.add("plugin." + ((RepoPath)artifact.getPaths().iterator().next()).getId());
+                }
+
+                target.addPathGroup(new PathGroup("classpath", paths, Boolean.TRUE));
+            }
+        }
+
+        return plugin;
+    }
+
+    protected Plugin parsePluginXml(URL url) {
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
 
-//        resolver.addVersion("plugin", new String[] {"0.1"});
-        resolver.addVersion("plugin", "0.1");
+        resolver.addVersion("plugin", new String[] { "0.1", "0.2" });
 
-        return (Plugin)xmlConverter.fromXml(Plugin.class, Document.parse(url, resolver).getRoot());
+//        resolver.addVersion("plugin", "0.1");
+        Plugin plugin = (Plugin)xmlConverter.fromXml(Plugin.class, Document.parse(url, resolver).getRoot());
+
+        return plugin;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
@@ -170,24 +195,30 @@ public class StandardPluginParser implements PluginParser {
                 }
             }
 
+            // Description
+            Element descriptionEl = pluginEl.getChild("description");
+
+            if (descriptionEl != null) {
+                plugin.setDescription(descriptionEl.getText());
+            }
+
             return plugin;
         }
 
         private void addProperty(Element propertyEl, Plugin plugin) {
             Locator locator = LocatorDomParser.getLocator(propertyEl.getElement());
-            Annotations annotations = new Annotations();
-            annotations.put(AnnotatedObject.LOCATOR, locator);
 
-            String value = propertyEl.getAttribute("value");
-            annotations.put("initial", value);
-
+            // Build a set of properties to which this property applies
+            List properties = new ArrayList();
             List targetNames = Strings.commaSepList(propertyEl.getAttribute("targets"));
             List targets = (targetNames.size() == 0) ? plugin.getTargets() : toTargets(plugin, locator, targetNames);
 
             for (Iterator i = targets.iterator(); i.hasNext();) {
                 Target target = (Target)i.next();
-                target.getDefaultProperties().setProperty(propertyEl.getAttribute("name"), value, annotations);
+                properties.add(target.getDefaultProperties());
             }
+
+            ProjectParser.addProperty(propertyEl, "", properties);
         }
 
         private List toTargets(Plugin plugin, Locator locator, List targetNames) {
@@ -238,23 +269,6 @@ public class StandardPluginParser implements PluginParser {
                 target.addPathGroup((PathGroup)converter.fromXml(pathGroupEl));
             }
 
-            // Add a default path group for the classpath 
-            if (target.getPathGroup("classpath") == null) {
-                RepoArtifact artifact = (RepoArtifact)getContext("artifact");
-                int size = artifact.getPaths().size();
-                Assert.isTrue(size <= 1, target.getLocator(),
-                    "A 'classpath' path group must be defined for the target as there are multiple possible paths defined in the repository");
-
-                List paths = new ArrayList();
-                paths.add("plugin");
-
-                if (size != 0) {
-                    paths.add("plugin." + ((RepoPath)artifact.getPaths().iterator().next()).getId());
-                }
-
-                target.addPathGroup(new PathGroup("classpath", paths, Boolean.TRUE));
-            }
-
             // Project paths
             List pathEls = targetEl.getChildren("project-path");
 
@@ -272,14 +286,8 @@ public class StandardPluginParser implements PluginParser {
             for (Iterator i = dependencies.iterator(); i.hasNext();) {
                 String dependency = (String)i.next();
                 dependency = (dependency.indexOf(":") != -1) ? dependency : (plugin.getNameSpace() + ":" + dependency);
-
-                //                if (target.isAbstract()) {
                 target.addOriginalDependency(dependency);
-
-                //                } else {
                 target.addDependency(dependency);
-
-                //                }
             }
 
             // Properties
@@ -287,13 +295,7 @@ public class StandardPluginParser implements PluginParser {
 
             for (Iterator i = propertyEls.iterator(); i.hasNext();) {
                 Element propertyEl = (Element)i.next();
-                Locator locator = LocatorDomParser.getLocator(propertyEl.getElement());
-                Annotations annotations = new Annotations();
-                annotations.put(AnnotatedObject.LOCATOR, locator);
-
-                String value = propertyEl.getAttribute("value");
-                annotations.put("initial", value);
-                target.getDefaultProperties().setProperty(propertyEl.getAttribute("name"), value, annotations);
+                ProjectParser.addProperty(propertyEl, "", Collections.singleton(target.getDefaultProperties()));
             }
 
             return target;
