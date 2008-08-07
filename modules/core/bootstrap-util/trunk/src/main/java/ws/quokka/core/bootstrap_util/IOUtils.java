@@ -17,16 +17,10 @@
 
 package ws.quokka.core.bootstrap_util;
 
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.util.FileUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 import java.net.URL;
 
@@ -136,5 +130,67 @@ public class IOUtils {
                     return new URL(spec);
                 }
             }.soften();
+    }
+
+    public void stringToFile(String string, File file) {
+        try {
+            StringReader reader = new StringReader(string);
+            Writer writer = new BufferedWriter(new FileWriter(file));
+
+            try {
+                while (true) {
+                    int ch = reader.read();
+
+                    if (ch == -1) {
+                        return;
+                    }
+
+                    writer.write(ch);
+                }
+            } finally {
+                writer.close();
+            }
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    public String fileToString(File file) {
+        try {
+            StringWriter writer = new StringWriter();
+            Reader reader = new BufferedReader(new FileReader(file));
+
+            try {
+                while (true) {
+                    int ch = reader.read();
+
+                    if (ch == -1) {
+                        return writer.toString();
+                    }
+
+                    writer.write(ch);
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    public File createTempFile(String prefix, String suffix) {
+        try {
+            return File.createTempFile(prefix, suffix);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    public File createTempFile(String prefix, String suffix, File directory) {
+        try {
+            return File.createTempFile(prefix, suffix, directory);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
     }
 }

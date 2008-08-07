@@ -6,12 +6,12 @@
         <artifact paths="runtime"/>
     </artifacts>
 
-    <bootstrap core="[0.1,0.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
-        <dependency group="quokka.core.test" version="0.1" paths="test-compile(junit)"/>
+        <dependency group="quokka.core.test" version="0.1.1-ss" paths="test-compile(junit)"/>
         <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
 
-        <dependency-set group="quokka.internal.module-depset" version="0.1"/>
+        <dependency-set group="quokka.internal.module-depset" version="0.1.2"/>
     </dependency-set>
 </project>

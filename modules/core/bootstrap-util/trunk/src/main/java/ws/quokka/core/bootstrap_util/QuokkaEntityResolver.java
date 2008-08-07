@@ -24,9 +24,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -39,8 +37,8 @@ public class QuokkaEntityResolver implements EntityResolver {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void addVersion(String entity, String version) {
-        versions.put(entity, version);
+    public void addVersion(String entity, String[] versions) {
+        this.versions.put(entity, versions);
     }
 
     public InputSource resolveEntity(String publicId, String systemId)
@@ -51,8 +49,9 @@ public class QuokkaEntityResolver implements EntityResolver {
             for (Iterator i = versions.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();
                 String entity = (String)entry.getKey();
-                String version = (String)entry.getValue();
-                assertVersion(publicId, prefix + entity + "-", version);
+                String[] versions = (String[])entry.getValue();
+
+                assertVersion(publicId, prefix + entity + "-", versions);
             }
 
             String dtd = "META-INF/" + publicId + ".dtd";
@@ -65,16 +64,25 @@ public class QuokkaEntityResolver implements EntityResolver {
         return null;
     }
 
-    public String getVersion(String entity) {
-        return (String)versions.get(entity);
+    public String[] getVersion(String entity) {
+        return (String[])versions.get(entity);
     }
 
-    // TODO: Support multiple versions simultaneously if backwards compatible
-    private void assertVersion(String publicId, String prefix, String version)
+    private void assertVersion(String publicId, String prefix, String[] versions)
             throws SAXException {
-        if (publicId.startsWith(prefix) && !publicId.substring(prefix.length()).equals(version)) {
-            throw new SAXException("The dtd referenced by '" + publicId + "' does not match the required version of '"
-                + version + "'");
+        if (!publicId.startsWith(prefix)) {
+            return;
         }
+
+        for (int i = 0; i < versions.length; i++) {
+            String version = versions[i];
+
+            if (publicId.substring(prefix.length()).equals(version)) {
+                return;
+            }
+        }
+
+        throw new SAXException("The dtd referenced by '" + publicId + "' does not match the required version(s) of '"
+            + Arrays.asList(versions).toString() + "'");
     }
 }

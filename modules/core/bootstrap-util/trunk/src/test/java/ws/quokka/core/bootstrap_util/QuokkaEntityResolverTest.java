@@ -47,20 +47,20 @@ public class QuokkaEntityResolverTest extends TestCase {
     }
 
     public void testKnownEntityCorrectVersion() throws IOException, SAXException {
-        resolver.addVersion("project", "1.0");
+        resolver.addVersion("project", new String[] { "1.0" });
 
         InputSource source = resolver.resolveEntity("quokka.ws/dtd/project-1.0", "");
         assertNotNull(source);
         source.getByteStream().close();
 
-        resolver.addVersion("plugin", "2.0");
+        resolver.addVersion("plugin", new String[] { "2.0" });
         source = resolver.resolveEntity("quokka.ws/dtd/plugin-2.0", "");
         assertNotNull(source);
         source.getByteStream().close();
     }
 
     public void testKnownEntityWrongVersion() throws IOException {
-        resolver.addVersion("project", "1.2");
+        resolver.addVersion("project", new String[] { "1.2" });
 
         try {
             resolver.resolveEntity("quokka.ws/dtd/project-1.0", "");
