@@ -29,17 +29,16 @@ public class ChecksumRepositoryTest extends AbstractRepositoryTest {
 
     protected void setUp() throws Exception {
         super.setUp();
-        repository = new ChecksumRepository();
         name = "checksum";
     }
 
     public void testResolveFromParents() {
-        put("rootDir", getTestCaseResource("repository").getAbsolutePath());
+        put("root", getTestCaseResource("repository").getAbsolutePath());
         put("hierarchical", "false");
         put("confirmImport", "false");
         put("parents", "parent");
         put("parent", "class", "file");
-        put("parent", "rootDir", getTestResource("FileRepositoryTest/hierarchical-repository").getAbsolutePath());
+        put("parent", "root", getTestResource("FileRepositoryTest/hierarchical-repository").getAbsolutePath());
         initialise();
 
         RepoArtifactId id = new RepoArtifactId("group1", "name1", "jar", new Version("version1"));

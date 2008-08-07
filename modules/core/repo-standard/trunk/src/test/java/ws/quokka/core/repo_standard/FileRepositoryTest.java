@@ -29,30 +29,56 @@ public class FileRepositoryTest extends AbstractRepositoryTest {
 
     protected void setUp() throws Exception {
         super.setUp();
-        repository = new FileRepository();
         name = "file";
     }
 
     public void testResolveArtifactHierachical() {
-        put("rootDir", getTestCaseResource("hierarchical-repository").getAbsolutePath());
+        put("root", getTestCaseResource("hierarchical-repository").getAbsolutePath());
         initialise();
         resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1")), 1);
     }
 
+    public void testResolveArtifactHierachicalWithRepoVersion() {
+        put("root", getTestCaseResource("hierarchical-repository").getAbsolutePath());
+        initialise();
+        resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1~2")), 1);
+    }
+
     public void testResolveArtifactFlat() {
-        put("rootDir", getTestCaseResource("flat-repository").getAbsolutePath());
+        put("root", getTestCaseResource("flat-repository").getAbsolutePath());
         put("hierarchical", "false");
+        initialise();
+        resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1")), 1);
+    }
+
+    public void testResolvePathsFlat() {
+        put("root", getTestCaseResource("flat-repository").getAbsolutePath());
+        put("hierarchical", "false");
+        initialise();
+        resolveArtifact(new RepoArtifactId("group2", "name1", "paths", new Version("2.0")), 1);
+    }
+
+    public void testResolveArtifactFlatWithRepoVersion() {
+        put("root", getTestCaseResource("flat-repository").getAbsolutePath());
+        put("hierarchical", "false");
+        initialise();
+        resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1~2")), 1);
+    }
+
+    public void testResolveArtifactFlatWithUrl() {
+        String root = getTestCaseResource("flat-repository").getAbsolutePath();
+        put("url", "file:" + root + ";hierarchical=false");
         initialise();
         resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1")), 1);
     }
 
     public void testResolveFromParents() {
-        put("rootDir", getTestCaseResource("flat-repository").getAbsolutePath());
+        put("root", getTestCaseResource("flat-repository").getAbsolutePath());
         put("hierarchical", "false");
         put("parents", "parent");
         put("confirmImport", "false");
         put("parent", "class", "file");
-        put("parent", "rootDir", getTestCaseResource("hierarchical-repository").getAbsolutePath());
+        put("parent", "root", getTestCaseResource("hierarchical-repository").getAbsolutePath());
 
         RepoArtifactId id = new RepoArtifactId("group1", "name2", "jar", new Version("version1"));
         initialise();

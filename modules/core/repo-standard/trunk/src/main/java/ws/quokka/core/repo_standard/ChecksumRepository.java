@@ -21,7 +21,6 @@ import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.Repository;
-import ws.quokka.core.util.AnnotatedProperties;
 
 import java.io.File;
 
@@ -39,8 +38,8 @@ public class ChecksumRepository extends FileRepository {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object project, AnnotatedProperties properties) {
-        super.initialise(project, properties);
+    public void initialise() {
+        super.initialise();
         Assert.isTrue(getParents().size() == 1,
             "Checksum repository must have a single parent. Artifacts will be retrieved from the parent and installs will be delegated to it.");
         parent = (Repository)getParents().get(0);
@@ -51,8 +50,11 @@ public class ChecksumRepository extends FileRepository {
         File artifactFile = getArtifactFile(id);
         File repositoryFile = getRepositoryFile(id);
 
-        if (artifactFile.exists()) {
-            RepoArtifact artifact = parse(id, repositoryFile);
+        if (artifactFile.exists() || repositoryFile.exists()) {
+            Assert.isTrue(id.getType().equals("paths") || artifactFile.exists(),
+                "Repository is corrupt. repository.xml exists, but artifact is missing: " + artifactFile.getPath());
+
+            RepoArtifact artifact = repositoryFile.exists() ? parse(id, repositoryFile) : new RepoArtifact(id);
 
             // This repository only stores signatures, so get the actual artifact from the parent
             ResolvedArtifact resolved = resolveFromParents(id, true, false);

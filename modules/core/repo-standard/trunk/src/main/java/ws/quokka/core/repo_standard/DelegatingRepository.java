@@ -18,17 +18,15 @@
 package ws.quokka.core.repo_standard;
 
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.repo_spi.AbstractRepository;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
-import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.UnresolvedArtifactException;
-import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Strings;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,48 +36,23 @@ import java.util.Set;
 /**
  *
  */
-public class DelegatingRepository extends AbstractStandardRepository {
+public class DelegatingRepository extends AbstractRepository {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private List repositories = new ArrayList();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object antProject, AnnotatedProperties properties) {
-        setName("delegating");
-        super.initialise(antProject, properties);
+    public void initialise() {
+        String root = getFactory().getProperties().getProperty(prefix() + "root");
+        String[] roots = Strings.trim(Strings.split(root, ","));
+        Assert.isTrue((roots != null) && (roots.length != 0),
+            "'" + prefix() + "root' property must contain a comma separated list of repository ids");
 
-        List repoNames = new ArrayList();
-        String roots = properties.getProperty("quokka.project.repoRoots",
-                properties.getProperty("quokka.global.repoRoots", null));
-        Assert.isTrue(roots != null,
-            "quokka.project.repoRoots and/or quokka.global.repoRoots must be set to specify the root repositories");
-        repoNames.addAll(Strings.commaSepList(roots));
-
-        Assert.isTrue(getParents().size() == 0, "Parents should not be specified for DelegatingRepository");
-
-        for (Iterator i = repoNames.iterator(); i.hasNext();) {
-            String name = (String)i.next();
-            Repository repository = create(name);
-
-            if (repository instanceof AbstractStandardRepository) {
-                ((AbstractStandardRepository)repository).setName(name);
-            }
-
-            repository.initialise(antProject, properties);
-            repositories.add(repository);
+        for (int i = 0; i < roots.length; i++) {
+            root = roots[i];
+            repositories.add(getFactory().getOrCreate(root));
         }
-    }
-
-    public void registerType(RepoType type) {
-        for (Iterator i = repositories.iterator(); i.hasNext();) {
-            Repository repository = (Repository)i.next();
-            repository.registerType(type);
-        }
-    }
-
-    public RepoType getType(String id) {
-        return ((Repository)repositories.iterator().next()).getType(id);
     }
 
     public RepoArtifact resolve(RepoArtifactId artifactId) {
@@ -152,7 +125,29 @@ public class DelegatingRepository extends AbstractStandardRepository {
         return false;
     }
 
-    public Collection getReferencedRepositories() {
-        return Collections.unmodifiableList(repositories);
+    public RepoArtifact updateSnapshot(RepoArtifact artifact) {
+        RepoArtifact latest = null;
+
+        for (Iterator i = repositories.iterator(); i.hasNext();) {
+            Repository repository = (Repository)i.next();
+
+            if (repository.supportsReslove(artifact.getId())) {
+                RepoArtifact updated = repository.updateSnapshot(artifact);
+
+                if (updated != null) {
+                    if (latest == null) {
+                        latest = updated;
+                    } else {
+                        latest = latest.isNewerThan(updated) ? latest : updated;
+                    }
+                }
+            }
+        }
+
+        return latest;
+    }
+
+    public Collection availableVersions(String group, String name, String type) {
+        throw new UnsupportedOperationException();
     }
 }

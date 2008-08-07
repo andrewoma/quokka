@@ -25,56 +25,36 @@ import org.apache.tools.ant.taskdefs.Input;
 import org.apache.tools.ant.util.FileUtils;
 
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
 import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.bootstrap_util.QuokkaEntityResolver;
 import ws.quokka.core.repo_spi.AbstractRepository;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
-import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.UnresolvedArtifactException;
 import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Strings;
-import ws.quokka.core.util.URLs;
 import ws.quokka.core.util.xml.Document;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 
 /**
  *
  */
 public abstract class AbstractStandardRepository extends AbstractRepository {
-    //~ Static fields/initializers -------------------------------------------------------------------------------------
-
-    public static final String PREFIX = "quokka.repo.";
-
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    private Project project;
-    private Properties properties;
-    private Map classes = new HashMap();
-    private String name;
     private boolean hierarchical;
     private List parents = new ArrayList();
     private boolean confirmImport;
@@ -88,55 +68,34 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object antProject, AnnotatedProperties properties) {
-        this.project = (Project)antProject;
-        log = new ProjectLogger(project);
-        this.properties = properties;
-        name = (name == null) ? getProperty("name", true) : name; // Note: this must be set parents and is used as a namespace for properties
+    public void initialise() {
+        log = new ProjectLogger(getProject());
+
         hierarchical = getBoolean("hierarchical", true);
         confirmImport = getBoolean("confirmImport", true);
         snapshots = getBoolean("snapshots", false);
         installSnapshots = getBoolean("installSnapshots", snapshots);
-        releases = getBoolean("releases", true);
+        releases = getBoolean("releases", !snapshots);
         installReleases = getBoolean("installReleases", releases);
         supports = Strings.commaSepList(getProperty("supports", null));
         installSupports = Strings.commaSepList(getProperty("installSupports", null));
         installSupports.addAll((installSupports.size() == 0) ? supports : Collections.EMPTY_LIST);
-
-        // Add aliases for known implementations
-        classes.put("file", "ws.quokka.core.repo_standard.FileRepository");
-        classes.put("url", "ws.quokka.core.repo_standard.UrlRepository");
-        classes.put("checksum", "ws.quokka.core.repo_standard.ChecksumRepository");
-        classes.put("delegating", "ws.quokka.core.repo_standard.DelegatingRepository");
 
         // Initialise any parents
         List names = Strings.commaSepList(getProperty("parents", false));
 
         for (Iterator i = names.iterator(); i.hasNext();) {
             String name = (String)i.next();
-            Repository parent = create(name);
-            properties.put(PREFIX + "name", name);
-            parent.initialise(antProject, properties);
-
-            for (Iterator j = getTypes().values().iterator(); j.hasNext();) {
-                parent.registerType((RepoType)j.next());
-            }
-
-            parents.add(parent);
+            parents.add(getFactory().getOrCreate(name));
         }
     }
 
-    public void registerType(RepoType type) {
-        super.registerType(type);
-
-        for (Iterator i = parents.iterator(); i.hasNext();) {
-            Repository parent = (Repository)i.next();
-            parent.registerType(type);
-        }
+    public Logger log() {
+        return log;
     }
 
     protected Project getProject() {
-        return project;
+        return getFactory().getProject();
     }
 
     protected boolean isHierarchical() {
@@ -149,32 +108,6 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
     protected boolean isConfirmImport() {
         return confirmImport;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    protected void setName(String name) {
-        this.name = name;
-    }
-
-    protected Repository create(String name) {
-        String className = getProperty(name, "class", true);
-
-        if (className == null) {
-            return null;
-        }
-
-        if (classes.containsKey(className)) {
-            className = (String)classes.get(className);
-        }
-
-        try {
-            return (Repository)Class.forName(className).newInstance();
-        } catch (Exception e) {
-            throw new BuildException(e);
-        }
     }
 
     protected boolean getBoolean(String key, boolean defaultValue) {
@@ -194,13 +127,13 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected String getProperty(String key, boolean mandatory) {
-        return getProperty(name, key, mandatory);
+        return getProperty(getName(), key, mandatory);
     }
 
     protected String getProperty(String name, String key, boolean mandatory) {
         key = PREFIX + ((name == null) ? "" : (name + ".")) + key;
 
-        String value = properties.getProperty(key);
+        String value = getProperties().getProperty(key);
         Assert.isTrue(!mandatory || (value != null), "Mandatory property is missing: " + key);
 
         return value;
@@ -248,20 +181,9 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected void writeRepositoryFile(RepoArtifact artifact, File repositoryFile) {
-        try {
-            Assert.isTrue(repositoryFile.getParentFile().exists() || repositoryFile.getParentFile().mkdirs(),
-                "Unable to create repository directory: " + repositoryFile.getParent());
-
-            Writer writer = new BufferedWriter(new FileWriter(repositoryFile));
-
-            try {
-                RepoXmlConverter.toXml(artifact, writer);
-            } finally {
-                writer.close();
-            }
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
+        Assert.isTrue(repositoryFile.getParentFile().exists() || repositoryFile.getParentFile().mkdirs(),
+            "Unable to getOrCreate repository directory: " + repositoryFile.getParent());
+        RepoXmlConverter.toXml(artifact, repositoryFile);
     }
 
     protected void copyArtifact(RepoArtifact artifact, File artifactFile) {
@@ -270,17 +192,8 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected RepoArtifact parse(RepoArtifactId id, File xml) {
-        //        System.out.println("Attempting to parse: " + xml.toString());
-        if (!xml.exists()) {
-            if (id.getVersion().getRepositoryVersion() == 0) {
-                return new RepoArtifact(id); // OK not to define if there are no dependencies
-            }
-
-            throw new UnresolvedArtifactException(id, URLs.toURL(xml), "repository xml missing");
-        }
-
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
-        resolver.addVersion("repository", "0.1");
+        resolver.addVersion("repository", new String[] { "0.1", "0.2" });
 
         RepoArtifact artifact = (RepoArtifact)RepoXmlConverter.getXmlConverter().fromXml(RepoArtifact.class,
                 Document.parse(xml, resolver).getRoot());
@@ -290,59 +203,13 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected static void generateChecksum(File file, File checksum) {
-        stringToFile(checksum(file), checksum);
+        new IOUtils().stringToFile(checksum(file), checksum);
     }
 
     protected static void verifyChecksum(File file, File checksum) {
-        Assert.isTrue(checksum(file).equals(fileToString(checksum)),
+        Assert.isTrue(checksum(file).equals(new IOUtils().fileToString(checksum)),
             "Checksum of artifact does not match: " + file.getAbsolutePath() + " against checksum in "
             + checksum.getAbsolutePath());
-    }
-
-    private static String fileToString(File file) {
-        try {
-            StringWriter writer = new StringWriter();
-            Reader reader = new BufferedReader(new FileReader(file));
-
-            try {
-                while (true) {
-                    int ch = reader.read();
-
-                    if (ch == -1) {
-                        return writer.toString();
-                    }
-
-                    writer.write(ch);
-                }
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
-    }
-
-    private static void stringToFile(String string, File file) {
-        try {
-            StringReader reader = new StringReader(string);
-            Writer writer = new BufferedWriter(new FileWriter(file));
-
-            try {
-                while (true) {
-                    int ch = reader.read();
-
-                    if (ch == -1) {
-                        return;
-                    }
-
-                    writer.write(ch);
-                }
-            } finally {
-                writer.close();
-            }
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
     }
 
     private static String checksum(File file) {
@@ -361,9 +228,6 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         return project.getProperty(property);
     }
 
-    //    public boolean supportsReslove(RepoArtifactId artifactId) {
-    //        return artifactId.getVersion().getQualifier() == null || !artifactId.getVersion().getQualifier().endsWith("-ss");
-    //    }
     protected File normalise(File file) {
         return getFileUtils().normalize(file.getAbsolutePath());
     }
@@ -401,9 +265,10 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
     protected String getRelativePath(RepoArtifactId id, String extension) {
         if (hierarchical) {
-            return id.getGroup().replace('.', '/') + "/" + id.getVersion() + "/" + id.getName() + "_" + extension;
+            return id.getGroup().replace('.', '/') + "/" + id.getVersion().toString() + "/" + id.getName() + "_"
+            + extension;
         } else {
-            return id.getGroup() + "_" + id.getVersion() + "_" + id.getName() + "_" + extension;
+            return id.getGroup() + "_" + id.getVersion().toString() + "_" + id.getName() + "_" + extension;
         }
     }
 
@@ -412,8 +277,9 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     public boolean supportsReslove(RepoArtifactId artifactId) {
-        return ((snapshots && artifactId.isSnapShot()) || (releases && !artifactId.isSnapShot()))
-        && supports(supports, artifactId);
+        return (
+            (snapshots && artifactId.getVersion().isSnapShot()) || (releases && !artifactId.getVersion().isSnapShot())
+        ) && supports(supports, artifactId);
     }
 
     protected boolean supports(List supports, RepoArtifactId artifactId) {
@@ -433,17 +299,22 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected boolean matches(String pattern, RepoArtifactId artifactId) {
-        // TODO: use reflection to apply regex match if jdk > 1.4
-        return false;
+        return artifactId.toShortString().matches(pattern);
     }
 
     public boolean supportsInstall(RepoArtifactId artifactId) {
-        return ((installSnapshots && artifactId.isSnapShot()) || (installReleases && !artifactId.isSnapShot()))
-        && supports(installSupports, artifactId);
+        return (
+            (installSnapshots && artifactId.getVersion().isSnapShot())
+            || (installReleases && !artifactId.getVersion().isSnapShot())
+        ) && supports(installSupports, artifactId);
     }
 
-    public Collection getReferencedRepositories() {
-        return parents;
+    public AnnotatedProperties getProperties() {
+        return getFactory().getProperties();
+    }
+
+    public Collection availableVersions(String group, String name, String type) {
+        throw new UnsupportedOperationException();
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------

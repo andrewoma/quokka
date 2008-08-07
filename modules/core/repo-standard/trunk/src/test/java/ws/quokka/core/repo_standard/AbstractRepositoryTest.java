@@ -17,6 +17,7 @@
 
 package ws.quokka.core.repo_standard;
 
+import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 
 import ws.quokka.core.repo_spi.RepoArtifact;
@@ -35,21 +36,31 @@ public abstract class AbstractRepositoryTest extends AbstractTest {
 
     protected Repository repository;
     protected String name;
+    protected String className;
     protected AnnotatedProperties properties = new AnnotatedProperties();
+    protected RepositoryFactoryImpl factory = new RepositoryFactoryImpl();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     protected void initialise() {
         Project project = new Project();
         project.setDefaultInputStream(System.in);
+
+        DefaultLogger logger = new DefaultLogger();
+        logger.setOutputPrintStream(System.out);
+        logger.setErrorPrintStream(System.err);
+        logger.setMessageOutputLevel(Project.MSG_INFO);
+        project.addBuildListener(logger);
         project.init();
 
-        if (name != null) {
-            properties.put(AbstractStandardRepository.PREFIX + "name", name);
-        }
+        put("class", (className == null) ? name : className);
+        factory.setProject(project);
+        factory.setProperties(properties);
+        factory.registerType(new RepoType("jar", ".jar file", "jar"));
+        factory.registerType(new RepoType("paths", "Repository file", "xml"));
+        repository = factory.getOrCreate(name);
 
-        repository.initialise(project, properties);
-        repository.registerType(new RepoType("jar", ".jar file", "jar"));
+//        repository.initialise();
     }
 
     protected void put(String key, String value) {

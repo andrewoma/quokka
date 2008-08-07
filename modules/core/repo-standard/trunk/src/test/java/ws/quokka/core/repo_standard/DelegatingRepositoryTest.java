@@ -29,14 +29,14 @@ public class DelegatingRepositoryTest extends AbstractRepositoryTest {
 
     protected void setUp() throws Exception {
         super.setUp();
-        repository = new DelegatingRepository();
+        name = "delegate";
     }
 
     public void test() {
-        properties.put("quokka.project.repoRoots", "release, snapshot");
-        put("release", "rootDir", getTestResource("FileRepositoryTest/hierarchical-repository").getAbsolutePath());
+        put("root", "release, snapshot");
+        put("release", "root", getTestResource("FileRepositoryTest/hierarchical-repository").getAbsolutePath());
         put("release", "class", "file");
-        put("snapshot", "rootDir", getTestResource("FileRepositoryTest/flat-repository").getAbsolutePath());
+        put("snapshot", "root", getTestResource("FileRepositoryTest/flat-repository").getAbsolutePath());
         put("snapshot", "class", "file");
         put("snapshot", "hierarchical", "false");
         put("snapshot", "snapshots", "true");

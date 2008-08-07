@@ -23,11 +23,12 @@ import org.apache.tools.ant.taskdefs.Get;
 import org.apache.tools.ant.util.Base64Converter;
 
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoType;
+import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.UnresolvedArtifactException;
-import ws.quokka.core.util.AnnotatedProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Locale;
 
 
@@ -52,11 +54,11 @@ public class UrlRepository extends AbstractStandardRepository {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object project, AnnotatedProperties properties) {
-        super.initialise(project, properties);
+    public void initialise() {
+        super.initialise();
 
         try {
-            String url = getProperty("url", true);
+            String url = getProperty("root", true);
             url = url.endsWith("/") ? url : (url + "/"); // Force trailing slash
             this.url = (url == null) ? null : new URL(url);
         } catch (MalformedURLException e) {
@@ -69,25 +71,18 @@ public class UrlRepository extends AbstractStandardRepository {
     }
 
     public RepoArtifact resolve(RepoArtifactId id) {
-        File artifactFile;
-        File repositoryFile;
+        File artifactFile = getRemoteArtifact(id);
+        RepoArtifact remoteArtifact = getRemoteRepositoryFile(id);
 
-        try {
-            artifactFile = File.createTempFile(id.toPathString(), "." + getType(id.getType()).getExtension());
-            artifactFile.deleteOnExit();
-            repositoryFile = File.createTempFile(id.toPathString(), "_repository.xml");
-            repositoryFile.deleteOnExit();
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
+        if ((artifactFile != null) || (remoteArtifact != null)) {
+            Assert.isTrue(id.getType().equals("paths") || (artifactFile != null),
+                "Repository is corrupt. repository.xml exists, but artifact is missing: " + id.toShortString());
 
-        if (getRemoteArtifact(id, artifactFile)) {
-            RepoArtifact artifact = new RepoArtifact(id);
-
-            if (getRemoteRepositoryFile(id, repositoryFile)) {
-                artifact = parse(id, repositoryFile);
+            if (artifactFile != null) {
+                artifactFile.deleteOnExit();
             }
 
+            RepoArtifact artifact = (remoteArtifact == null) ? new RepoArtifact(id) : remoteArtifact;
             artifact.setLocalCopy(artifactFile);
 
             return artifact;
@@ -98,23 +93,35 @@ public class UrlRepository extends AbstractStandardRepository {
     }
 
     private boolean getRemoteRepositoryFile(RepoArtifactId id, File repositoryFile) {
-        RepoType type = getType(id.getType());
+        RepoType type = getFactory().getType(id.getType());
 
         return getRemoteFile(getRelativePath(id, type.getId() + "_repository.xml"), repositoryFile);
     }
 
-    private boolean getRemoteArtifact(RepoArtifactId id, File artifactFile) {
-        RepoType type = getType(id.getType());
+    private File getRemoteArtifact(RepoArtifactId id) {
+        File artifactFile = new IOUtils().createTempFile(id.toPathString(),
+                "." + getFactory().getType(id.getType()).getExtension());
+
+        RepoType type = getFactory().getType(id.getType());
         String extension = type.getId() + "." + type.getExtension();
 
-        return getRemoteFile(getRelativePath(id, extension), artifactFile);
+        boolean exists = getRemoteFile(getRelativePath(id, extension), artifactFile);
+
+        if (exists) {
+            return artifactFile;
+        } else {
+            artifactFile.delete();
+
+            return null;
+        }
     }
 
-    private boolean getRemoteFile(String relativePath, File detination) {
+    protected boolean getRemoteFile(String relativePath, File destination) {
         URL url;
 
         try {
             url = new URL(this.url, relativePath);
+            log().verbose("Attempting to get: " + url.toString());
         } catch (MalformedURLException e) {
             throw new BuildException(e);
         }
@@ -123,7 +130,7 @@ public class UrlRepository extends AbstractStandardRepository {
         get.setSrc(url);
         get.setUsername(user);
         get.setPassword(password);
-        get.setDest(detination);
+        get.setDest(destination);
         get.setUseTimestamp(false);
         get.setIgnoreErrors(false);
 
@@ -180,5 +187,63 @@ public class UrlRepository extends AbstractStandardRepository {
 
     public Collection listArtifactIds() {
         throw new UnsupportedOperationException();
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    protected RepoArtifact getRemoteRepositoryFile(RepoArtifactId id) {
+        File repositoryFile = new IOUtils().createTempFile(id.toPathString(), "_repository.xml");
+
+        try {
+            if (getRemoteRepositoryFile(id, repositoryFile)) {
+                return parse(id, repositoryFile);
+            }
+        } finally {
+            repositoryFile.delete();
+        }
+
+        return null;
+    }
+
+    public RepoArtifact updateSnapshot(RepoArtifact artifact) {
+        RepoArtifact latest = null;
+
+        // Check this repository
+        boolean artifactRequired = false;
+        RepoArtifact updated = getRemoteRepositoryFile(artifact.getId()); // Get the repository.xml only
+
+        if ((updated != null) && updated.isNewerThan(artifact)) {
+            latest = updated;
+            artifactRequired = true;
+        }
+
+        // Check parents
+        for (Iterator i = getParents().iterator(); i.hasNext();) {
+            Repository parent = (Repository)i.next();
+            RepoArtifact current = (latest == null) ? artifact : latest;
+            updated = parent.updateSnapshot(current);
+
+            if ((updated != null) && updated.isNewerThan(current)) {
+                latest = updated;
+                artifactRequired = false;
+            }
+        }
+
+        if (artifactRequired) {
+            // This repo was newer, so need to fetch the actual artifact
+            latest.setLocalCopy(getRemoteArtifact(artifact.getId()));
+        }
+
+        return latest;
     }
 }
