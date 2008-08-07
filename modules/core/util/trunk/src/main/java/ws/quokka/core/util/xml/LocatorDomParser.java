@@ -37,6 +37,7 @@ import ws.quokka.core.bootstrap_util.QuokkaEntityResolver;
 
 import java.io.IOException;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Stack;
@@ -210,7 +211,7 @@ public class LocatorDomParser {
             // Provide a friendly error message for a missing doctype declaration as the default xerces one is confusing
             if (e.getMessage().equals("Document root element \"project\", must match DOCTYPE root \"null\".")
                     && entityResolver instanceof QuokkaEntityResolver) {
-                String version = ((QuokkaEntityResolver)entityResolver).getVersion("project");
+                String version = Arrays.asList(((QuokkaEntityResolver)entityResolver).getVersion("project")).toString();
                 throw new BuildException(
                     "Quokka requires a DOCTYPE declaration in project files. For this version of quokka use:\n\t"
                     + "<!DOCTYPE project PUBLIC \"quokka.ws/dtd/project-" + version

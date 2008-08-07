@@ -113,13 +113,17 @@ public class ReflectionConverter extends AbstractConverter {
     }
 
     public Object fromXml(Element element) {
-        Object object = reflect.construct(clazz);
+        Object object = construct();
 
         if (object instanceof Annotated) {
             ((Annotated)object).getAnnotations().put("locator", LocatorDomParser.getLocator(element.getElement()));
         }
 
         return setObject(object, element, getFields());
+    }
+
+    public Object construct() {
+        return reflect.construct(clazz);
     }
 
     private List getFields() {

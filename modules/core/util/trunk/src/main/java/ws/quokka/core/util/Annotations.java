@@ -43,6 +43,10 @@ public class Annotations implements Cloneable {
         return annotations.get(key);
     }
 
+    public Object remove(String key) {
+        return annotations.remove(key);
+    }
+
     public Set entrySet() {
         return Collections.unmodifiableMap(annotations).entrySet();
     }

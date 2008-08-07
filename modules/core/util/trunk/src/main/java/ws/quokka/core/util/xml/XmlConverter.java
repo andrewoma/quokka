@@ -19,6 +19,8 @@ package ws.quokka.core.util.xml;
 
 import org.apache.tools.ant.BuildException;
 
+import org.xml.sax.EntityResolver;
+
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -71,16 +73,16 @@ public class XmlConverter {
         return context.get(key);
     }
 
-    public String toXml(Object object, String rootElementName) {
-        return toXml(object, new StringWriter(), rootElementName).toString();
+    public String toXml(Object object, String rootElementName, String publicId, String systemId) {
+        return toXml(object, new StringWriter(), rootElementName, publicId, systemId).toString();
     }
 
-    public Writer toXml(Object object, final Writer writer, String rootElementName) {
+    public Writer toXml(Object object, final Writer writer, String rootElementName, String publicId, String systemId) {
         Converter converter = getConverter(object.getClass());
         Document document = Document.create();
         document.addRootElement(rootElementName);
         converter.toXml(object, document.getRoot());
-        document.toXML(writer, false);
+        document.toXML(writer, false, publicId, systemId);
 
         return writer;
     }
@@ -91,12 +93,12 @@ public class XmlConverter {
         return converter.fromXml(element);
     }
 
-    public Object fromXml(Class clazz, String xml) {
-        return fromXml(clazz, new StringReader(xml));
+    public Object fromXml(Class clazz, String xml, EntityResolver entityResolver) {
+        return fromXml(clazz, new StringReader(xml), entityResolver);
     }
 
-    public Object fromXml(Class clazz, Reader reader) {
-        Document document = Document.parse(reader);
+    public Object fromXml(Class clazz, Reader reader, EntityResolver entityResolver) {
+        Document document = Document.parse(reader, entityResolver);
 
         return fromXml(clazz, document.getRoot());
     }

@@ -49,7 +49,8 @@ public class DocumentTest extends AbstractTest {
     }
 
     public void testParseReader() throws FileNotFoundException {
-        Document document = Document.parse(new FileReader(getTestCaseResource("minimal.xml")));
+        Document document = Document.parse(new FileReader(getTestCaseResource("minimal.xml")),
+                new Document.NullEntityResolver());
         assertEquals("root", document.getRoot().getName());
     }
 
@@ -73,7 +74,7 @@ public class DocumentTest extends AbstractTest {
     public void testToXml() {
         Document document = Document.parse(getTestCaseResource("basic.xml"));
         String xml = document.toXML(new StringWriter(), true).toString();
-        Document parsed = Document.parse(new StringReader(xml));
+        Document parsed = Document.parse(new StringReader(xml), new Document.NullEntityResolver());
         Element root = parsed.getRoot();
         assertEquals("root", root.getName());
 

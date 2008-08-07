@@ -158,7 +158,7 @@ public class AnnotatedProperties extends Properties {
 //    }
 //    public synchronized Object remove(Object key) {
 //        return super.remove(key.toString().toLowerCase());
-//    }
+    //    }
     public synchronized Object put(Object key, Object value) {
         Assert.isTrue(value != null, "Value is null for key=" + key);
 

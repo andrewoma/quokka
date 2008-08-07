@@ -22,11 +22,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import ws.quokka.core.bootstrap_util.ExceptionHandler;
+import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.CharArrayReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -35,9 +38,12 @@ import java.io.Writer;
 
 import java.net.URL;
 
+import java.util.Properties;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 
 
 /**
@@ -117,12 +123,12 @@ public class Document {
     /**
      * Parses an XML file. It softens any exceptions to RuntimeExceptions.
      */
-    public static Document parse(final Reader reader) {
+    public static Document parse(final Reader reader, final EntityResolver entityResolver) {
         return parse(new Source() {
                 public InputSource getSource() throws Exception {
                     return new InputSource(reader);
                 }
-            }, null);
+            }, entityResolver);
     }
 
     /**
@@ -170,12 +176,24 @@ public class Document {
         return new Element((org.w3c.dom.Element)document.appendChild(document.createElement(name)));
     }
 
+    public void toXML(final File file) {
+        new VoidExceptionHandler() {
+                public void run() throws IOException {
+                    toXML(new BufferedWriter(new FileWriter(file)), true, new Properties());
+                }
+            };
+    }
+
     public Writer toXML(final Writer writer, final boolean close) {
+        return toXML(writer, close, new Properties());
+    }
+
+    public Writer toXML(final Writer writer, final boolean close, final Properties properties) {
         return (Writer)new ExceptionHandler() {
                 public Object run() throws IOException {
                     try {
-                        XmlWriter xmlWriter = new XmlWriter(document.getFirstChild());
-                        xmlWriter.write(writer);
+                        TransformingXmlWriter xmlWriter = new TransformingXmlWriter();
+                        xmlWriter.write(writer, document.getFirstChild(), properties);
 
                         return writer;
                     } finally {
@@ -185,6 +203,14 @@ public class Document {
                     }
                 }
             }.soften();
+    }
+
+    public Writer toXML(final Writer writer, final boolean close, String publicId, String systemId) {
+        Properties properites = new Properties();
+        properites.put(OutputKeys.DOCTYPE_PUBLIC, publicId);
+        properites.put(OutputKeys.DOCTYPE_SYSTEM, systemId);
+
+        return toXML(writer, close, properites);
     }
 
     public org.w3c.dom.Document getDocument() {

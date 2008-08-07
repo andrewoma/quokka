@@ -19,7 +19,6 @@ package ws.quokka.core.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -769,7 +768,7 @@ public class Strings {
     }
 
     public static List asList(Object[] array) {
-        return (array == null) ? Collections.EMPTY_LIST : Arrays.asList(array);
+        return (array == null) ? new ArrayList() : Arrays.asList(array);
     }
 
     public static List commaSepList(String string) {

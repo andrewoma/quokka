@@ -139,6 +139,15 @@ public class Element {
         return this;
     }
 
+    /**
+     * Convenience method to get the text content of a child node, or null if the node doesn't exist
+     */
+    public String getChildText(String child) {
+        Element childEl = getChild(child);
+
+        return (childEl == null) ? null : childEl.getText();
+    }
+
     public String getText() {
         // element.getTextContent() breaks in jdk 1.4, so is implemented manually
         return getTextContent(element, new StringBuffer()).toString();
