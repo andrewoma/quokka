@@ -17,23 +17,33 @@
 
 package ws.quokka.core.bootstrap.resources;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import ws.quokka.core.version.Version;
 
 
 /**
  *
  */
-public class JdkPropertiesReader {
+public class SuppliedDependencyResource extends DependencyResource {
+    //~ Instance fields ------------------------------------------------------------------------------------------------
+
+    private String file;
+    private String url;
+
+    //~ Constructors ---------------------------------------------------------------------------------------------------
+
+    public SuppliedDependencyResource(String group, String name, Version version, String file, String url) {
+        super(group, name, version);
+        this.file = file;
+        this.url = url;
+    }
+
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public static void main(String[] args) {
-        Map properties = new TreeMap(System.getProperties());
+    public String getFile() {
+        return file;
+    }
 
-        for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
-            Map.Entry entry = (Map.Entry)i.next();
-            System.out.println(entry.getKey() + "=" + entry.getValue());
-        }
+    public String getUrl() {
+        return url;
     }
 }

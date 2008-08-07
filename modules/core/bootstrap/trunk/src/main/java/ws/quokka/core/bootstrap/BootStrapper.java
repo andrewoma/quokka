@@ -20,40 +20,37 @@ package ws.quokka.core.bootstrap;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.launch.Launcher;
+import org.apache.tools.ant.taskdefs.Execute;
+import org.apache.tools.ant.taskdefs.PumpStreamHandler;
+import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.CommandlineJava;
 import org.apache.tools.ant.util.JavaEnvUtils;
 
 import ws.quokka.core.bootstrap.constraints.BootStrapConstraints;
 import ws.quokka.core.bootstrap.constraints.BootStrapContraintsParser;
 import ws.quokka.core.bootstrap.constraints.JdkConstraint;
-import ws.quokka.core.bootstrap.resources.BootStrapResources;
-import ws.quokka.core.bootstrap.resources.BootStrapResourcesParser;
-import ws.quokka.core.bootstrap.resources.DependencyResource;
-import ws.quokka.core.bootstrap.resources.Jdk;
+import ws.quokka.core.bootstrap.resources.*;
 import ws.quokka.core.bootstrap_util.ArtifactPropertiesParser;
 import ws.quokka.core.bootstrap_util.Assert;
-import ws.quokka.core.bootstrap_util.Exec;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Log;
 import ws.quokka.core.version.Version;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.net.URL;
+
+import java.util.*;
 
 
 /**
  *
  */
 public class BootStrapper {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static final String[] ESCAPE_CHARS = new String[] { "@", "@at@", "\"", "@quot@", "'", "@apos@" };
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private Properties properties = new Properties();
@@ -61,12 +58,13 @@ public class BootStrapper {
     private BootStrapConstraints constraints;
     private BootStrapResources resources;
     private File quokkaFile;
-    private String maxMemory;
+    private String jvmArgs;
     private File librariesDir;
     private File cacheDir;
     private List arguments;
-    private String commandLine;
+    private CommandlineJava commandLine;
     private List additionalDependencies;
+    private Project project;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -123,10 +121,50 @@ public class BootStrapper {
 
         for (Iterator i = dependencies.iterator(); i.hasNext();) {
             DependencyResource resource = (DependencyResource)i.next();
-            classPath.add(toCanonical(resource));
+
+            if (resource instanceof SuppliedDependencyResource) {
+                classPath.add(resolveDependencyResource((SuppliedDependencyResource)resource));
+            } else {
+                classPath.add(toCanonical(resource));
+            }
         }
 
         return classPath;
+    }
+
+    private File resolveDependencyResource(SuppliedDependencyResource resource) {
+        try {
+            if (resource.getFile() != null) {
+                // Use project to resolve to current handle the base dir
+                File file = project.resolveFile(resource.getFile());
+                Assert.isTrue(file.exists() && !file.isDirectory() && file.canRead(),
+                    "Boot dependency file either doesn't exist, is a directory, or isn't readable: " + file.getPath());
+
+                return file;
+            } else {
+                String md5 = BootStrapResourcesParser.md5(resource.getUrl().getBytes("UTF8"));
+                File cachedFile = new File(cacheDir, md5 + ".jar");
+
+                if (!cachedFile.exists()) {
+                    Log.get().info("Downloading bootstrap dependency from " + resource.getUrl());
+                    Assert.isTrue(cachedFile.getParentFile().exists() || cachedFile.getParentFile().mkdirs(),
+                        "Cannot create " + cachedFile.getParent());
+
+                    IOUtils utils = new IOUtils();
+                    File temp = utils.createTempFile(md5, ".jar", cacheDir);
+                    URL url = utils.createURL(resource.getUrl());
+                    InputStream in = url.openStream();
+                    Assert.isTrue(in != null, "Cannot access boot dependency URL: " + resource.getUrl());
+                    utils.copyStream(in, new BufferedOutputStream(new FileOutputStream(temp)));
+                    Assert.isTrue(temp.renameTo(cachedFile),
+                        "Could not rename " + temp.getPath() + " to " + cachedFile.getPath());
+                }
+
+                return cachedFile;
+            }
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
     }
 
     public List getAdditionalDependencies() {
@@ -160,7 +198,7 @@ public class BootStrapper {
         }
     }
 
-    protected List getJavaClassPath() {
+    protected List getCurrentClassPath() {
         List javaClassPath = new ArrayList();
         StringTokenizer tokenizer = new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
 
@@ -185,15 +223,22 @@ public class BootStrapper {
 
     public int bootStrap() {
         Log.get().info("Bootstrapping build ...");
-        Log.get().verbose(commandLine);
+        Log.get().verbose(commandLine.toString());
 
-        return new Exec().exec(commandLine);
+        Execute execute = new Execute(new PumpStreamHandler(System.out, System.err, System.in));
+        execute.setCommandline(commandLine.getCommandline());
+        execute.setVMLauncher(true);
+
+//        execute.setWorkingDirectory(new File(System.getProperty("user.dir")));
+        try {
+            return execute.execute();
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
     }
 
-    protected String createCommandLine(Jdk jdk, List bootStrapClassPath) {
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug(bootStrapClassPath.toString());
-        }
+    protected CommandlineJava createCommandLine(Jdk jdk, List bootStrapClassPath) {
+        Log.get().debug(bootStrapClassPath.toString());
 
         // Convert the classpath to a string
         StringBuffer classPath = new StringBuffer();
@@ -217,14 +262,12 @@ public class BootStrapper {
         command.createVmArgument().setValue("-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper");
         command.createVmArgument().setValue("-Dant.home=" + System.getProperty("ant.home"));
         command.createVmArgument().setValue("-Dant.library.dir=" + new File(System.getProperty("ant.home"), "antlib"));
-        command.createVmArgument().setValue("-Dquokka.bootstrap.maxMemory=" + jdk.getMatchedConstraint().getMaxMemory());
+        command.createVmArgument().setValue("-Dquokka.bootstrap.jvmArgs=" + jdk.getMatchedConstraint().getJvmArgs());
 
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug(classPath.toString());
-        }
+        Log.get().debug(classPath.toString());
 
         command.createClasspath(project).setPath(classPath.toString());
-        command.setMaxmemory(jdk.getMatchedConstraint().getMaxMemory());
+        command.createVmArgument().setLine(jdk.getMatchedConstraint().getJvmArgs());
 
         command.setClassname(Launcher.class.getName());
 
@@ -245,7 +288,7 @@ public class BootStrapper {
             command.createArgument().setValue(target);
         }
 
-        return command.toString();
+        return command;
     }
 
     public boolean isReleasable() {
@@ -282,74 +325,69 @@ public class BootStrapper {
 
         Log.get().verbose("   cacheDir -> " + cacheDir.getAbsolutePath());
 
-        if (maxMemory == null) {
-            maxMemory = System.getProperty("quokka.bootstrap.maxMemory");
+        if (jvmArgs == null) {
+            jvmArgs = unescape(System.getProperty("quokka.bootstrap.jvmArgs"));
         }
 
-        Log.get().verbose("   maxMemory -> " + maxMemory);
+        Log.get().verbose("   jvmArgs -> " + jvmArgs);
 
-        File bootStrapPropertes = new File(System.getProperty("quokka.bootstrap.properties"),
+        File bootStrapProperties = new File(System.getProperty("quokka.bootstrap.properties"),
                 new File(bootStrapDefaultDir, "bootstrap.xml").getAbsolutePath());
 
         if (resources == null) {
-            Log.get().verbose("   resourcesFile -> " + bootStrapPropertes.getAbsolutePath());
-            resources = new BootStrapResourcesParser().parse(bootStrapPropertes, librariesDir, cacheDir);
+            Log.get().verbose("   resourcesFile -> " + bootStrapProperties.getAbsolutePath());
+            resources = new BootStrapResourcesParser().parse(bootStrapProperties, librariesDir, cacheDir);
         }
 
-        //        Assert.isTrue(resources.getJdks().size() != 0, "No jdks have been defined for bootstrapping in: " + bootStrapPropertes.getAbsolutePath());
+        //        Assert.isTrue(resources.getJdks().size() != 0, "No jdks have been defined for bootstrapping in: " + bootStrapProperties.getAbsolutePath());
         // Get the environment needed for bootstrapping
-        List javaClassPath = getJavaClassPath();
-        List bootStrapClassPath = createBootStrapClassPath();
+        List currentClassPath = getCurrentClassPath();
+        List bootClassPath = createBootStrapClassPath();
 
         // Bootstrapping is required if the either the class paths, or jdks do not match
         boolean match = true;
-        Set bootSet = asSet(bootStrapClassPath);
+        Set bootSet = asSet(bootClassPath);
+        Set currentSet = asSet(currentClassPath);
 
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug("bootClassPath -> " + bootSet);
-        }
-
-        Set javaSet = asSet(javaClassPath);
-
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug("javaClassPath -> " + javaSet);
-        }
-
-        if (!bootSet.equals(javaSet)) {
+        if (!bootSet.equals(currentSet)) {
             match = false;
-            Log.get().debug("Class paths do not match");
+            Log.get().info("Bootstrap class path does not match (use -v for details)");
+            Log.get().verbose("\t current -> " + currentSet);
+            Log.get().verbose("\trequired -> " + bootSet);
         }
 
-        String javaHome = System.getProperty("java.home");
-
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug("javaHome -> " + javaHome);
-        }
+        String currentJavaHome = System.getProperty("java.home");
 
         Jdk jdk;
 
         if (constraints.getJdkConstraints().size() != 0) {
             jdk = constraints.findMatchingJdk(resources);
 
-            String bootHome = jdk.getProperties().getProperty("java.home");
-            Log.get().debug("bootHome -> " + bootHome);
-
-            if (!bootHome.equals(javaHome)) {
-                match = false;
-                Log.get().debug("Jdks do not match");
+            if (jdk == null) {
+                throw new BuildException("No jdks have been defined that meet the bootstrap requirements in "
+                    + bootStrapProperties.getAbsolutePath());
             }
 
-            String bootMemory = jdk.getMatchedConstraint().getMaxMemory();
-            Log.get().debug("bootMemory -> " + bootMemory);
-            Log.get().debug("javaMemory -> " + maxMemory);
+            String bootJavaHome = jdk.getProperties().getProperty("java.home");
 
-            if (bootMemory == null) {
-                jdk.getMatchedConstraint().setMaxMemory(maxMemory); // Passes on existing memory to forked jvm
+            if (!bootJavaHome.equals(currentJavaHome)) {
+                match = false;
+                Log.get().info("Bootstrap JDK does not match (use -v for details)");
+                Log.get().verbose("\t current -> " + currentJavaHome);
+                Log.get().verbose("\trequired -> " + bootJavaHome);
             }
 
-            if (maxMemory.equals(bootMemory)) {
+            String bootJvmArgs = jdk.getMatchedConstraint().getJvmArgs();
+
+            if (bootJvmArgs == null) {
+                jdk.getMatchedConstraint().setJvmArgs(jvmArgs); // Passes on existing args to forked jvm
+            }
+
+            if (!argsMatch(jvmArgs, bootJvmArgs)) {
                 match = false;
-                Log.get().debug("Memory does not match");
+                Log.get().info("Bootstrap JVM args do not match (use -v for details)");
+                Log.get().verbose("\t current -> " + jvmArgs);
+                Log.get().verbose("\trequired -> " + bootJvmArgs);
             }
         } else {
             // Set up the current jdk as the default if no jdk constraints were specified
@@ -357,13 +395,66 @@ public class BootStrapper {
             jdk.setLocation(new File(JavaEnvUtils.getJdkExecutable("java"))); // Get the jdk home
 
             JdkConstraint constraint = new JdkConstraint();
-            constraint.setMaxMemory(maxMemory);
+            constraint.setJvmArgs(jvmArgs);
             jdk.setMatchedConstraint(constraint);
         }
 
         // Compare values and if they don't match create the bootstrap command line
         if (!match) {
-            commandLine = createCommandLine(jdk, bootStrapClassPath);
+            commandLine = createCommandLine(jdk, bootClassPath);
         }
+    }
+
+    private String unescape(String string) {
+        for (int i = 0; i < ESCAPE_CHARS.length; i++) {
+            String with = ESCAPE_CHARS[i];
+            String escape = ESCAPE_CHARS[++i];
+            string = replace(string, escape, with);
+        }
+
+        return string;
+    }
+
+    private String replace(String text, String repl, String with) {
+        StringBuffer sb = new StringBuffer(text.length());
+        int start = 0;
+        int end;
+
+        while ((end = text.indexOf(repl, start)) != -1) {
+            sb.append(text.substring(start, end)).append(with);
+            start = end + repl.length();
+        }
+
+        sb.append(text.substring(start));
+
+        return sb.toString();
+    }
+
+    /**
+     * Returns true if the jvm arguments include all the arguments specified in the bootJvmArgs
+     */
+    private boolean argsMatch(String jvmArgs, String bootJvmArgs) {
+        List args = parseArgs(jvmArgs);
+
+        for (Iterator i = parseArgs(bootJvmArgs).iterator(); i.hasNext();) {
+            String arg = (String)i.next();
+
+            if (!args.contains(arg)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List parseArgs(String args) {
+        Commandline command = new Commandline();
+        command.createArgument().setLine(args);
+
+        return Arrays.asList(command.getArguments());
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 }

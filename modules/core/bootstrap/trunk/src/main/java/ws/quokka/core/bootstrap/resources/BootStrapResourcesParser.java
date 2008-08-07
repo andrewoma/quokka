@@ -91,9 +91,22 @@ public class BootStrapResourcesParser extends XmlParser {
         return availableLibraries;
     }
 
+    public static String md5(byte[] bytes) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+
+            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
+            messageDigest.reset();
+            messageDigest.update(bytes);
+
+            return toHex(messageDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new BuildException(e);
+        }
+    }
+
     public BootStrapResources parse_(File file, File librariesDir, File cacheDir)
-            throws NoSuchAlgorithmException, IOException {
-        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            throws IOException {
         BootStrapResources resources = new BootStrapResources();
 
         // Add available libraries
@@ -137,10 +150,7 @@ public class BootStrapResourcesParser extends XmlParser {
                 + "' does not exist");
 
             // Create a hash of the jdk location and use it a key for a cache of jvm system properties
-            messageDigest.reset();
-            messageDigest.update(jdk.getLocation().getAbsolutePath().getBytes("UTF8"));
-
-            String locationHash = toHex(messageDigest.digest());
+            String locationHash = md5(jdk.getLocation().getAbsolutePath().getBytes("UTF8"));
             File propertiesFile = new File(cacheDir, locationHash + ".properties");
 
             if (!propertiesFile.exists()
@@ -185,7 +195,7 @@ public class BootStrapResourcesParser extends XmlParser {
         }
     }
 
-    private String toHex(byte[] fileDigest) {
+    private static String toHex(byte[] fileDigest) {
         StringBuffer hex = new StringBuffer();
 
         for (int i = 0; i < fileDigest.length; i++) {
@@ -207,16 +217,28 @@ public class BootStrapResourcesParser extends XmlParser {
         public static void main(String[] args) {
             try {
                 File propertiesFile = new File(args[0]);
+
+                if (propertiesFile.exists()) {
+                    propertiesFile.delete();
+                }
+
                 File dir = propertiesFile.getParentFile();
 
                 if (!dir.exists() && !dir.mkdirs()) {
                     throw new RuntimeException("Unable to create directory: " + dir.getAbsolutePath());
                 }
 
-                OutputStream out = new BufferedOutputStream(new FileOutputStream(propertiesFile));
+                // Write to temp file first in case the writing is interrupted
+                File temp = File.createTempFile("temp", ".properties", dir);
+                OutputStream out = new BufferedOutputStream(new FileOutputStream(temp));
 
                 try {
                     System.getProperties().store(out, "Generated at " + new Date());
+
+                    if (temp.renameTo(propertiesFile)) {
+                        throw new RuntimeException("Could not rename " + temp.getPath() + " to "
+                            + propertiesFile.getPath());
+                    }
                 } finally {
                     out.close();
                 }

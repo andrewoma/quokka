@@ -49,7 +49,7 @@ public class JdkConstraintTest extends AbstractTest {
         jdk.setProperties(props);
 
         jdk.setLocation(new File("C:\\SomeDir\\java.exe"));
-        jdkConstraint.setMaxMemory("1024m");
+        jdkConstraint.setJvmArgs("1024m");
     }
 
     public void testMatchJdkDefault() {

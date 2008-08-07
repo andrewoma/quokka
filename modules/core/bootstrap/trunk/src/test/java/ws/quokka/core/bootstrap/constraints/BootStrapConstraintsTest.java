@@ -17,9 +17,13 @@
 
 package ws.quokka.core.bootstrap.constraints;
 
+import org.apache.tools.ant.Project;
+
 import ws.quokka.core.bootstrap.resources.BootStrapResources;
 import ws.quokka.core.bootstrap.resources.DependencyResource;
 import ws.quokka.core.bootstrap.resources.Jdk;
+import ws.quokka.core.bootstrap_util.Log;
+import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.test.AbstractTest;
 import ws.quokka.core.version.Version;
 import ws.quokka.core.version.VersionRangeUnion;
@@ -41,6 +45,8 @@ public class BootStrapConstraintsTest extends AbstractTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     protected void setUp() throws Exception {
+        Log.set(new ProjectLogger(new Project()));
+
         JdkConstraint constraint = new JdkConstraint();
         constraint.addSystemPropery("constraint", "constraint1", true);
         constraints.getJdkConstraints().add(constraint);
@@ -68,9 +74,9 @@ public class BootStrapConstraintsTest extends AbstractTest {
         constraints.getCoreConstraints().add(coreConstraint);
 
         constraints.getDependencyContraints().add(new DependencyConstraint("group", "name",
-                VersionRangeUnion.parse("[1.2,1.3]")));
+                VersionRangeUnion.parse("[1.2,1.3]"), null, null));
         constraints.getDependencyContraints().add(new DependencyConstraint("quokka.bundle", "core",
-                VersionRangeUnion.parse("[1.2,1.2]")));
+                VersionRangeUnion.parse("[1.2,1.2]"), null, null));
 
         addLibrary("quokka.bundle", "core", "1.3");
         addLibrary("quokka.bundle", "core", "1.2");

@@ -30,13 +30,17 @@ public class DependencyConstraint {
     private String group;
     private String name;
     private VersionRangeUnion version;
+    private String file;
+    private String url;
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public DependencyConstraint(String group, String name, VersionRangeUnion version) {
+    public DependencyConstraint(String group, String name, VersionRangeUnion version, String file, String url) {
         this.group = group;
         this.name = name;
         this.version = version;
+        this.file = file;
+        this.url = url;
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -60,5 +64,13 @@ public class DependencyConstraint {
 
     public String toString() {
         return group + ":" + name + ":" + version;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

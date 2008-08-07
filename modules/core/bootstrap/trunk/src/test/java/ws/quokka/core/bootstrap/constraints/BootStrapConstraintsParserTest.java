@@ -77,12 +77,12 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         addSysProperty("default-sysproperty1", "default-sysproperty1-value1", true);
         addSysProperty("overridden-sysproperty1", "overridden-sysproperty1-value1", true);
         assertJdk("overridden-java-version1", "overridden-java-vendor1", "overridden-jvm-version1",
-            "overridden-jvm-vendor1", "overridden-spec-version1", "overridden-max-memory1", sysproperties,
+            "overridden-jvm-vendor1", "overridden-spec-version1", "overridden-jvm-args1", sysproperties,
             (JdkConstraint)jdks.get(1));
 
         sysproperties.remove("overridden-sysproperty1");
         assertJdk("default-java-version1", "default-java-vendor1", "default-jvm-version1", "default-jvm-vendor1",
-            "default-spec-version1", "default-max-memory1", sysproperties, (JdkConstraint)jdks.get(2));
+            "default-spec-version1", "default-jvm-args1", sysproperties, (JdkConstraint)jdks.get(2));
 
         assertJdk("postjdk", null, null, null, null, null, new HashMap(), (JdkConstraint)jdks.get(3));
 
@@ -90,7 +90,7 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         addSysProperty("name1", "value1", true);
         addSysProperty("opt1", "value2", false);
         addSysProperty("def1", "value3", true);
-        assertJdk("java-version1", "java-vendor1", "jvm-version1", "jvm-vendor1", "spec-version1", "max-memory1",
+        assertJdk("java-version1", "java-vendor1", "jvm-version1", "jvm-vendor1", "spec-version1", "jvm-args1",
             sysproperties, (JdkConstraint)jdks.get(4));
 
         // Check the dependencies
@@ -149,7 +149,7 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         assertVersion(jvmVersion, jdkConstraint.getJvmVersion());
         assertEquals(jvmVendor, jdkConstraint.getJavaJvmVendor());
         assertVersion(specVersion, jdkConstraint.getSpecVersion());
-        assertEquals(maxHeap, jdkConstraint.getMaxMemory());
+        assertEquals(maxHeap, jdkConstraint.getJvmArgs());
         assertEquals(systemProperties, jdkConstraint.getSystemProperties());
     }
 

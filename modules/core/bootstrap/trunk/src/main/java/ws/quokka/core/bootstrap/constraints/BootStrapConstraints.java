@@ -22,7 +22,11 @@ import org.apache.tools.ant.BuildException;
 import ws.quokka.core.bootstrap.resources.BootStrapResources;
 import ws.quokka.core.bootstrap.resources.DependencyResource;
 import ws.quokka.core.bootstrap.resources.Jdk;
+import ws.quokka.core.bootstrap.resources.SuppliedDependencyResource;
+import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.Log;
+import ws.quokka.core.version.VersionRange;
+import ws.quokka.core.version.VersionRangeUnion;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -69,10 +73,6 @@ public class BootStrapConstraints {
         Jdk match = findMatchingJdk(resources, true);
         match = (match == null) ? findMatchingJdk(resources, false) : match;
 
-        if (match == null) {
-            throw new BuildException("No jdks have been defined that meet the bootstrap requirements");
-        }
-
         return match;
     }
 
@@ -83,9 +83,7 @@ public class BootStrapConstraints {
             for (Iterator j = resources.getJdks().iterator(); j.hasNext();) {
                 Jdk available = (Jdk)j.next();
 
-                if (Log.get().isDebugEnabled()) {
-                    Log.get().debug("Matching against jdk: " + available.getLocation().getAbsolutePath());
-                }
+                Log.get().debug("Matching against jdk: " + available.getLocation().getAbsolutePath());
 
                 if (required.matches(available, matchOptional)) {
                     available.setMatchedConstraint(required);
@@ -104,7 +102,7 @@ public class BootStrapConstraints {
         for (Iterator i = coreConstraints.iterator(); i.hasNext();) {
             CoreConstraint required = (CoreConstraint)i.next();
             DependencyConstraint requiredDependency = new DependencyConstraint("quokka.bundle", "core",
-                    required.getVersion());
+                    required.getVersion(), null, null);
             match = findMatch(resources, requiredDependency, !i.hasNext());
 
             if (match != null) {
@@ -121,9 +119,7 @@ public class BootStrapConstraints {
 
     private DependencyResource findMatch(BootStrapResources resources, DependencyConstraint dependency,
         boolean mandatory) {
-        if (Log.get().isDebugEnabled()) {
-            Log.get().debug("Matching " + dependency);
-        }
+        Log.get().debug("Matching " + dependency);
 
         for (Iterator j = resources.getAvailableLibraries().iterator(); j.hasNext();) {
             DependencyResource available = (DependencyResource)j.next();
@@ -136,6 +132,21 @@ public class BootStrapConstraints {
             if (match) {
                 return available;
             }
+        }
+
+        if ((dependency.getFile() != null) || (dependency.getUrl() != null)) {
+            // Not available in the quokka library dir, so use the file/url provided
+            // Note: this will effectively force bootstrapping
+            VersionRangeUnion union = dependency.getVersion();
+            String message = "When supplying a boot dependency, the version must be an exact version of format [n,n]: "
+                + union;
+            Assert.isTrue(union.getRanges().size() == 1, message);
+
+            VersionRange range = (VersionRange)union.getRanges().get(0);
+            Assert.isTrue(range.getHigh().equals(range.getLow()), message);
+
+            return new SuppliedDependencyResource(dependency.getGroup(), dependency.getName(), range.getHigh(),
+                dependency.getFile(), dependency.getUrl());
         }
 
         if (mandatory) {

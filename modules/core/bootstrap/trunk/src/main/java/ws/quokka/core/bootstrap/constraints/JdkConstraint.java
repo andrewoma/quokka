@@ -38,17 +38,17 @@ public class JdkConstraint {
     private VersionRangeUnion jvmVersion;
     private String javaJvmVendor;
     private VersionRangeUnion specVersion;
-    private String maxMemory;
+    private String jvmArgs;
     private Map systemProperties = new HashMap();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public String getMaxMemory() {
-        return maxMemory;
+    public String getJvmArgs() {
+        return jvmArgs;
     }
 
-    public void setMaxMemory(String maxMemory) {
-        this.maxMemory = maxMemory;
+    public void setJvmArgs(String jvmArgs) {
+        this.jvmArgs = jvmArgs;
     }
 
     public String getJavaVendor() {
@@ -105,7 +105,7 @@ public class JdkConstraint {
         jvmVersion = applyDefault(jvmVersion, defaults.jvmVersion);
         javaJvmVendor = applyDefault(javaJvmVendor, defaults.javaJvmVendor);
         specVersion = applyDefault(specVersion, defaults.specVersion);
-        maxMemory = applyDefault(maxMemory, defaults.maxMemory);
+        jvmArgs = applyDefault(jvmArgs, defaults.jvmArgs);
 
         for (Iterator i = defaults.getSystemProperties().entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
@@ -180,7 +180,7 @@ public class JdkConstraint {
 
     public boolean isEmpty() {
         return (javaJvmVendor == null) && (javaVendor == null) && (javaVersion == null) && (jvmVersion == null)
-        && (maxMemory == null) && (systemProperties.size() == 0) && (specVersion == null);
+        && (jvmArgs == null) && (systemProperties.size() == 0) && (specVersion == null);
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
