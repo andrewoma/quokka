@@ -34,6 +34,7 @@ public class Artifact extends AnnotatedObject {
 
     private RepoArtifactId id;
     private List exportedPaths = new ArrayList();
+    private String description;
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
@@ -56,6 +57,14 @@ public class Artifact extends AnnotatedObject {
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public void setId(RepoArtifactId id) {
         this.id = id;

@@ -42,7 +42,7 @@ public class DependencySet extends AnnotatedObject {
     private Map paths = new HashMap();
     private DependencySet parent;
     private URL importURL;
-    private AnnotatedProperties properties;
+    private AnnotatedProperties properties = new AnnotatedProperties();
     private boolean inheritProperties = false;
     private boolean inheritResources = false;
     private List overrides = new ArrayList();

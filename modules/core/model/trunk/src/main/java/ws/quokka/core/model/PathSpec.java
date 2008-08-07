@@ -29,7 +29,15 @@ public class PathSpec extends RepoPathSpec {
     public PathSpec() {
     }
 
-    public PathSpec(String from, String to, Boolean descend, Boolean mandatory) {
-        super(from, to, descend, mandatory);
+    public PathSpec(String shorthand, boolean toRequired) {
+        super(shorthand, toRequired);
+    }
+
+    public PathSpec(String shorthand) {
+        super(shorthand);
+    }
+
+    public PathSpec(String fromPath, String toPath, String options, Boolean descend, Boolean mandatory) {
+        super(fromPath, toPath, options, descend, mandatory);
     }
 }

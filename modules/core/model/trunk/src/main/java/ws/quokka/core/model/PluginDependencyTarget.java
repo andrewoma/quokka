@@ -80,9 +80,7 @@ public class PluginDependencyTarget extends AnnotatedObject {
     }
 
     public boolean isValid() {
-        return (name != null) && (
-            ((prefix == null) && (template == null)) || ((prefix != null) && (template != null))
-        );
+        return (template == null) || (prefix != null);
     }
 
     public String toShortString() {
@@ -95,5 +93,50 @@ public class PluginDependencyTarget extends AnnotatedObject {
 
     public void addDependency(String dependency) {
         dependencies.add(dependency);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
+
+        PluginDependencyTarget that = (PluginDependencyTarget)o;
+
+        if ((alias != null) ? (!alias.equals(that.alias)) : (that.alias != null)) {
+            return false;
+        }
+
+        if ((dependencies != null) ? (!dependencies.equals(that.dependencies)) : (that.dependencies != null)) {
+            return false;
+        }
+
+        if ((name != null) ? (!name.equals(that.name)) : (that.name != null)) {
+            return false;
+        }
+
+        if ((prefix != null) ? (!prefix.equals(that.prefix)) : (that.prefix != null)) {
+            return false;
+        }
+
+        if ((template != null) ? (!template.equals(that.template)) : (that.template != null)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = ((name != null) ? name.hashCode() : 0);
+        result = (31 * result) + ((prefix != null) ? prefix.hashCode() : 0);
+        result = (31 * result) + ((template != null) ? template.hashCode() : 0);
+        result = (31 * result) + ((alias != null) ? alias.hashCode() : 0);
+        result = (31 * result) + ((dependencies != null) ? dependencies.hashCode() : 0);
+
+        return result;
     }
 }

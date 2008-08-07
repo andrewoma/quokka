@@ -22,11 +22,9 @@ import ws.quokka.core.util.AnnotatedProperties;
 
 import java.io.File;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +46,6 @@ public class Project extends AnnotatedObject {
     private AnnotatedProperties properties;
     private File projectFile;
     private Map profiles = new HashMap();
-    private List overrides = new ArrayList();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -122,14 +119,6 @@ public class Project extends AnnotatedObject {
 
     public Map getProfiles() {
         return Collections.unmodifiableMap(profiles);
-    }
-
-    public void addOverride(Override override) {
-        overrides.add(override);
-    }
-
-    public List getOverrides() {
-        return Collections.unmodifiableList(overrides);
     }
 
     public void setDefaultTarget(String defaultTarget) {

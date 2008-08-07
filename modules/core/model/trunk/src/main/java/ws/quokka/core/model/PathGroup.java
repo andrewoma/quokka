@@ -55,6 +55,10 @@ public class PathGroup extends AnnotatedObject {
         return Collections.unmodifiableList(paths);
     }
 
+    public void setMergeWithCore(Boolean mergeWithCore) {
+        this.mergeWithCore = mergeWithCore;
+    }
+
     public Boolean getMergeWithCore() {
         return mergeWithCore;
     }

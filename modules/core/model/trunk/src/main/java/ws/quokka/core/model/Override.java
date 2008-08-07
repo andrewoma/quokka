@@ -17,85 +17,78 @@
 
 package ws.quokka.core.model;
 
+import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.repo_spi.RepoArtifactId;
-import ws.quokka.core.util.AnnotatedObject;
-import ws.quokka.core.version.Version;
-import ws.quokka.core.version.VersionRangeUnion;
+import ws.quokka.core.repo_spi.RepoOverride;
+import ws.quokka.core.util.Strings;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**
  *
  */
-public class Override extends AnnotatedObject {
-    //~ Static fields/initializers -------------------------------------------------------------------------------------
-
-    public static final String SCOPE_ALL = "all";
-
-    // TODO: work out if these still make sense
-    public static final String SCOPE_CONFLICT = "conflict";
-    public static final String SCOPE_ALL_BUT_EXPLICIT = "allButExplicit";
-
+public class Override extends RepoOverride {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    private String group;
-    private String name;
-    private String type;
-    private VersionRangeUnion versionRangeUnion;
-    private Version with;
-    private String scope = SCOPE_ALL;
+    private Set pluginPaths = new HashSet();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public String getGroup() {
-        return group;
+    public void addPluginPath(String path) {
+        pluginPaths.add(path);
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public Set getPluginPaths() {
+        return Collections.unmodifiableSet(pluginPaths);
     }
 
-    public String getName() {
-        return name;
+    /**
+     * Returns paths that match the plugin specified
+     * Format is: group[:name]=path1[:pathn]
+     */
+    public Set matchingPluginPaths(RepoArtifactId pluginId) {
+        if ((pluginPaths.size() == 1) && pluginPaths.contains("*")) {
+            return pluginPaths; // Applies globally to all paths within all plugins
+        }
+
+        Set matching = new HashSet();
+
+        for (Iterator i = pluginPaths.iterator(); i.hasNext();) {
+            String path = (String)i.next();
+
+            // Split group from paths
+            String[] tokens = Strings.split(path, "=");
+            assertPath(tokens.length == 2, path);
+
+            // Split group and name
+            String[] groupTokens = Strings.split(tokens[0], ":");
+            assertPath((groupTokens.length >= 1) && (groupTokens.length <= 2), path);
+
+            String group = groupTokens[0];
+            String name;
+
+            if (groupTokens.length == 1) {
+                String[] nameTokens = Strings.split(groupTokens[0], ".");
+                name = nameTokens[nameTokens.length - 1];
+            } else {
+                name = groupTokens[1];
+            }
+
+            // Check if the group and name match
+            if (pluginId.getGroup().equals(group) && pluginId.getName().equals(name)) {
+                matching.addAll(Strings.asList(Strings.split(tokens[1], ":")));
+            }
+        }
+
+        return matching;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public VersionRangeUnion getVersionRangeUnion() {
-        return versionRangeUnion;
-    }
-
-    public void setVersionRangeUnion(VersionRangeUnion versionRangeUnion) {
-        this.versionRangeUnion = versionRangeUnion;
-    }
-
-    public Version getWith() {
-        return with;
-    }
-
-    public void setWith(Version with) {
-        this.with = with;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-    public boolean matches(String scope, RepoArtifactId id) {
-        return this.scope.equals(scope) && group.equals(id.getGroup()) && name.equals(id.getName())
-        && type.equals(id.getType()) && versionRangeUnion.isInRange(id.getVersion());
+    private void assertPath(boolean condition, String path) {
+        Assert.isTrue(condition, getLocator(),
+            "Override plugin path does not match format '*|group[:name]=*|path1[:pathn]': " + path);
     }
 }
