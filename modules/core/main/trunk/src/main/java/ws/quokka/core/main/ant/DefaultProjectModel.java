@@ -20,8 +20,6 @@ package ws.quokka.core.main.ant;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 
-import org.xml.sax.Locator;
-
 import ws.quokka.core.bootstrap.BootStrapper;
 import ws.quokka.core.bootstrap.resources.DependencyResource;
 import ws.quokka.core.bootstrap_util.ArtifactPropertiesParser;
@@ -37,7 +35,6 @@ import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
 import ws.quokka.core.model.ModelFactory;
 import ws.quokka.core.model.ModelFactoryAware;
-import ws.quokka.core.model.Override;
 import ws.quokka.core.model.Path;
 import ws.quokka.core.model.PathGroup;
 import ws.quokka.core.model.Plugin;
@@ -50,15 +47,21 @@ import ws.quokka.core.model.Target;
 import ws.quokka.core.plugin_spi.BuildResources;
 import ws.quokka.core.plugin_spi.PluginState;
 import ws.quokka.core.plugin_spi.ResourcesAware;
+import ws.quokka.core.repo_resolver.ResolvedPath;
+import ws.quokka.core.repo_resolver.Resolver;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoDependency;
+import ws.quokka.core.repo_spi.RepoOverride;
 import ws.quokka.core.repo_spi.RepoPath;
 import ws.quokka.core.repo_spi.RepoPathSpec;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryAware;
-import ws.quokka.core.util.*;
+import ws.quokka.core.util.AnnotatedProperties;
+import ws.quokka.core.util.Annotations;
+import ws.quokka.core.util.PropertyProvider;
+import ws.quokka.core.util.Strings;
 import ws.quokka.core.version.Version;
 
 import java.util.ArrayList;
@@ -71,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 
 
 /**
@@ -84,9 +86,11 @@ public class DefaultProjectModel implements ProjectModel {
     private Profiles profiles;
     private ModelFactory modelFactory;
     private List aliases = new ArrayList();
-    private Map coreClassPath = new HashMap();
     private BootStrapper bootStrapper;
     private Logger log;
+    private Resolver pathResolver;
+    private ResolvedPath corePath = new ResolvedPath();
+    private List coreOverrides = new ArrayList();
 
     // Attributes
     private Map resolvedPaths = new HashMap();
@@ -103,6 +107,14 @@ public class DefaultProjectModel implements ProjectModel {
     private List resolvedImports = new ArrayList();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
+
+    public Resolver getPathResolver() {
+        return pathResolver;
+    }
+
+    public void setPathResolver(Resolver pathResolver) {
+        this.pathResolver = pathResolver;
+    }
 
     public void setBootStrapper(BootStrapper bootStrapper) {
         this.bootStrapper = bootStrapper;
@@ -177,6 +189,12 @@ public class DefaultProjectModel implements ProjectModel {
                         Assert.isTrue(!target.isTemplate(), dependencyTarget.getLocator(),
                             "The named target '" + name + "' is a template");
 
+                        String prefix = dependencyTarget.getPrefix();
+                        Assert.isTrue((prefix == null) || prefix.equals(target.getPrefix()),
+                            dependencyTarget.getLocator(),
+                            "The prefix '" + prefix + "' should match the target prefix '" + target.getPrefix()
+                            + "' if specified");
+
                         if (dependencyTarget.getAlias() != null) {
                             target.setAlias(dependencyTarget.getAlias());
                         }
@@ -233,9 +251,6 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     private void addTarget(Map resolved, Target target) {
-        //        if (target.getPlugin().getNameSpace().equals("quokka.devreport")) {
-        //            System.out.println("");
-        //        }
         //        System.out.println("Adding " + target.getName() + " from " + parents);
         if (target.getPrefix() != null) {
             target.setDefaultProperties(expandPrefix(target.getPrefix(), target.getDefaultProperties()));
@@ -377,14 +392,15 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     public void initialise() {
+        pathResolver = new Resolver(repository, log);
+
         // Add ant-types path
         project.getDependencySet().addPath(new Path("ant-types",
                 "Any entires added to this path are automatically added to the ant type definition class loader. "
                 + "e.g. Add commons.net and ant's optional commons.net library for using the ftp task"));
 
         // Get dependency sets, applying profiles and overrides
-        List sets = new ArrayList();
-        depthFirst(sets, project.getDependencySet());
+        List sets = depthFirst(project.getDependencySet());
 
         // 1st pass: Define targets, paths, imported URLs
         Map targets = new HashMap();
@@ -429,38 +445,44 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         resolvedTargets = targets;
+        corePath = resolveCorePath();
 
-        List modules = getCoreModules();
-
-        for (Iterator i = modules.iterator(); i.hasNext();) {
-            addBootClassPathModule((RepoArtifactId)i.next());
+        if ("true".equals(antProject.getProperty("quokka.project.overrideCore"))) {
+            coreOverrides = getCoreOverrides();
         }
     }
 
-    private void addBootClassPathModule(RepoArtifactId id) {
-        RepoArtifactId key = toUnversionedId(id);
-        coreClassPath.put(key, id);
+    private List depthFirst(DependencySet dependencySet) {
+        List sets = new ArrayList();
+        depthFirst(sets, dependencySet);
+
+        return sets;
     }
 
-    private RepoArtifactId toUnversionedId(RepoArtifactId id) {
-        return new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), Version.parse("0"));
-    }
-
-    private Version getBootClassPathVersion(RepoArtifactId id) {
-        RepoArtifactId bootClassPathId = (RepoArtifactId)coreClassPath.get(toUnversionedId(id));
-
-        return (bootClassPathId == null) ? null : bootClassPathId.getVersion();
-    }
-
-    private void depthFirst(List list, DependencySet dependencySet) {
-        list.add(dependencySet);
+    private void depthFirst(List sets, DependencySet dependencySet) {
+        sets.add(dependencySet);
 
         for (Iterator i = dependencySet.getSubsets().iterator(); i.hasNext();) {
             DependencySet subset = (DependencySet)i.next();
-            depthFirst(list, subset);
+            depthFirst(sets, subset);
         }
     }
 
+//    Project parser is depth-first, so keep the logic consistent. Keep for now in case of switch
+//    private List setsBreadthFirst() {
+//        List sets = new ArrayList();
+//        LinkedList queue = new LinkedList();
+//        queue.add(project.getDependencySet());
+//        while (!queue.isEmpty()) {
+//            DependencySet set = (DependencySet) queue.removeFirst();
+//            sets.add(set);
+//            for (Iterator i = set.getSubsets().iterator(); i.hasNext();) {
+//                DependencySet subSet = (DependencySet) i.next();
+//                queue.addLast(subSet);
+//            }
+//        }
+//        return sets;
+    //    }
     private void addPath(Path path) {
         resolvedPaths.put(path.getId(), path);
     }
@@ -509,7 +531,7 @@ public class DefaultProjectModel implements ProjectModel {
     private void registerTypes(Target target) {
         // TODO: prevent registration of duplicates?
         for (Iterator i = target.getPlugin().getTypes().iterator(); i.hasNext();) {
-            repository.registerType((RepoType)i.next());
+            repository.getFactory().registerType((RepoType)i.next());
         }
     }
 
@@ -593,7 +615,10 @@ public class DefaultProjectModel implements ProjectModel {
 
         for (Iterator i = artifacts.iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();
-            path.add(new org.apache.tools.ant.types.Path(antProject, artifact.getLocalCopy().getAbsolutePath()));
+
+            if (artifact.getLocalCopy() != null) { // Possible for "paths" type
+                path.add(new org.apache.tools.ant.types.Path(antProject, artifact.getLocalCopy().getAbsolutePath()));
+            }
         }
 
         return path;
@@ -609,9 +634,8 @@ public class DefaultProjectModel implements ProjectModel {
         }
     }
 
-    public List resolvePath(Target target, String pathGroupId, boolean flatten) {
+    public List resolvePathGroup(Target target, String pathGroupId) {
         Plugin plugin = target.getPlugin();
-        List path = new ArrayList();
         PathGroup pathGroup = target.getPathGroup(pathGroupId);
 
         if (pathGroup == null) {
@@ -632,11 +656,28 @@ public class DefaultProjectModel implements ProjectModel {
                 + ", pathGroupElements=" + pathGroup.getPaths());
         }
 
-        resolvePath(path, pathGroup.getPaths(), pathGroup.getMergeWithCore().booleanValue(), target, flatten);
+//        System.out.println("Resolving path: target=" + target.getName() + ", pathGroup=" + pathGroupId
+//            + ", pathGroupElements=" + pathGroup.getPaths());
+        List paths = new ArrayList();
 
+        // Note: merging with core is turned off here so that the proper path tree is maintained
+        // However, core overrides are still applied by separating that into a different flag
+        resolvePath(pathGroup.getPaths(), paths, false, pathGroup.getMergeWithCore().booleanValue(), target, false);
+
+//        for (Iterator i = paths.iterator(); i.hasNext();) {
+//            ResolvedPath path = (ResolvedPath) i.next();
+//            System.out.println(pathResolver.formatPath(path, false));
+//        }
+        ResolvedPath path = pathResolver.merge(paths);
+
+        if (pathGroup.getMergeWithCore().booleanValue()) {
+            mergeWithCore(path);
+        }
+
+//        System.out.println(pathResolver.formatPath(path, false));
         StringBuffer sb = new StringBuffer();
 
-        for (Iterator i = path.iterator(); i.hasNext();) {
+        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();
             sb.append(artifact.getId().toShortString()).append(";");
         }
@@ -646,25 +687,26 @@ public class DefaultProjectModel implements ProjectModel {
                 + sb.toString());
         }
 
-        return path;
+        return path.getArtifacts();
     }
 
-    private void resolvePath(List path, List pathIds, boolean mergeWithCore, Target target, boolean flatten) {
+    private void resolvePath(List ids, List paths, boolean mergeWithCore, boolean overrideCore, Target target,
+        boolean flatten) {
         String projectPrefix = "project.";
         String pluginPrefix = "plugin.";
         String propertyPrefix = "property.";
 
-        for (Iterator i = pathIds.iterator(); i.hasNext();) {
+        for (Iterator i = ids.iterator(); i.hasNext();) {
             String id = (String)i.next();
 
             if (id.startsWith(projectPrefix)) {
                 String projectPathId = id.substring(projectPrefix.length());
                 Assert.isTrue(resolvedPaths.get(projectPathId) != null,
                     "Project path '" + projectPathId + "' is not defined");
-                path.addAll(getProjectPath(projectPathId, mergeWithCore, flatten));
+                paths.add(getReslovedProjectPath(projectPathId, mergeWithCore, overrideCore, flatten));
             } else if (id.startsWith(pluginPrefix)) {
                 String pluginPathId = id.substring(pluginPrefix.length());
-                resolvePluginPath(path, target.getPlugin(), pluginPathId, mergeWithCore, flatten);
+                paths.add(getResolvedPluginPath(target.getPlugin(), pluginPathId, mergeWithCore, overrideCore, flatten));
             } else if (id.startsWith(propertyPrefix)) {
                 String property = id.substring(propertyPrefix.length());
                 property = Strings.replace(property, "prefix", target.getPrefix());
@@ -672,10 +714,13 @@ public class DefaultProjectModel implements ProjectModel {
                 String value = project.getProperties().getProperty(property);
 
                 if (value != null) {
-                    resolvePath(path, Strings.commaSepList(value), mergeWithCore, target, flatten);
+                    resolvePath(Strings.commaSepList(value), paths, mergeWithCore, overrideCore, target, flatten);
                 }
             } else if (id.equals("plugin")) {
+                ResolvedPath path = new ResolvedPath();
+                path.setId("Plugin:");
                 path.add(target.getPlugin().getArtifact());
+                paths.add(path);
             } else {
                 throw new BuildException(
                     "A path group must contain a comma separated list of: plugin | plugin.<pluginpath> | project.<projectpath> | property.<reference to a property containing additional paths>: id="
@@ -685,356 +730,191 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     public List getPluginPath(Plugin plugin, String pathId, boolean mergeWithCore, boolean flatten) {
-        List path = new ArrayList();
-        resolvePluginPath(path, plugin, pathId, mergeWithCore, flatten);
-
-        return path;
+        return getResolvedPluginPath(plugin, pathId, mergeWithCore, mergeWithCore, flatten).getArtifacts();
     }
 
-    private void resolvePluginPath(List path, Plugin plugin, String pathId, boolean mergeWithCore, boolean flatten) {
-        // Check if the plugin declaration provides options to either add optional dependencies or override versions
-        Set options = new HashSet();
+    public ResolvedPath getResolvedPluginPath(Plugin plugin, String pathId, boolean mergeWithCore,
+        boolean overrideCore, boolean flatten) {
+        // Create a mock artifact for the resolver as a way to add user specified path specs and overrides
+        RepoArtifact artifact = new RepoArtifact();
+        RepoDependency dependency = new RepoDependency();
+        RepoArtifactId pluginId = plugin.getArtifact().getId();
+        dependency.setId(pluginId);
+        artifact.addDependency(dependency);
 
+        String id = "plugin";
+        artifact.addPath(new RepoPath(id, "Plugin path", true, true));
+
+        // Add dependencies
         if (plugin.getDependency() != null) {
             for (Iterator j = plugin.getDependency().getPathSpecs().iterator(); j.hasNext();) {
                 RepoPathSpec pluginPathSpec = (RepoPathSpec)j.next();
 
                 if (pluginPathSpec.getFrom().equals(pathId)) {
-                    options.add(pluginPathSpec.getOptions());
+                    // Add user specifications. Ignore the mandatory flag and to paths as they
+                    // are not relevant. However, allow descend to be false in case the writer of the
+                    // plugin added bogus dependencies.
+                    dependency.addPathSpec(new RepoPathSpec(pathId, id, pluginPathSpec.getOptions(),
+                            (pluginPathSpec.isDescend() == null) ? Boolean.TRUE : pluginPathSpec.isDescend(),
+                            Boolean.TRUE));
                 }
             }
         }
 
-        boolean containsPlugin = false;
+        if (dependency.getPathSpecs().size() == 0) {
+            // Add default ... user hasn't specified anything
+            dependency.addPathSpec(new RepoPathSpec(pathId, id, null, Boolean.TRUE, Boolean.TRUE));
+        }
 
-        for (Iterator i = path.iterator(); i.hasNext();) {
-            RepoArtifact artifact = (RepoArtifact)i.next();
-
-            if (artifact.getId().equals(plugin.getArtifact().getId())) {
-                containsPlugin = true;
-
-                break;
+        // Add core overrides if applicable
+        if (overrideCore) {
+            for (Iterator j = coreOverrides.iterator(); j.hasNext();) {
+                RepoOverride override = (RepoOverride)j.next();
+                artifact.addOverride(override);
             }
         }
 
-        RepoPathSpec pathSpec = new RepoPathSpec(pathId, null, null, Boolean.TRUE, Boolean.TRUE);
-        RepoDependency pluginDependency = new RepoDependency();
-        pluginDependency.setId(plugin.getArtifact().getId());
-        pluginDependency.addPathSpec(pathSpec);
+        // Add overrides
+        for (Iterator i = depthFirst(project.getDependencySet()).iterator(); i.hasNext();) {
+            DependencySet set = (DependencySet)i.next();
 
-        // TODO: Simplify this mess ... so that the plugin artifact is never added in the first place
-        int size = path.size();
-        resolvePath(pathId, path, pathSpec, options, true, plugin.getArtifact().getId(), mergeWithCore, flatten);
+            for (Iterator j = set.getOverrides().iterator(); j.hasNext();) {
+                ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)j.next();
+                Set paths = override.matchingPluginPaths(plugin.getArtifact().getId());
 
-        if (!containsPlugin) {
-            path.remove(size);
-        }
-    }
-
-    private RepoArtifactId handleConflict(String pathId, List path, RepoArtifactId id, boolean autoFix,
-        boolean flatten, RepoArtifactId declaredBy) {
-        RepoArtifactId unversioned = toUnversionedId(id);
-
-        for (Iterator i = path.iterator(); i.hasNext();) {
-            RepoArtifact artifact = (RepoArtifact)i.next();
-
-            if (toUnversionedId(artifact.getId()).equals(unversioned)) {
-                if (artifact.getId().getVersion().equals(id.getVersion())) {
-                    return flatten ? null : id;
-                } else {
-                    // Conflict
-                    Assert.isTrue(autoFix,
-                        "A conflict has occurred between " + artifact.getId().toShortString() + " and "
-                        + id.getVersion() + " for path '" + pathId + "'" + "\n\t" + artifact.getId().getVersion()
-                        + " <- " + getDeclarations((RepoArtifactId)artifact.getId().getAnnotations().get("declaredBy"))
-                        + "\n\t" + id.getVersion() + " <- " + getDeclarations(declaredBy));
-
-                    return override(id, artifact.getId().getVersion());
+                if (paths.contains(pathId) || ((paths.size() == 1) && paths.contains("*"))) {
+                    // Create a copy of the override, moving matching plugin paths to be standard paths
+                    RepoOverride copy = new RepoOverride(Collections.singleton("*"), override.getGroup(),
+                            override.getName(), override.getType(), override.getVersion(), override.getWithVersion(),
+                            override.getWithPathSpecs());
+                    artifact.addOverride(copy);
                 }
             }
         }
 
-        return id;
-    }
+        // Remove the plugin itself from the path
+        // TODO: Look into a better way of doing this, perhaps modifying Resolver so it has the option
+        // of not adding the root in first place.
+        ResolvedPath path = pathResolver.resolvePath(id, artifact);
+        path.setId("Plugin path '" + pathId + "' from " + pluginId.toShortString());
 
-//    private String getLocation(AnnotatedObject annotatedObject) {
-//        Locator locator = annotatedObject.getLocator();
-//        if (locator == null) {
-//            return "unknown";
-//        } else {
-//            return locator.toString();
-//        }
-//    }
-    private String getDeclarations(RepoArtifactId id) {
-        if (id == null) {
-            return "project";
-        }
+        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
+            artifact = (RepoArtifact)i.next();
 
-        StringBuffer sb = new StringBuffer();
-        getDeclarations(id, sb);
-
-        return sb.toString();
-    }
-
-    private void getDeclarations(RepoArtifactId id, StringBuffer sb) {
-        sb.append(id.toShortString());
-
-        RepoArtifactId declaredBy = (RepoArtifactId)id.getAnnotations().get("declaredBy");
-
-        if (declaredBy != null) {
-            sb.append(" <- ");
-            getDeclarations(declaredBy, sb);
-        }
-    }
-
-    private void resolvePath(String pathId, List path, RepoPathSpec pathSpec, Set options, boolean force,
-        RepoArtifactId declaredBy, boolean mergeWithCore, boolean flatten) {
-        if (path.size() > 150) {
-            System.err.println("Cycle detected!");
-
-            for (Iterator i = path.iterator(); i.hasNext();) {
-                RepoArtifact artifact = (RepoArtifact)i.next();
-                System.err.println(artifact.getId().toShortString());
+            if (artifact.getId().equals(pluginId)) {
+                i.remove();
             }
 
-            System.exit(1);
-        }
-
-        if (pathSpec.getOptions() != null) {
-            options = new HashSet(options);
-            options.add(pathSpec.getOptions());
-        }
-
-        if ((options.size() == 0) && !pathSpec.isMandatory().booleanValue() && !force) {
-            return; // The artifact is not mandatory and has not been added as an option
-        }
-
-        // Add the artifact to the path
-        RepoArtifact artifact = getArtifact(pathSpec.getDependency().getId());
-        RepoArtifactId id = handleConflict(pathId, path, artifact.getId(), false, flatten, declaredBy);
-
-        if (id != null) {
-            artifact = id.equals(artifact.getId()) ? artifact : getArtifact(id);
-            artifact.getId().getAnnotations().put("declaredBy", declaredBy);
-            path.add(artifact);
-        }
-
-        if ((options.size() == 0) && !pathSpec.isDescend().booleanValue()) {
-            return; // Not required to descend and no options to force it
-        }
-
-        // Process dependencies
-        Set topLevelOptions = splitTopLevelOptions(options);
-
-        for (Iterator i = artifact.getDependencies().iterator(); i.hasNext();) {
-            RepoDependency dependency = (RepoDependency)i.next();
-
-            // Handle global overrides
-            for (Iterator j = project.getOverrides().iterator(); j.hasNext();) {
-                Override override = (Override)j.next();
-
-                if (override.matches(Override.SCOPE_ALL, dependency.getId())) {
-                    dependency.setId(override(dependency.getId(), override.getWith()));
-                }
-            }
-
-            for (Iterator j = dependency.getPathSpecs().iterator(); j.hasNext();) {
-                RepoPathSpec dependencyPathSpec = (RepoPathSpec)j.next();
-
-                if (dependencyPathSpec.getTo().equals(pathSpec.getFrom())) {
-                    // This dependency is path of the path
-                    Set matchingOptions = new HashSet();
-                    Version override = findMatchingOptions(artifact, dependencyPathSpec, topLevelOptions,
-                            matchingOptions);
-
-                    // Handle explicit overrides
-                    if (override != null) {
-                        dependency.setId(override(dependency.getId(), override));
-                    }
-
-                    if (pathSpec.isDescend().booleanValue() || (matchingOptions.size() > 0)) {
-                        if (!mergeWithCore || !isCore(dependency.getId())) {
-                            resolvePath(pathId, path, dependencyPathSpec, nextLevelOptions(matchingOptions),
-                                matchingOptions.size() > 0, artifact.getId(), mergeWithCore, flatten);
-                        }
-                    }
-                }
+            if (pluginId.equals(artifact.getId().getAnnotations().get("declaredBy"))) {
+                artifact.getId().getAnnotations().remove("declaredBy");
             }
         }
 
-        Assert.isTrue(topLevelOptions.size() == 0, pathSpec.getLocator(),
-            "Options do not match dependencies of artifact: artifact=" + artifact.getId() + ", options="
-            + topLevelOptions + ", dependencies=" + artifact.getDependencies());
-    }
+        path = handleMergeAndFlatten(mergeWithCore, flatten, path);
 
-    private RepoArtifactId override(RepoArtifactId id, Version version) {
-        if (log.isDebugEnabled()) {
-            log.debug("Overriding " + id.toShortString() + " to " + version);
-        }
-
-        RepoArtifactId overridden = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), version);
-        overridden.setAnnotations((Annotations)id.getAnnotations().clone());
-
-        return overridden;
-    }
-
-    private boolean isCore(RepoArtifactId id) {
-        RepoArtifactId core = (RepoArtifactId)coreClassPath.get(toUnversionedId(id));
-
-        if (core != null) {
-            boolean conflict = !core.getVersion().equals(id.getVersion());
-
-            if (conflict) {
-                String message = "conflict with the core: dependency=" + id.toShortString() + ", core="
-                    + core.getVersion();
-                boolean overrideCore = "true".equals(antProject.getProperty("quokka.project.overrideCore"));
-                Assert.isTrue(overrideCore, id.getLocator(), message);
-                log.verbose("Overriding " + message);
-            }
-
-            log.verbose("Dropping " + id.toShortString() + " from path as it exists in the core");
-        }
-
-        return core != null;
-    }
-
-    private Version findMatchingOptions(RepoArtifact artifact, RepoPathSpec pathSpec, Set options, Set matching) {
-        //        System.out.println("    matching options: options=" + options + ", artifact=" + artifact.getId() + ", pathSpec=" + pathSpec);
-        Version override = null;
-
-        for (Iterator i = options.iterator(); i.hasNext();) {
-            String option = (String)i.next();
-
-            // Find matching artifact dependency
-            String[] groupName = Strings.split(Strings.split(option, "(")[0], RepoArtifactId.ID_SEPARATOR);
-            String name = groupName[0].trim();
-            String group = (groupName.length > 1) ? groupName[1] : null;
-            String[] nameVersion = Strings.split(name, "@");
-            Assert.isTrue((nameVersion.length == 1) || (nameVersion.length == 2),
-                "Invalid option format: valid format is [group][:]<name>[@][version]: options=" + option);
-
-            if (nameVersion.length == 2) {
-                name = nameVersion[0];
-
-                Version version = new Version(nameVersion[1]);
-                Assert.isTrue((override == null) || override.equals(version),
-                    "Multiple overrides are specified for " + artifact.getId().toShortString()
-                    + " that are inconsistent: " + version + " and " + override);
-                override = version;
-            }
-
-            if (matches(group, name, artifact, pathSpec)) {
-                i.remove(); // To see if any remain unmatched later
-
-                //                System.out.println("Matched " + dependency + " to " + option);
-                matching.add(option);
-            }
-        }
-
-        return override;
-    }
-
-    private boolean matches(String group, String name, RepoArtifact artifact, RepoPathSpec pathSpec) {
-        RepoArtifactId id = pathSpec.getDependency().getId();
-
-        if (group != null) {
-            return id.getGroup().equals(group) && id.getName().equals(name); // Exact match
-        }
-
-        if (!id.getName().equals(name)) {
-            return false; // names don't match
-        }
-
-        // Make sure matching by name is unambiguos for all dependencies in the path
-        int count = 0;
-
-        for (Iterator i = artifact.getDependencies().iterator(); i.hasNext();) {
-            RepoDependency dependency = (RepoDependency)i.next();
-
-            for (Iterator j = dependency.getPathSpecs().iterator(); j.hasNext();) {
-                RepoPathSpec dependencyPathSpec = (RepoPathSpec)j.next();
-
-                if (dependencyPathSpec.getTo().equals(pathSpec.getTo())) {
-                    // This dependency is path of the path
-                    if (id.getName().equals(dependencyPathSpec.getDependency().getId().getName())) {
-                        count++;
-                    }
-
-                    if (count > 1) {
-                        throw new BuildException(
-                            "Option does not uniquely identify the dependency. Specify the group as well");
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private Set nextLevelOptions(Set options) {
-        Set nextLevel = new HashSet();
-
-        for (Iterator i = options.iterator(); i.hasNext();) {
-            String option = (String)i.next();
-
-            if (option.indexOf("(") > 0) {
-                nextLevel.add(option.substring(option.indexOf('(') + 1, option.lastIndexOf(')')));
-            }
-        }
-
-        return nextLevel;
+        return path;
     }
 
     private RepoArtifact getArtifact(RepoArtifactId artifactId) {
         return (RepoArtifact)repository.resolve(artifactId).clone(); // Clone to allow additional annotations to be added within context
     }
 
-    private Set splitTopLevelOptions(Set options) {
-        Set topLevelOptions = new HashSet();
-
-        for (Iterator i = options.iterator(); i.hasNext();) {
-            String option = (String)i.next();
-            String[] split = Strings.splitTopLevel(option, '(', ')', ',');
-            topLevelOptions.addAll(Arrays.asList(split));
-        }
-
-        return topLevelOptions;
+    public List getProjectPath(String id, boolean mergeWithCore, boolean flatten) {
+        return getReslovedProjectPath(id, mergeWithCore, mergeWithCore, flatten).getArtifacts();
     }
 
-    public List getProjectPath(String id, boolean mergeWithCore, boolean flatten) {
-        ArrayList path = new ArrayList();
-        log.debug("Getting project path: id=" + id + ", mergeWithCore=" + mergeWithCore + ", flatten=" + flatten);
-        resolveProjectPath(path, id, project.getDependencySet(), mergeWithCore, flatten);
+    public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten) {
+        return getReslovedProjectPath(id, mergeWithCore, overrideCore, flatten, new ArrayList());
+    }
+
+    public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten,
+        List appliedOverrides) {
+        log.debug("Getting project path: id=" + id + ", mergeWithCore=" + mergeWithCore + ", overrideCore="
+            + overrideCore + ", flatten=" + flatten);
+
+        RepoArtifact artifact = new RepoArtifact();
+
+        for (Iterator i = depthFirst(project.getDependencySet()).iterator(); i.hasNext();) {
+            DependencySet set = (DependencySet)i.next();
+
+            // Add dependencies
+            for (Iterator j = set.getDependencies().iterator(); j.hasNext();) {
+                RepoDependency dependency = (RepoDependency)j.next();
+                artifact.addDependency(dependency);
+            }
+
+            // Add core overrides first if applicable
+            if (overrideCore) {
+                for (Iterator j = coreOverrides.iterator(); j.hasNext();) {
+                    RepoOverride override = (RepoOverride)j.next();
+                    artifact.addOverride(override);
+                }
+            }
+
+            // Add overrides
+            for (Iterator j = set.getOverrides().iterator(); j.hasNext();) {
+                RepoOverride override = (RepoOverride)j.next();
+                artifact.addOverride(override);
+            }
+        }
+
+        // Copy the project paths to the artifact
+        for (Iterator i = resolvedPaths.values().iterator(); i.hasNext();) {
+            RepoPath path = (RepoPath)i.next();
+            artifact.addPath(path);
+        }
+
+        ResolvedPath path = pathResolver.resolvePath(id, artifact, appliedOverrides);
+        path.setId("Project path '" + id + "'");
+
+        path = handleMergeAndFlatten(mergeWithCore, flatten, path);
 
         return path;
     }
 
-    public Map getResolvedPaths() {
-        return resolvedPaths;
-    }
+    /**
+     * Overrides anything that conflicts with the core to the core version
+     * This will allow old plugins to potentially work without overriding them
+     */
+    private List getCoreOverrides() {
+        List overrides = new ArrayList();
 
-    private void resolveProjectPath(List path, String id, DependencySet dependencySet, boolean mergeWithCore,
-        boolean flatten) {
-        for (Iterator i = dependencySet.getDependencies().iterator(); i.hasNext();) {
-            resolveProjectPath(path, id, (Dependency)i.next(),
-                (dependencySet.getArtifact() == null) ? null : dependencySet.getArtifact().getId(), mergeWithCore,
-                flatten);
+        for (Iterator i = corePath.getArtifacts().iterator(); i.hasNext();) {
+            RepoArtifact artifact = (RepoArtifact)i.next();
+            RepoArtifactId id = artifact.getId();
+            overrides.add(new RepoOverride(Collections.singleton("*"), id.getGroup(), id.getName(), id.getType(), null,
+                    id.getVersion()));
         }
 
-        for (Iterator i = dependencySet.getSubsets().iterator(); i.hasNext();) {
-            resolveProjectPath(path, id, (DependencySet)i.next(), mergeWithCore, flatten);
-        }
+        return overrides;
     }
 
-    private void resolveProjectPath(List path, String pathId, Dependency dependency, RepoArtifactId declaredBy,
-        boolean mergeWithCore, boolean flatten) {
-        for (Iterator i = dependency.getPathSpecs().iterator(); i.hasNext();) {
-            RepoPathSpec pathSpec = (RepoPathSpec)i.next();
+    private ResolvedPath handleMergeAndFlatten(boolean mergeWithCore, boolean flatten, ResolvedPath path) {
+        if (mergeWithCore) {
+            mergeWithCore(path);
+        } else if (flatten) {
+            path = pathResolver.merge(Collections.singleton(path));
+        }
 
-            if (pathSpec.getTo().equals(pathId)) {
-                resolvePath(pathId, path, pathSpec, new HashSet(), false, declaredBy, mergeWithCore, flatten);
+        return path;
+    }
+
+    private void mergeWithCore(ResolvedPath path) {
+        // Will throw a detailed exception on conflict
+        pathResolver.merge(Arrays.asList(new ResolvedPath[] { corePath, path }));
+
+        // Now strip any artifacts that are found in the core
+        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
+            RepoArtifact artifact = (RepoArtifact)i.next();
+
+            if (corePath.contains(artifact.getId())) {
+                i.remove();
             }
         }
+    }
+
+    public Map getResolvedPaths() {
+        return resolvedPaths;
     }
 
     public Metadata getMetadata() {
@@ -1072,7 +952,7 @@ public class DefaultProjectModel implements ProjectModel {
         DefaultResources resources;
 
         try {
-            org.apache.tools.ant.types.Path classPath = toAntPath(resolvePath(target, "classpath", true));
+            org.apache.tools.ant.types.Path classPath = toAntPath(resolvePathGroup(target, "classpath"));
 
             // Allow additional classes to added to the plugin classpath. This is primarily designed to
             // allow the additional of instrumented testing classes and libraries for code coverage of integration
@@ -1146,58 +1026,35 @@ public class DefaultProjectModel implements ProjectModel {
         return null;
     }
 
-    public void mergeWithCoreClassPath(List classPath) {
-        for (Iterator i = classPath.iterator(); i.hasNext();) {
-            RepoArtifact artifact = (RepoArtifact)i.next();
-            Version version = (Version)coreClassPath.get(toUnversionedId(artifact.getId()));
-
-            if (version == null) {
-                continue; // Not in boot class path at all
-            }
-
-            Assert.isTrue(artifact.getId().getVersion().equals(version), artifact.getLocator(),
-                "The artifact conflicts with core classpath: artifact=" + artifact.getId().toShortString()
-                + ", core version=" + version.toString());
-            i.remove();
-        }
-    }
-
-    protected List getCoreModules() {
-        List modules = new ArrayList();
-
-        String[] module = new String[] {
-                "main", "metadata", "model", "plugin-spi", "repo-spi", "repo-standard", "util", "bootstrap"
-            };
-
-        for (int i = 0; i < module.length; i++) {
-            String name = module[i];
-            modules.add(coreModuleId(name));
-        }
+    protected ResolvedPath resolveCorePath() {
+        List ids = new ArrayList();
 
         // Add the ant jars
         Properties properites = new ArtifactPropertiesParser().parse("quokka.core.main", "main", "jar");
-        List dependencies = BootStrapper.getDependencies(properites, "dist");
+        ids.add(new DependencyResource("quokka.core.main", "main",
+                Version.parse(properites.getProperty("artifact.id.version"))));
+        ids.addAll(BootStrapper.getDependencies(properites, "runtime"));
+        properites = new ArtifactPropertiesParser().parse("quokka.core.ant-optional-1-7-0", "ant-optional-1-7-0", "jar");
+        ids.addAll(BootStrapper.getDependencies(properites, "bundle"));
 
         // Add any additional user specified dependencies
         // TODO: Support additional dependencies for non-bootstrapped builds?
         if (bootStrapper != null) {
-            dependencies.addAll(bootStrapper.getAdditionalDependencies());
+            ids.addAll(bootStrapper.getAdditionalDependencies());
         }
 
-        for (Iterator i = dependencies.iterator(); i.hasNext();) {
+        List artifacts = new ArrayList();
+
+        for (Iterator i = ids.iterator(); i.hasNext();) {
             DependencyResource dependency = (DependencyResource)i.next();
-            modules.add(new RepoArtifactId(dependency.getGroup(), dependency.getName(), "jar", dependency.getVersion()));
+            artifacts.add(new RepoArtifact(
+                    new RepoArtifactId(dependency.getGroup(), dependency.getName(), "jar", dependency.getVersion())));
         }
 
-        return modules;
-    }
+        ResolvedPath path = new ResolvedPath("Quokka core path", artifacts);
+        log.debug(pathResolver.formatPath(path, false));
 
-    protected RepoArtifactId coreModuleId(String module) {
-        String group = "quokka.core" + "." + module;
-        String type = "jar";
-        Properties properites = new ArtifactPropertiesParser().parse(group, module, type);
-
-        return new RepoArtifactId(group, module, type, Version.parse(properites.getProperty("artifact.id.version")));
+        return path;
     }
 
     /**
@@ -1229,72 +1086,5 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         return applied;
-    }
-
-    //~ Inner Classes --------------------------------------------------------------------------------------------------
-
-    /**
-     * QuokkaLoader is a class loader that keeps track of the number of class loaders
-     * allocated versus finalized to check for class laoder leaks. At present, the jalopy
-     * plugin is known the leak loaders, although the underlying cause has not been identified.
-     *
-     * Useful options:
-     *      Debugging:   QUOKKA_OPTS=-verbose:gc -XX:+PrintClassHistogram -XX:+PrintGCDetails
-     *      Work-around: QUOKKA_OPTS=-XX:MaxPermSize=128m
-     */
-    public static class QuokkaLoader extends AntClassLoader {
-        private static Map loaders = new TreeMap();
-        private String name;
-
-        public QuokkaLoader(Target target, ClassLoader parent, org.apache.tools.ant.Project project,
-            org.apache.tools.ant.types.Path classpath) {
-            super(parent, project, classpath);
-            name = target.getName();
-            add(1);
-        }
-
-        private static void initialise() {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                    public void run() {
-                        System.out.println("Checking for leaking class loaders ...");
-                        System.gc();
-
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        System.gc();
-
-                        for (Iterator i = loaders.entrySet().iterator(); i.hasNext();) {
-                            Map.Entry entry = (Map.Entry)i.next();
-                            System.out.println(entry.getKey() + " -> " + entry.getValue());
-                        }
-                    }
-                });
-        }
-
-        protected void finalize() throws Throwable {
-            super.finalize();
-            add(-1);
-        }
-
-        private void add(int i) {
-            synchronized (loaders) {
-                if (loaders.size() == 0) {
-                    initialise();
-                }
-
-                Integer count = (Integer)loaders.get(name);
-
-                if (count == null) {
-                    count = new Integer(0);
-                }
-
-                count = new Integer(count.intValue() + i);
-                loaders.put(name, count);
-            }
-        }
     }
 }

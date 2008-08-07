@@ -29,6 +29,7 @@ import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
 import ws.quokka.core.model.Override;
 import ws.quokka.core.model.Path;
+import ws.quokka.core.model.PathSpec;
 import ws.quokka.core.model.PluginDependency;
 import ws.quokka.core.model.PluginDependencyTarget;
 import ws.quokka.core.model.Profile;
@@ -38,22 +39,25 @@ import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
 import ws.quokka.core.repo_spi.Repository;
-import ws.quokka.core.util.*;
+import ws.quokka.core.util.AnnotatedObject;
+import ws.quokka.core.util.AnnotatedProperties;
+import ws.quokka.core.util.Annotations;
+import ws.quokka.core.util.Strings;
+import ws.quokka.core.util.URLs;
 import ws.quokka.core.util.xml.Converter;
 import ws.quokka.core.util.xml.Document;
 import ws.quokka.core.util.xml.Element;
 import ws.quokka.core.util.xml.LocatorDomParser;
 import ws.quokka.core.util.xml.ReflectionConverter;
 import ws.quokka.core.util.xml.XmlConverter;
-import ws.quokka.core.version.Version;
-import ws.quokka.core.version.VersionRangeUnion;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
 import java.net.URL;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +74,6 @@ public class ProjectParser {
     private Repository repository;
     private XmlConverter converter = new XmlConverter();
     private Project project;
-    private List traversedDependencySets = new ArrayList();
     private boolean topLevel;
     private AnnotatedProperties projectProperties;
     private AnnotatedProperties eagerProperties;
@@ -98,8 +101,9 @@ public class ProjectParser {
         converter.add(new DependencyConverter(Dependency.class));
         converter.add(new PluginDependencyConverter(PluginDependency.class));
         converter.add(new PathConverter(Path.class));
-        converter.add(new AbstractProjectConverter(ws.quokka.core.model.Override.class));
+        converter.add(new OverrideConverter(Override.class));
         converter.add(new PluginDependendencyTargetConverter(PluginDependencyTarget.class));
+        converter.add(new ReflectionConverter(PathSpec.class));
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -125,25 +129,19 @@ public class ProjectParser {
         log.verbose("Automatically activating profile '" + id + "'");
     }
 
+    private Element applyProfilesChild(Element element, String child) {
+        List elements = applyProfiles(element.getChildren(child));
+        Assert.isTrue(elements.size() <= 1,
+            "There can be only 1 active '" + child + "' element at a time for a given '" + element.getName() + "'");
+
+        return (Element)((elements.size() == 0) ? null : elements.get(0));
+    }
+
     private List applyProfiles(List elements) {
         for (Iterator i = elements.iterator(); i.hasNext();) {
             Element element = (Element)i.next();
-            Profiles elementProfiles = new Profiles(element.getAttribute("profiles"));
 
-            for (Iterator j = elementProfiles.getElements().iterator(); j.hasNext();) {
-                String profileId = (String)j.next();
-                String absoluteProfileId = profileId;
-
-                if (profileId.startsWith("-")) {
-                    absoluteProfileId = profileId.substring(1);
-                }
-
-                Assert.isTrue(project.getProfiles().get(absoluteProfileId) != null,
-                    LocatorDomParser.getLocator(element.getElement()),
-                    "Profile '" + profileId + "' has not been defined in the project");
-            }
-
-            if (!activeProfiles.matches(elementProfiles)) {
+            if (applyProfiles(element) == null) {
                 i.remove();
             }
         }
@@ -151,53 +149,69 @@ public class ProjectParser {
         return elements;
     }
 
+    private Element applyProfiles(Element element) {
+        if (element == null) {
+            return null;
+        }
+
+        return activeProfiles.matches(getProfiles(element)) ? element : null;
+    }
+
+    private Profiles getProfiles(Element element) {
+        Profiles elementProfiles = new Profiles(element.getAttribute("profiles"));
+
+        for (Iterator j = elementProfiles.getElements().iterator(); j.hasNext();) {
+            String profileId = (String)j.next();
+            String absoluteProfileId = profileId;
+
+            if (profileId.startsWith("-")) {
+                absoluteProfileId = profileId.substring(1);
+            }
+
+            Assert.isTrue(project.getProfiles().get(absoluteProfileId) != null, getLocator(element),
+                "Profile '" + profileId + "' has not been defined in the project");
+        }
+
+        return elementProfiles;
+    }
+
     private void addProperties(AnnotatedProperties properties, String prefix, Element el) {
         for (Iterator i = applyProfiles(el.getChildren("property")).iterator(); i.hasNext();) {
             Element propertyEl = (Element)i.next();
-            String name = propertyEl.getAttribute("name");
-            String value = propertyEl.getAttribute("value");
-            String text = propertyEl.getText();
-            Locator locator = LocatorDomParser.getLocator(propertyEl.getElement());
-            Assert.isTrue(((value == null) && (text.length() != 0)) || ((value != null) && (text.length() == 0)),
-                locator, "Property must either have text content or a value attribute, but not both");
-            value = (value == null) ? text : value;
-
-            Annotations annotations = new Annotations();
-            annotations.put(AnnotatedObject.LOCATOR, locator);
-            properties.setProperty(prefix + name, value, annotations);
+            addProperty(propertyEl, prefix, Collections.singleton(properties));
         }
     }
 
-    private RepoArtifactId override(RepoArtifactId id, String scope) {
-        for (Iterator i = project.getOverrides().iterator(); i.hasNext();) {
-            Override override = (Override)i.next();
+    public static void addProperty(Element propertyEl, String prefix, Collection properties) {
+        String name = propertyEl.getAttribute("name");
+        String value = propertyEl.getAttribute("value");
+        String text = propertyEl.getText();
+        Locator locator = getLocator(propertyEl);
+        Assert.isTrue(((value == null) && (text.length() != 0)) || ((value != null) && (text.length() == 0)), locator,
+            "Property must either have text content or a value attribute, but not both");
+        value = (value == null) ? text : value;
 
-            if (override.matches(scope, id)) {
-                RepoArtifactId overridden = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(),
-                        override.getWith());
-                overridden.setAnnotations((Annotations)id.getAnnotations().clone());
-                overridden.getAnnotations().put("overiddenVersion", id.getVersion());
-                overridden.getAnnotations().put("overiddenBy", override);
+        Annotations annotations = new Annotations();
+        annotations.put(AnnotatedObject.LOCATOR, locator);
+        annotations.put("initial", value);
 
-                return overridden;
-            }
+        for (Iterator i = properties.iterator(); i.hasNext();) {
+            AnnotatedProperties annotatedProperties = (AnnotatedProperties)i.next();
+            annotatedProperties.setProperty(prefix + name, value, annotations);
         }
-
-        return id;
     }
 
     /*
      * TODO: Define DTDs and add validation
      */
     public Project parse() {
-        if (log.isDebugEnabled()) {
-            log.debug("Parsing " + projectFile.getAbsolutePath());
-        }
+        log.debug("Parsing " + projectFile.getAbsolutePath());
 
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
-        resolver.addVersion("project", "0.1");
 
-//        resolver.addVersion("project", new String[] {"0.1", "0.2"});
+//        resolver.addVersion("project", "0.1");
+        resolver.addVersion("project", new String[] { "0.1", "0.2" });
+
         Document document = Document.parse(projectFile, resolver);
         Project project = (Project)converter.fromXml(Project.class, document.getRoot());
         project.setProjectFile(projectFile);
@@ -218,6 +232,9 @@ public class ProjectParser {
             }
         }
 
+        // Project properies from project file itself
+        addTopLevelProjectProperties(projectFile, properties);
+
         // User properties
         final File file = new File(new File(new File(System.getProperty("user.home")), ".quokka"), "quokka.properties");
 
@@ -225,7 +242,7 @@ public class ProjectParser {
             File parentFile = file.getParentFile();
             System.out.println("Creating default properties: " + file.getAbsolutePath());
             Assert.isTrue(parentFile.exists() || parentFile.mkdirs(),
-                "Cannot create quokka defaults dir: " + parentFile.getAbsolutePath());
+                "Cannot getOrCreate quokka defaults dir: " + parentFile.getAbsolutePath());
 
             new VoidExceptionHandler() {
                     public void run() throws Exception {
@@ -243,11 +260,34 @@ public class ProjectParser {
         return properties;
     }
 
+    private static void addTopLevelProjectProperties(File projectFile, AnnotatedProperties properties) {
+        try {
+            Document document = Document.parse(projectFile, new Document.NullEntityResolver());
+            Element projectEl = document.getRoot();
+
+            if (projectEl != null) {
+                Element dependencySetEl = projectEl.getChild("dependency-set");
+                List propertyEls = dependencySetEl.getChildren("property");
+
+                for (Iterator i = propertyEls.iterator(); i.hasNext();) {
+                    Element propertyEl = (Element)i.next();
+                    addProperty(propertyEl, "", Collections.singleton(properties));
+                }
+            }
+        } catch (Exception e) {
+            // Ignore as the document will be parsed properly and validated later
+        }
+    }
+
     private static AnnotatedProperties getProperties(URL url) {
         AnnotatedProperties properties = new AnnotatedProperties();
         properties.load(url);
 
         return properties;
+    }
+
+    private static Locator getLocator(Element el) {
+        return LocatorDomParser.getLocator(el.getElement());
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
@@ -266,7 +306,9 @@ public class ProjectParser {
                 target.addDependency(dependency);
             }
 
-            addProperties(projectProperties, (target.getPrefix() == null) ? "" : (target.getPrefix() + "."), element);
+            DependencySet dependencySet = (DependencySet)getContext("dependencySet");
+            addProperties(dependencySet.getProperties(),
+                (target.getPrefix() == null) ? "" : (target.getPrefix() + "."), element);
 
             return target;
         }
@@ -275,6 +317,26 @@ public class ProjectParser {
     public static class AbstractProjectConverter extends ReflectionConverter {
         public AbstractProjectConverter(Class clazz) {
             super(clazz);
+        }
+    }
+
+    public class OverrideConverter extends RepoXmlConverter.RepoOverrideConverter {
+        public OverrideConverter(Class clazz) {
+            super(clazz);
+        }
+
+        public Object fromXml(Element overrideEl) {
+            Override override = (Override)super.fromXml(overrideEl);
+            String paths = overrideEl.getAttribute("plugin-paths");
+
+            if (paths != null) {
+                for (Iterator i = Strings.commaSepList(paths).iterator(); i.hasNext();) {
+                    String path = (String)i.next();
+                    override.addPluginPath(path);
+                }
+            }
+
+            return override;
         }
     }
 
@@ -289,12 +351,15 @@ public class ProjectParser {
             project.setProperties(projectProperties);
 
             addAutomaticProfiles();
+            activateAutomaticProfiles();
 
             Converter converter;
 
             // Dependency set
-            // Important: parse first as dependency sets must be recursed first to discover profiles, overrids and paths
-            Element dependencySetEl = projectEl.getChild("dependency-set");
+            // Important: parse first as dependency sets must be recursed first to discover profiles, overrides and paths
+            Element dependencySetEl = applyProfilesChild(projectEl, "dependency-set");
+            Assert.isTrue(dependencySetEl.getElement().getAttributes().getLength() == 0, getLocator(dependencySetEl),
+                "The root dependency set should not have any attributes");
 
             if (dependencySetEl != null) {
                 converter = getConverter(DependencySet.class);
@@ -325,7 +390,7 @@ public class ProjectParser {
                 project.setName(((Artifact)project.getArtifacts().iterator().next()).getId().getGroup());
             }
 
-            Assert.isTrue(project.getName() != null, LocatorDomParser.getLocator(projectEl.getElement()),
+            Assert.isTrue(project.getName() != null, getLocator(projectEl),
                 "The name attribute must be supplied if no artifacts are defined");
 
             return project;
@@ -373,14 +438,7 @@ public class ProjectParser {
 
             Converter converter;
 
-            if (dependencySet.getArtifact() != null) {
-                traversedDependencySets.add(dependencySet.getArtifact().getId());
-            }
-
-            // Properties
-            addProperties(projectProperties, "", dependencySetEl);
-
-            // Profiles
+            // Profiles ... must come first
             for (Iterator i = applyProfiles(dependencySetEl.getChildren("profile")).iterator(); i.hasNext();) {
                 Element profileEl = (Element)i.next();
                 converter = getConverter(Profile.class);
@@ -390,17 +448,24 @@ public class ProjectParser {
                 project.addProfile(profile);
             }
 
+            // Properties
+            addProperties(dependencySet.getProperties(), "", dependencySetEl);
+
+            AnnotatedProperties temp = eagerProperties;
+            eagerProperties = new AnnotatedProperties();
+            eagerProperties.putAll(dependencySet.getProperties());
+            eagerProperties.putAll(temp);
+            activateAutomaticProfiles();
+
             // Overrides
             for (Iterator i = applyProfiles(dependencySetEl.getChildren("override")).iterator(); i.hasNext();) {
                 Element overrideEl = (Element)i.next();
-                converter = getConverter(ws.quokka.core.model.Override.class);
+                converter = getConverter(Override.class);
 
                 Override override = (Override)converter.fromXml(overrideEl);
-                override.setVersionRangeUnion(VersionRangeUnion.parse(overrideEl.getAttribute("version")));
-                override.setWith(Version.parse(overrideEl.getAttribute("with")));
                 dependencySet.addOverride(override);
-                project.addOverride(override);
-                verifyOverride(override, Override.SCOPE_ALL);
+
+//                project.addOverride(override);
             }
 
             // Paths
@@ -412,11 +477,13 @@ public class ProjectParser {
                 dependencySet.addPath(path);
             }
 
-            // Nested dependency sets
+            // Nested dependency sets ... must do before adding dependencies
             List dependencySetEls = applyProfiles(dependencySetEl.getChildren("dependency-set"));
 
             for (Iterator i = dependencySetEls.iterator(); i.hasNext();) {
                 Element nestedSetEl = (Element)i.next();
+                Assert.isTrue(nestedSetEl.getElement().getChildNodes().getLength() == 0, getLocator(nestedSetEl),
+                    "Nested dependency sets do not currently support child nodes");
 
                 // Get the dependency set from the repository
                 converter = getConverter(RepoArtifactId.class);
@@ -424,7 +491,6 @@ public class ProjectParser {
                 RepoArtifactId artifactId = ((RepoArtifactId)converter.fromXml(nestedSetEl)).mergeDefaults();
                 artifactId = new RepoArtifactId(artifactId.getGroup(), artifactId.getName(), "jar",
                         artifactId.getVersion());
-                artifactId = override(artifactId, Override.SCOPE_ALL);
 
                 RepoArtifact artifact = ProjectParser.this.repository.resolve(artifactId);
 
@@ -441,9 +507,9 @@ public class ProjectParser {
                         "META-INF/quokka/" + nestedSet.getArtifact().getId().toPathString() + "/quokka.properties");
 
                 if (url != null) {
-                    nestedSet.setProperties(getProperties(url));
+                    nestedSet.getProperties().putAll(getProperties(url));
 
-                    AnnotatedProperties temp = eagerProperties;
+                    temp = eagerProperties;
                     eagerProperties = new AnnotatedProperties();
                     eagerProperties.putAll(nestedSet.getProperties());
                     eagerProperties.putAll(temp);
@@ -472,6 +538,7 @@ public class ProjectParser {
 
             // Plugin dependencies
             dependencyEls = applyProfiles(dependencySetEl.getChildren("plugin"));
+            addContext("dependencySet", dependencySet);
 
             for (Iterator i = dependencyEls.iterator(); i.hasNext();) {
                 Element dependencyEl = (Element)i.next();
@@ -496,19 +563,6 @@ public class ProjectParser {
             return dependencySet;
         }
 
-        /*
-         * Make sure that the override doesn't affect any dependency sets already traversed
-         */
-        private void verifyOverride(Override override, String scope) {
-            for (Iterator i = traversedDependencySets.iterator(); i.hasNext();) {
-                DependencySet set = (DependencySet)i.next();
-                Assert.isTrue(!override.matches(scope, set.getArtifact().getId()), override.getLocator(),
-                    override.toString() + " applies to a dependendency set that has already been traversed: "
-                    + set.getArtifact().getId().toShortString()
-                    + ". The override must be defined at a higher level (prior to traversal)");
-            }
-        }
-
         private Element parseNestedDependencySet(RepoArtifact artifact) {
             //            URL url = URLs.toURL(artifact.getLocalCopy(), "depset.xml");
             String path = "META-INF/quokka/" + artifact.getId().toPathString() + "/depset.xml";
@@ -527,9 +581,12 @@ public class ProjectParser {
 
         public Object fromXml(Element dependencyEl) {
             Dependency dependency = (Dependency)super.fromXml(dependencyEl);
-            dependency.setId(override(dependency.getId(), Override.SCOPE_ALL));
 
             return dependency;
+        }
+
+        public List filter(List pathSpecEls) {
+            return applyProfiles(pathSpecEls);
         }
     }
 
@@ -564,15 +621,26 @@ public class ProjectParser {
                 Converter converter = getConverter(PluginDependencyTarget.class);
                 PluginDependencyTarget target = (PluginDependencyTarget)converter.fromXml(targetEl);
                 Assert.isTrue(target.isValid(), target.getLocator(),
-                    "Target must specify both 'prefix' and 'template', or neither");
+                    "Target must specify 'prefix' when 'template' is specified");
                 dependency.addTarget(target);
+            }
+
+            // Ensure the to attribute has not been set
+            for (Iterator i = dependency.getPathSpecs().iterator(); i.hasNext();) {
+                PathSpec pathSpec = (PathSpec)i.next();
+                Assert.isTrue(pathSpec.getTo() == null, pathSpec.getLocator(),
+                    "The 'to' attribute is not valid for plugin path specifications");
             }
 
             return dependency;
         }
+
+        public boolean toRequired() {
+            return false;
+        }
     }
 
-    public static class ArtifactConverter extends AbstractProjectConverter {
+    public class ArtifactConverter extends AbstractProjectConverter {
         public ArtifactConverter(Class clazz) {
             super(clazz);
         }
@@ -580,10 +648,15 @@ public class ProjectParser {
         public Object fromXml(Element artifactEl) {
             Artifact artifact = (Artifact)super.fromXml(artifactEl);
             Converter converter = getConverter(RepoArtifactId.class);
+
             RepoArtifactId id = (RepoArtifactId)converter.fromXml(artifactEl);
+            Element nameEl = applyProfilesChild(artifactEl, "name");
+
+            if (nameEl != null) {
+                id = new RepoArtifactId(id.getGroup(), nameEl.getAttribute("value"), id.getType(), id.getVersion());
+            }
+
             id = id.merge((RepoArtifactId)getContext("defaultId")).mergeDefaults();
-            Assert.isTrue(id.isValid(), id.getLocator(),
-                "Values must be supplied for group, name, type & version attributes for an artifact: " + id);
             artifact.setId(id);
 
             // Exported paths
@@ -593,6 +666,12 @@ public class ProjectParser {
                 String path = (String)i.next();
                 String[] tokens = Strings.split(path, ":");
                 artifact.addExportedPath(tokens[0], (tokens.length > 1) ? tokens[1] : tokens[0]);
+            }
+
+            Element descriptionEl = artifactEl.getChild("description");
+
+            if (descriptionEl != null) {
+                artifact.setDescription(descriptionEl.getText());
             }
 
             return artifact;

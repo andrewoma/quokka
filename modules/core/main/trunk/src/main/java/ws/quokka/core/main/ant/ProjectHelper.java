@@ -48,6 +48,7 @@ import ws.quokka.core.bootstrap_util.PropertiesUtil;
 import ws.quokka.core.bootstrap_util.Reflect;
 import ws.quokka.core.main.ant.task.ArchetypeTask;
 import ws.quokka.core.main.ant.task.BuildPathTask;
+import ws.quokka.core.main.ant.task.ConsoleTask;
 import ws.quokka.core.main.ant.task.CopyPathTask;
 import ws.quokka.core.main.ant.task.DependencyOfTask;
 import ws.quokka.core.main.ant.task.ForTask;
@@ -60,10 +61,10 @@ import ws.quokka.core.main.parser.ProjectParser;
 import ws.quokka.core.model.Profiles;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
+import ws.quokka.core.repo_spi.RepositoryFactory;
 import ws.quokka.core.repo_spi.UnresolvedArtifactException;
-import ws.quokka.core.repo_standard.DelegatingRepository;
+import ws.quokka.core.repo_standard.RepositoryFactoryImpl;
 import ws.quokka.core.util.AnnotatedProperties;
-import ws.quokka.core.util.ServiceFactory;
 import ws.quokka.core.util.Strings;
 
 import java.io.File;
@@ -95,6 +96,8 @@ public class ProjectHelper extends ProjectHelper2 {
     private static final String BUILD_RESOURCES_PREFIX = "quokka.project.resources[";
     private static final Map SPECIAL_TARGETS = new HashMap();
     private static final String BUILD_RESOURCES_LISTENER = "quokka.project.buildResourcesListener";
+    public static final String REPOSITORY_FACTORY = "quokka.project.repositoryFactory";
+    public static final String REPOSITORY = "quokka.project.repository";
 
     static {
         SPECIAL_TARGETS.put("archetype", ArchetypeTask.class);
@@ -111,9 +114,7 @@ public class ProjectHelper extends ProjectHelper2 {
                     boolean ignoring = context.isIgnoringProjectTag();
 
                     try {
-                        if (context.isIgnoringProjectTag()) {
-                            context.setIgnoreProjectTag(false);
-                        }
+                        context.setIgnoreProjectTag(false);
 
                         super.onStartElement(uri, tag, qname, attrs, context);
                     } finally {
@@ -125,25 +126,34 @@ public class ProjectHelper extends ProjectHelper2 {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void parse(final Project antProject, Object source)
-            throws BuildException {
-        // Handle special cases of "archetype" & "help" targets
-        String specialTarget = antProject.getProperty("quokka.project.specialTarget");
+    public void parse(final Project antProject, Object source) {
+        File antFile = new File(antProject.getUserProperty("ant.file"));
 
-        if (specialTarget != null) {
-            handleSpecialTarget(antProject, specialTarget);
+        try {
+            // Handle special cases of "archetype" & "help" targets
+            String specialTarget = antProject.getProperty("quokka.project.specialTarget");
 
-            return;
-        }
+            if (specialTarget != null) {
+                handleSpecialTarget(antProject, specialTarget);
 
-        File quokkaFile = getQuokkaFile(new File(antProject.getUserProperty("ant.file")));
+                return;
+            }
 
-        if (quokkaFile != null) {
-            boolean topLevel = addParentProjectBuildListener(antProject);
-            getImportStack().addElement(quokkaFile);
-            initialise(antProject, quokkaFile, topLevel);
-        } else {
-            super.parse(antProject, source);
+            File quokkaFile = getQuokkaFile(antFile);
+
+            if (quokkaFile != null) {
+                boolean topLevel = addParentProjectBuildListener(antProject);
+                getImportStack().addElement(quokkaFile);
+                initialise(antProject, quokkaFile, topLevel);
+            } else {
+                super.parse(antProject, source);
+            }
+        } catch (RuntimeException e) {
+            // When using no banner logging it is sometimes unclear which sub project is causing the error
+            // as the sub build listener is only called after the project is successfully compiled.
+            // Therefore, display the current file and rethrow
+            antProject.log("Error parsing " + antFile.getPath(), Project.MSG_ERR);
+            throw e;
         }
     }
 
@@ -234,7 +244,7 @@ public class ProjectHelper extends ProjectHelper2 {
         BootStrapper bootStrapper = bootStrap(antProject, antProperties, quokkaFile, profiles, topLevel);
 
         registerBuiltIns(antProject);
-        antProject.log("Quokka project detected: parsing '" + quokkaFile.getPath() + "'", Project.MSG_DEBUG);
+        antProject.log("Quokka project detected: parsing '" + quokkaFile.getPath() + "'", Project.MSG_VERBOSE);
         antProject.setBaseDir(quokkaFile.getParentFile());
 
         AnnotatedProperties projectProperties = ProjectParser.getProjectProperties(quokkaFile, antProperties);
@@ -393,10 +403,15 @@ public class ProjectHelper extends ProjectHelper2 {
 
     private BootStrapper bootStrap(Project antProject, Map properties, File quokkaFile, Profiles profiles,
         boolean topLevel) {
-        String initialise = (String)properties.get("quokka.bootstrap.initialise");
+        // Disable bootstrapping:
+        // 1. If quokka.bootstrap.enabled=false
+        // 2. Otherwise, it defaults to enabled if launched from a script, or disabled otherwise (e.g. from an IDE)
+        // This gets around having to continually specify quokka.bootstrap.enabled=false in IDEs
+        boolean script = "true".equals(properties.get("quokka.bootstrap.script"));
+        String enabled = (String)properties.get("quokka.bootstrap.enabled");
 
-        if ((initialise != null) && initialise.equals("true")) {
-            return null; // Bootstrapping override
+        if ("false".equals(enabled) || (!script && (enabled == null))) {
+            return null; // Bootstrapping disabled
         }
 
         // Get the arguments that
@@ -420,27 +435,24 @@ public class ProjectHelper extends ProjectHelper2 {
             bootStrapper.setArguments(arguments);
             bootStrapper.setProfiles(new HashSet(profiles.getElements()));
             bootStrapper.setQuokkaFile(quokkaFile);
+            bootStrapper.setProject(antProject);
 
-            String enabled = (String)properties.get("quokka.bootstrap.enabled");
+            bootStrapper.initialise();
 
-            if ((enabled == null) || enabled.equals("true")) {
-                bootStrapper.initialise();
+            if (bootStrapper.isBootStrapRequired()) {
+                Assert.isTrue(topLevel,
+                    "Cannot bootstrap '" + quokkaFile.getAbsolutePath() + "' as this is not a top level project. "
+                    + "Either standardise the bootstrap options between parents and children, or launch the "
+                    + "descendents using <bootstrap> tasks from within parent projects build.xml file.");
 
-                if (bootStrapper.isBootStrapRequired()) {
-                    Assert.isTrue(topLevel,
-                        "Cannot bootstrap '" + quokkaFile.getAbsolutePath() + "' as this is not a top level project. "
-                        + "Either standardise the bootstrap options between parents and children, or launch the "
-                        + "descendents using <bootstrap> tasks from within parent projects build.xml file.");
+                int code;
 
-                    int code;
-
-                    try {
-                        code = bootStrapper.bootStrap();
-                        System.exit(code);
-                    } catch (Exception e) {
-                        antProject.fireBuildFinished(e);
-                        System.exit(1);
-                    }
+                try {
+                    code = bootStrapper.bootStrap();
+                    System.exit(code);
+                } catch (Exception e) {
+                    antProject.fireBuildFinished(e);
+                    System.exit(1);
                 }
             }
 
@@ -607,6 +619,10 @@ public class ProjectHelper extends ProjectHelper2 {
             task.setOwningTarget(antTarget);
             task.setLocation(Location.UNKNOWN_LOCATION);
             task.setDescription("plugin target task for " + target.getName());
+
+//            String pluginClass = target.getPlugin().getClassName();
+//            pluginClass = pluginClass == null ? "plugin" : pluginClass;
+//            task.setTaskName(pluginClass.substring(pluginClass.lastIndexOf(".") + 1).toLowerCase());
             task.setTaskName("plugin");
             task.setPluginTarget(target);
             task.setProjectModel(project);
@@ -666,25 +682,69 @@ public class ProjectHelper extends ProjectHelper2 {
             antProject.addTarget(aliasTarget);
         }
 
+        addConsoleTarget(antProject);
+
         return antTargets;
     }
 
-    private Repository getRepository(AnnotatedProperties properties, Project antProject) {
-        Repository repository = (Repository)new ServiceFactory().getService(Repository.class, properties);
+    private void addConsoleTarget(Project antProject) {
+        Target target = new Target();
+        target.setProject(antProject);
+        target.setName("console");
+        target.setDepends("");
+        target.setLocation(Location.UNKNOWN_LOCATION);
+        target.setDescription("Allows targets to be entered interactively, eliminating startup overheads");
+        antProject.addTarget(target);
 
-        if (repository == null) {
-            repository = new DelegatingRepository();
+        ConsoleTask task = new ConsoleTask();
+        task.setProject(antProject);
+        task.setOwningTarget(target);
+        task.setLocation(Location.UNKNOWN_LOCATION);
+        task.setTaskName("console");
+        task.setTaskType("console");
+        target.addTask(task);
+    }
+
+    private Repository getRepository(AnnotatedProperties properties, Project antProject) {
+        RepositoryFactory factory = createFactory(properties, antProject);
+        Repository repository;
+
+        // Check for an override (usually for integration testing of quokka itself)
+        String override = properties.getProperty("quokka.repositoryOverride");
+
+        if (override != null) {
+            repository = factory.getOrCreate(override);
+            Assert.isTrue(repository != null, "Override repository '" + override + "' is not defined");
+        } else {
+            // Try 'project' repository, then 'shared'
+            repository = factory.getOrCreate("project");
+
+            if (repository == null) {
+                repository = factory.getOrCreate("shared");
+            }
+
+            Assert.isTrue(repository != null, "Either a 'project' or 'shared' repository must be defined");
         }
 
-        repository = new CachingRepository(repository);
-        repository.initialise(antProject, properties);
-
-        // Built in types
-        repository.registerType(new RepoType("jar", "Java Archive (.jar) file", "jar"));
-        repository.registerType(new RepoType("license", "License file", "txt"));
-        antProject.addReference("quokka.project.repository", repository);
+        repository = new CachingRepository(antProject, repository);
+        antProject.addReference(REPOSITORY, repository);
 
         return repository;
+    }
+
+    private RepositoryFactory createFactory(AnnotatedProperties properties, Project antProject) {
+        // Create the factory
+        RepositoryFactoryImpl factory = new RepositoryFactoryImpl();
+        factory.setRepositoryVersion("0.2");
+        factory.setProject(antProject);
+        factory.setProperties(properties);
+        factory.registerType(new RepoType("jar", "Java Archive (.jar) file", "jar"));
+        factory.registerType(new RepoType("war", "Web Archive (.war) file", "war"));
+        factory.registerType(new RepoType("license", "License file", "txt"));
+        factory.registerType(new RepoType("paths", "Repository file", "xml"));
+        antProject.addReference(REPOSITORY_FACTORY, factory);
+
+        return factory;
     }
 
     private void registerBuiltIns(Project antProject) {

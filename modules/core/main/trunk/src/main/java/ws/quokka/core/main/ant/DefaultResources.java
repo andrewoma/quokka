@@ -26,8 +26,6 @@ import ws.quokka.core.plugin_spi.BuildResources;
 import ws.quokka.core.plugin_spi.PluginState;
 import ws.quokka.core.plugin_spi.Resources;
 
-import java.util.List;
-
 
 /**
  *
@@ -55,11 +53,7 @@ public class DefaultResources implements Resources {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public Path getPathGroupAsPath(String name) {
-        return projectModel.toAntPath(projectModel.resolvePath(target, name, true));
-    }
-
-    public List getPathGroup(String name) {
-        return projectModel.resolvePath(target, name, true);
+        return projectModel.toAntPath(projectModel.resolvePathGroup(target, name));
     }
 
     public BuildResources getBuildResources() {

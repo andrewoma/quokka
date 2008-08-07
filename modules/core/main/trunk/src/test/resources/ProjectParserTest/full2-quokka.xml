@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
+
+<project default-target="default-target" name="name">
+    <artifacts group="group.subgroup" version="0.1">
+        <artifact name="pack1" paths="path1"/>
+        <artifact name="pack2" type="war" description="Some artifact" paths="path1:something"/>
+        <artifact name="pack3" profiles="skip"/>
+        <artifact>
+            <description>pack4 description</description>
+            <name value="pack4"/>
+            <name value="pack5" profiles="skip"/>
+        </artifact>
+    </artifacts>
+    
+    <!--<artifacts group="blah" version="blah" type="war"/>-->
+
+    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]" jvm-args="-Xmx1024m"/>
+    <bootstrap core="[0.2,0.2.1]" spec-version="[1.7,1.8]" java-jvm-vendor="sun" profiles="skip"/>
+
+    <dependency-set>
+        <profile id="skip" description="Skip description"/>
+        <profile id="profile2" description="Another profile"/>
+
+        <property name="quokka.project.java.source" value="1.4"/>
+        <property name="prop1" value="value1"/>
+        <property name="prop2" value="value2"/>
+        <property name="prop3">value3</property>
+        <property name="prop4" value="value4" profiles="skip"/>
+        <property name="prop5"><![CDATA[Hello there]]></property>
+
+        <override group="quokka.plugin.javac" name="javac" paths="*" plugin-paths="plugin:path1" type="war" version="1.0" with="2.0" with-paths="blah(blah)"/>
+        <override group="blah" profiles="skip"/>
+        <override group="quokka.plugin.jee">
+            <path-spec from="from" descend="false" mandatory="true" options="hello, there"/>
+        </override>
+
+        <path id="path1" description="path1 description" descend-default="true" mandatory-default="true"/>
+        <path id="path2" description="path2 description" descend-default="false" mandatory-default="false"/>
+        <path id="path3" description="path3 description"/>
+        <path id="path4" profiles="skip"/>
+
+        <dependency group="some.plugin" version="0.2" paths="path1"/>
+        <dependency group="some.plugin" name="blah" version="0.2" paths="path1" profiles="source1.4"/>
+        <dependency group="some.plugin" name="blah2" version="0.2" paths="path1" profiles="skip"/>
+        <dependency group="quokka.core.repo-standard" version="1.0" paths="path2+(opt1,opt2)"/>
+        <dependency group="quokka.core.repo-resolver" name="somename" type="type1" version="0.1.1-ss" paths="path2+"/>
+        <dependency group="some.dep1" version="1.0">
+            <path-spec from="from" to="to" options="opt1, opt2" descend="false" mandatory="false"/>
+            <path-spec from="blah" profiles="skip"/>
+        </dependency>
+
+        <plugin group="quokka.plugin1" version="1.0"/>
+        <plugin group="quokka.plugin7" version="1.0" profiles="nestedprofile"/>
+        <plugin group="quokka.plugin2" version="2.0" profiles="skip"/>
+        <plugin group="quokka.plugin3" version="1.0" paths="path1(opt1)" targets="target1, target2"/>
+        <plugin group="quokka.plugin4" version="1.0">
+            <path-spec from="from" descend="false" mandatory="false" options="opt3, opt4"/>
+            <path-spec to="blah" from="blah" profiles="skip"/>
+            <target name="t1" alias="t1alias" depends="ta, tb" prefix="t1prefix" template="t1template">
+                <property name="prop1" value="value1"/>
+                <property name="prop2">value2</property>
+                <property name="prop2" value="value2" profiles="skip"/>
+            </target>
+            <target name="t2" profiles="skip"/>
+        </plugin>
+
+        <dependency-set group="nested" name="name" version="1.2"/>
+        <dependency-set group="nested2" version="1.2" profiles="skip"/>
+    </dependency-set>
+</project>

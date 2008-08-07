@@ -21,9 +21,8 @@ import org.apache.tools.ant.Project;
 
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
-import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
-import ws.quokka.core.util.AnnotatedProperties;
+import ws.quokka.core.repo_spi.RepositoryFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,27 +42,17 @@ public class CachingRepository implements Repository {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public CachingRepository(Repository repository) {
+    public CachingRepository(Project project, Repository repository) {
+        this.project = project;
         this.repository = repository;
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void initialise(Object antProject, AnnotatedProperties properties) {
-        repository.initialise(antProject, properties);
-        project = (Project)antProject;
-    }
-
-    public void registerType(RepoType type) {
-        repository.registerType(type);
-    }
-
-    public RepoType getType(String id) {
-        return repository.getType(id);
+    public void initialise() {
     }
 
     public RepoArtifact resolve(RepoArtifactId artifactId) {
-        //        System.out.println("resolving: " + artifactId);
         project.log("\nResolving: " + artifactId.toShortString(), Project.MSG_DEBUG);
 
         synchronized (cache) {
@@ -77,7 +66,6 @@ public class CachingRepository implements Repository {
             cache.put(artifactId, artifact);
             project.log("Resolved: " + artifact, Project.MSG_DEBUG);
 
-            //            System.out.println("resolved=" + artifact);
             return artifact;
         }
     }
@@ -102,11 +90,25 @@ public class CachingRepository implements Repository {
         return repository.supportsInstall(artifactId);
     }
 
-    public String getName() {
-        return getClass().getName();
+    public void setFactory(RepositoryFactory factory) {
     }
 
-    public Collection getReferencedRepositories() {
-        return repository.getReferencedRepositories();
+    public RepositoryFactory getFactory() {
+        return repository.getFactory();
+    }
+
+    public void setName(String name) {
+    }
+
+    public String getName() {
+        return "Cached " + repository.getName();
+    }
+
+    public RepoArtifact updateSnapshot(RepoArtifact artifact) {
+        return repository.updateSnapshot(artifact);
+    }
+
+    public Collection availableVersions(String group, String name, String type) {
+        return repository.availableVersions(group, name, type);
     }
 }

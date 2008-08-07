@@ -46,7 +46,6 @@ public class QuokkaMain extends Main {
 
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    //    private static List SPECIAL_TARGETS = Arrays.asList(new String[] {"archetype", "help"});
     private File tempFile;
 
     //~ Methods --------------------------------------------------------------------------------------------------------

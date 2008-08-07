@@ -24,6 +24,16 @@
     <orderEntry type="module" module-name="core.bootstrap-util" />
     <orderEntry type="module" module-name="core.version" />
     <orderEntry type="module" module-name="core.itest" />
+    <orderEntry type="module" module-name="core.repo-resolver" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../ant-optional-1-7-0/target/package/quokka.core.ant-optional-1-7-0_ant-optional-1-7-0_jar_1.0-ss.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntryProperties />
   </component>
 </module>

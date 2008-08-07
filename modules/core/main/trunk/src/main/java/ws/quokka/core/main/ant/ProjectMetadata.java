@@ -22,6 +22,7 @@ import org.apache.tools.ant.BuildException;
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
+import ws.quokka.core.main.ant.task.CopyPathTask;
 import ws.quokka.core.metadata.Metadata;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
@@ -36,6 +37,7 @@ import ws.quokka.core.model.Target;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoDependency;
+import ws.quokka.core.repo_spi.RepoOverride;
 import ws.quokka.core.repo_spi.RepoPath;
 import ws.quokka.core.repo_spi.RepoPathSpec;
 import ws.quokka.core.repo_spi.RepoType;
@@ -77,7 +79,7 @@ public class ProjectMetadata implements Metadata {
     }
 
     public RepoType getType(String id) {
-        return projectModel.getRepository().getType(id);
+        return projectModel.getRepository().getFactory().getType(id);
     }
 
     public List getArtifactIds(String type) {
@@ -154,6 +156,7 @@ public class ProjectMetadata implements Metadata {
 
     private RepoArtifact createExported(Artifact artifact) {
         RepoArtifact exported = new RepoArtifact(artifact.getId());
+        exported.setDescription(artifact.getDescription());
 
         // Add the paths
         for (Iterator i = artifact.getExportedPaths().iterator(); i.hasNext();) {
@@ -165,6 +168,37 @@ public class ProjectMetadata implements Metadata {
             RepoPath exportedPath = new RepoPath(mapping.getTo(), path.getDescription(), path.isDescendDefault(),
                     path.isMandatoryDefault());
             exported.addPath(exportedPath);
+
+            // Add any overrides that apply
+            List appliedOverrides = new ArrayList();
+            projectModel.getReslovedProjectPath(mapping.getFrom(), false, false, false, appliedOverrides);
+
+            for (Iterator j = appliedOverrides.iterator(); j.hasNext();) {
+                RepoOverride override = (RepoOverride)j.next();
+
+                // Check if an existing override matches, if so add this path to it
+                boolean added = false;
+
+                for (Iterator k = exported.getOverrides().iterator(); k.hasNext();) {
+                    RepoOverride existing = (RepoOverride)k.next();
+
+                    if (existing.equalsExcludingPaths(override)) {
+                        existing.addPath(mapping.getTo());
+                        added = true;
+
+                        break;
+                    }
+                }
+
+                // Add the override to the exported artifact
+                if (!added) {
+                    Set paths = new HashSet();
+                    paths.add(mapping.getTo());
+                    exported.addOverride(new RepoOverride(paths, override.getGroup(), override.getName(),
+                            override.getType(), override.getVersion(), override.getWithVersion(),
+                            override.getWithPathSpecs()));
+                }
+            }
         }
 
         // Add any dependencies for the path
@@ -459,5 +493,13 @@ public class ProjectMetadata implements Metadata {
         }
 
         return i == string.length();
+    }
+
+    public String translate(RepoArtifactId id, String pattern) {
+        return CopyPathTask.translate(projectModel.getAntProject(), id, pattern);
+    }
+
+    public void copyPath(List path, File destination, String pattern) {
+        CopyPathTask.copyPath(projectModel.getAntProject(), path, destination, pattern);
     }
 }

@@ -9,7 +9,7 @@
 <!ATTLIST name value CDATA #REQUIRED >
 <!ATTLIST name profiles CDATA #IMPLIED >
 
-<!ELEMENT artifact ( description? | name* ) >
+<!ELEMENT artifact ( description?, name* ) >
 <!ATTLIST artifact description CDATA #IMPLIED >
 <!ATTLIST artifact name NMTOKEN #IMPLIED >
 <!ATTLIST artifact type NMTOKEN #IMPLIED >
@@ -25,7 +25,9 @@
 <!ATTLIST boot-dependency group NMTOKEN #REQUIRED >
 <!ATTLIST boot-dependency name NMTOKEN #IMPLIED >
 <!ATTLIST boot-dependency version CDATA #REQUIRED >
-<!ELEMENT bootstrap ( cores | jdks | boot-dependency )* >
+<!ATTLIST boot-dependency profiles CDATA #IMPLIED >
+
+<!ELEMENT bootstrap ( jdk | core | cores | jdks | boot-dependency )* >
 <!ATTLIST bootstrap profiles CDATA #IMPLIED >
 <!ATTLIST bootstrap core CDATA #IMPLIED >
 <!ATTLIST bootstrap file CDATA #IMPLIED >
@@ -33,6 +35,7 @@
 <!ATTLIST bootstrap java-vendor CDATA #IMPLIED >
 <!ATTLIST bootstrap java-version CDATA #IMPLIED >
 <!ATTLIST bootstrap jvm-version CDATA #IMPLIED >
+<!ATTLIST bootstrap jvm-vendor CDATA #IMPLIED >
 <!ATTLIST bootstrap jvm-args CDATA #IMPLIED >
 <!ATTLIST bootstrap profiles CDATA #IMPLIED >
 <!ATTLIST bootstrap spec-version CDATA #IMPLIED >
@@ -60,6 +63,7 @@
 <!ELEMENT property ( #PCDATA ) >
 <!ATTLIST property name CDATA #REQUIRED >
 <!ATTLIST property value CDATA #IMPLIED >
+<!ATTLIST property profiles CDATA #IMPLIED >
 
 <!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin | property )* >
 <!ATTLIST dependency-set group NMTOKEN #IMPLIED >
@@ -74,27 +78,31 @@
 <!ATTLIST jdk java-vendor CDATA #IMPLIED >
 <!ATTLIST jdk java-version CDATA #IMPLIED >
 <!ATTLIST jdk jvm-version CDATA #IMPLIED >
+<!ATTLIST jdk jvm-vendor CDATA #IMPLIED >
 <!ATTLIST jdk jvm-args CDATA #IMPLIED >
 <!ATTLIST jdk profiles CDATA #IMPLIED >
 <!ATTLIST jdk spec-version CDATA #IMPLIED >
 
-<!ELEMENT jdks ( jdk+ ) >
+<!ELEMENT jdks ( jdk | sysproperty )* >
 <!ATTLIST jdks java-jvm-vendor CDATA #IMPLIED >
 <!ATTLIST jdks java-vendor CDATA #IMPLIED >
 <!ATTLIST jdks java-version CDATA #IMPLIED >
 <!ATTLIST jdks jvm-version CDATA #IMPLIED >
 <!ATTLIST jdks jvm-args CDATA #IMPLIED >
+<!ATTLIST jdks jvm-vendor CDATA #IMPLIED >
 <!ATTLIST jdks profiles CDATA #IMPLIED >
 <!ATTLIST jdks spec-version CDATA #IMPLIED >
 
-<!ELEMENT override EMPTY >
+<!ELEMENT override ( path-spec* ) >
 <!ATTLIST override group NMTOKEN #REQUIRED >
 <!ATTLIST override name NMTOKEN #IMPLIED >
 <!ATTLIST override profiles CDATA #IMPLIED >
-<!--<!ATTLIST override scope NMTOKEN #REQUIRED >-->
+<!ATTLIST override paths CDATA #IMPLIED >
+<!ATTLIST override plugin-paths CDATA #IMPLIED >
+<!ATTLIST override with-paths CDATA #IMPLIED >
 <!ATTLIST override type NMTOKEN #IMPLIED >
-<!ATTLIST override version CDATA #REQUIRED >
-<!ATTLIST override with CDATA #REQUIRED >
+<!ATTLIST override version CDATA #IMPLIED >
+<!ATTLIST override with CDATA #IMPLIED >
 
 <!ELEMENT path ( description? ) >
 <!ATTLIST path descend-default ( true | false ) #IMPLIED >
@@ -116,10 +124,11 @@
 <!ATTLIST plugin name NMTOKEN #IMPLIED >
 <!ATTLIST plugin profiles CDATA #IMPLIED >
 <!ATTLIST plugin targets CDATA #IMPLIED >
+<!ATTLIST plugin paths CDATA #IMPLIED >
 <!ATTLIST plugin version CDATA #REQUIRED >
 <!ATTLIST plugin use-defaults ( true | false ) #IMPLIED >
 
-<!ELEMENT project ( description?, artifacts?, bootstrap?, dependency-set ) >
+<!ELEMENT project ( description?, artifacts?, bootstrap*, dependency-set* ) >
 <!ATTLIST project name CDATA #IMPLIED >
 <!ATTLIST project default-target CDATA #IMPLIED >
 

@@ -18,6 +18,7 @@
 package ws.quokka.core.main.ant.task;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -40,11 +41,15 @@ import java.util.Vector;
  * Copies a path, renaming it based on the pattern provided
  */
 public class CopyPathTask extends Task {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static final String DEFAULT_PATTERN = "#{group}_#{name}_#{type}_#{version}.#{extension}";
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private String id;
     private File todir;
-    private String pattern = "#{group}_#{name}_#{type}_#{version}.#{extension}";
+    private String pattern = DEFAULT_PATTERN;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -62,32 +67,45 @@ public class CopyPathTask extends Task {
 
     public void execute() throws BuildException {
         ProjectModel projectModel = (ProjectModel)getProject().getReference("quokka.projectModel");
-        PropertyHelper ph = PropertyHelper.getPropertyHelper(getProject());
 
         List path = projectModel.getProjectPath(id, false, true);
+        copyPath(getProject(), path, todir, pattern);
+    }
 
-        for (Iterator i = path.iterator(); i.hasNext();) {
+    public static void copyPath(Project project, List artifacts, File destination, String pattern) {
+        pattern = (pattern == null) ? DEFAULT_PATTERN : pattern;
+
+        for (Iterator i = artifacts.iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();
             RepoArtifactId id = artifact.getId();
-            Properties properties = new Properties();
-            properties.put("group", id.getGroup());
-            properties.put("name", id.getName());
-            properties.put("type", id.getType());
-            properties.put("version", id.getVersion().toString());
 
-            RepoType type = projectModel.getRepository().getType(id.getType());
-            properties.put("extension", type.getExtension());
+            String name = translate(project, id, pattern);
+            File file = FileUtils.getFileUtils().normalize(destination.getPath() + "/" + name);
+            file.getParentFile().mkdirs();
 
-            String name = expandName(ph, pattern, properties);
-            File destination = FileUtils.getFileUtils().normalize(todir + "/" + name);
-            Copy copy = (Copy)getProject().createTask("copy");
-            copy.setTofile(destination);
+            Copy copy = (Copy)project.createTask("copy");
+            copy.setTofile(file);
             copy.setFile(artifact.getLocalCopy());
             copy.perform();
         }
     }
 
-    private String expandName(PropertyHelper ph, String pattern, Properties properties) {
+    public static String translate(Project project, RepoArtifactId id, String pattern) {
+        ProjectModel projectModel = (ProjectModel)project.getReference("quokka.projectModel");
+        RepoType type = projectModel.getRepository().getFactory().getType(id.getType());
+
+        PropertyHelper ph = PropertyHelper.getPropertyHelper(project);
+        Properties properties = new Properties();
+        properties.put("group", id.getGroup());
+        properties.put("name", id.getName());
+        properties.put("type", id.getType());
+        properties.put("version", id.getVersion().toString());
+        properties.put("extension", type.getExtension());
+
+        return expandName(ph, pattern, properties);
+    }
+
+    private static String expandName(PropertyHelper ph, String pattern, Properties properties) {
         pattern = pattern.replace('#', '$');
 
         Vector fragments = new Vector();
@@ -105,7 +123,7 @@ public class CopyPathTask extends Task {
                 String property = (String)properties.get(ref);
 
                 if (property == null) {
-                    throw new BuildException("", getLocation());
+                    throw new BuildException("Unknown property in pattern: pattern=" + pattern + ", property=" + ref);
                 }
 
                 name.append(property);
