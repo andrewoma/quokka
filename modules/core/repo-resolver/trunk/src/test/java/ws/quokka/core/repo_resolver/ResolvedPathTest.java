@@ -39,7 +39,7 @@ public class ResolvedPathTest extends AbstractTest {
         RepoArtifactId id2 = new RepoArtifactId("group1", "name1", "type1", "2.0");
         artifacts.add(new RepoArtifact(id2));
 
-        ResolvedPath path = new ResolvedPath(artifacts);
+        ResolvedPath path = new ResolvedPath("id", artifacts);
         assertTrue(path.contains(id1));
         assertTrue(path.contains(id2));
         assertTrue(path.contains(new RepoArtifactId("group1", "name1", "type1", "2.0")));

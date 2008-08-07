@@ -39,7 +39,8 @@ public class ResolvedPath {
     public ResolvedPath() {
     }
 
-    public ResolvedPath(List artifacts) {
+    public ResolvedPath(String id, List artifacts) {
+        this.id = id;
         this.artifacts = artifacts;
     }
 

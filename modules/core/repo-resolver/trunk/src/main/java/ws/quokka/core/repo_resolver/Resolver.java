@@ -38,6 +38,7 @@ public class Resolver {
     private static final String DECLARED_BY = "declaredBy";
     private static final String PARENT = "parent";
     private static final String CONFLICT = "conflict";
+    private static final String OVERRIDDEN = "overridden";
 
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
@@ -53,8 +54,9 @@ public class Resolver {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public ResolvedPath resolvePath(String pathId, RepoArtifact artifact) {
+    public ResolvedPath resolvePath(String pathId, RepoArtifact artifact, List appliedOverrides) {
         Assert.isTrue(artifact.getPath(pathId) != null, "Path '" + pathId + "' does not exist in artifact: " + artifact);
+        Assert.isTrue(appliedOverrides.size() == 0, "appliedOverrides should have a size of 0");
 
         ResolvedPath path = new ResolvedPath();
         path.setId("Path: " + pathId); // Note: this may be overridden by something more contextually relevant
@@ -62,17 +64,21 @@ public class Resolver {
         for (Iterator i = artifact.getDependencies().iterator(); i.hasNext();) {
             RepoDependency dependency = (RepoDependency)i.next();
             List overrides = filterOverrides(pathId, artifact.getOverrides());
-            dependency = applyOverrides(dependency, overrides);
+            dependency = applyOverrides(dependency, overrides, appliedOverrides);
 
             Set pathSpecs = dependency.getPathSpecsTo(pathId);
 
             for (Iterator j = pathSpecs.iterator(); j.hasNext();) {
                 RepoPathSpec pathSpec = (RepoPathSpec)j.next();
-                resolvePath(path, pathSpec, new HashSet(), false, null, overrides);
+                resolvePath(path, pathSpec, new HashSet(), false, null, overrides, appliedOverrides);
             }
         }
 
         return path;
+    }
+
+    public ResolvedPath resolvePath(String pathId, RepoArtifact artifact) {
+        return resolvePath(pathId, artifact, new ArrayList());
     }
 
     /**
@@ -95,17 +101,20 @@ public class Resolver {
         return filtered;
     }
 
-    private RepoDependency applyOverrides(RepoDependency dependency, List overrides) {
+    private RepoDependency applyOverrides(RepoDependency dependency, List overrides, List appliedOverrides) {
         for (Iterator i = overrides.iterator(); i.hasNext();) {
             RepoOverride override = (RepoOverride)i.next();
 
             if (override.matches(dependency.getId())) {
                 RepoDependency overridden = new RepoDependency();
+                overridden.setId(dependency.getId());
+
+                appliedOverrides.add(override);
 
                 // Override version if specified
-                overridden.setId((override.getWithVersion() == null) ? dependency.getId()
-                                                                     : override(dependency.getId(),
-                        override.getWithVersion()));
+                if (override.getWithVersion() != null) {
+                    overridden.setId(override(dependency.getId(), override.getWithVersion()));
+                }
 
                 // Copy and possibly override path specifications
                 for (Iterator j = dependency.getPathSpecs().iterator(); j.hasNext();) {
@@ -142,8 +151,24 @@ public class Resolver {
         return dependency;
     }
 
+    private boolean areExclusions(Set options) {
+        for (Iterator i = options.iterator(); i.hasNext();) {
+            String option = (String)i.next();
+
+            if (!isExclusion(option)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isExclusion(String option) {
+        return option.trim().startsWith("-");
+    }
+
     private void resolvePath(ResolvedPath path, RepoPathSpec pathSpec, Set options, boolean force,
-        RepoArtifactId declaredBy, List overrides) {
+        RepoArtifactId declaredBy, List overrides, List appliedOverrides) {
         // TODO: do proper cycle detection
         if (path.getArtifacts().size() > 150) {
             StringBuffer sb = new StringBuffer("Cycle detected!\n");
@@ -161,7 +186,7 @@ public class Resolver {
             options.add(pathSpec.getOptions());
         }
 
-        if ((options.size() == 0) && !pathSpec.isMandatory().booleanValue() && !force) {
+        if (((options.size() == 0) || areExclusions(options)) && !pathSpec.isMandatory().booleanValue() && !force) {
             return; // The artifact is not mandatory and has not been added as an option
         }
 
@@ -172,7 +197,7 @@ public class Resolver {
 //        System.out.println("Adding: " + artifact.getId().toShortString() + " declared by " + (declaredBy == null ? "" : declaredBy.toShortString()));
         path.add(artifact);
 
-        if ((options.size() == 0) && !pathSpec.isDescend().booleanValue()) {
+        if (((options.size() == 0) || areExclusions(options)) && !pathSpec.isDescend().booleanValue()) {
             return; // Not required to descend and no options to force it
         }
 
@@ -183,7 +208,7 @@ public class Resolver {
             RepoDependency dependency = (RepoDependency)i.next();
             List combinedOverrides = new ArrayList(overrides);
             combinedOverrides.addAll(filterOverrides(pathSpec.getFrom(), artifact.getOverrides()));
-            dependency = applyOverrides(dependency, combinedOverrides);
+            dependency = applyOverrides(dependency, combinedOverrides, appliedOverrides);
 
             for (Iterator j = dependency.getPathSpecsTo(pathSpec.getFrom()).iterator(); j.hasNext();) {
                 RepoPathSpec dependencyPathSpec = (RepoPathSpec)j.next();
@@ -194,12 +219,26 @@ public class Resolver {
 
                 // Handle explicit overrides
                 if (override != null) {
-                    dependency.setId(override(dependency.getId(), override));
+                    if (dependency.getId().getAnnotations().get(OVERRIDDEN) == null) {
+                        dependency.setId(override(dependency.getId(), override));
+                    } else {
+                        log.verbose("Ignoring override as global override has already been applied for "
+                            + dependency.getId().toShortString());
+                    }
                 }
 
-                if (pathSpec.isDescend().booleanValue() || (matchingOptions.size() > 0)) {
+                // Descend if the path spec says to and the options are not all exclusions,
+                // Or if the path spec says not to, but there are options that are not all exclusions
+                if ((
+                            pathSpec.isDescend().booleanValue()
+                            && ((matchingOptions.size() == 0) || !areExclusions(matchingOptions))
+                        )
+                        || (
+                            !pathSpec.isDescend().booleanValue() && (matchingOptions.size() > 0)
+                            && !areExclusions(matchingOptions)
+                        )) {
                     resolvePath(path, dependencyPathSpec, nextLevelOptions(matchingOptions),
-                        matchingOptions.size() > 0, artifact.getId(), combinedOverrides);
+                        matchingOptions.size() > 0, artifact.getId(), combinedOverrides, appliedOverrides);
                 }
             }
         }
@@ -233,12 +272,18 @@ public class Resolver {
             String option = (String)i.next();
 
             // Find matching artifact dependency
-            String[] groupName = Strings.split(Strings.split(option, "(")[0], RepoArtifactId.ID_SEPARATOR);
-            String name = groupName[0].trim();
-            String group = (groupName.length > 1) ? groupName[1] : null;
+            String message = "Invalid option format: valid format is [-][group][:]<name>[@version]: options=" + option;
+
+            // Strip the leading '-' if this is an exclusion
+            String stripped = isExclusion(option) ? option.trim().substring(1) : option;
+
+            String[] groupName = Strings.trim(Strings.split(Strings.split(stripped, "(")[0], RepoArtifactId.ID_SEPARATOR));
+            Assert.isTrue((groupName.length == 1) || (groupName.length == 2), message);
+
+            String name = (groupName.length == 1) ? groupName[0] : groupName[1];
+            String group = (groupName.length == 1) ? null : groupName[0];
             String[] nameVersion = Strings.split(name, "@");
-            Assert.isTrue((nameVersion.length == 1) || (nameVersion.length == 2),
-                "Invalid option format: valid format is [group][:]<name>[@][version]: options=" + option);
+            Assert.isTrue((nameVersion.length == 1) || (nameVersion.length == 2), message);
 
             if (nameVersion.length == 2) {
                 name = nameVersion[0];
@@ -287,8 +332,8 @@ public class Resolver {
                         count++;
                     }
 
-                    Assert.isTrue(count <= 1,
-                        "Option does not uniquely identify the dependency. Specify the group as well");
+                    Assert.isTrue(count <= 1, pathSpec.getLocator(),
+                        "Option does not uniquely identify the dependency. Specify the group as well: name=" + name);
                 }
             }
         }
@@ -301,6 +346,7 @@ public class Resolver {
 
         RepoArtifactId overridden = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), version);
         overridden.setAnnotations((Annotations)id.getAnnotations().clone());
+        overridden.getAnnotations().put(OVERRIDDEN, id.getVersion());
 
         return overridden;
     }
@@ -336,15 +382,20 @@ public class Resolver {
                 RepoArtifact artifact = (RepoArtifact)j.next();
                 setConflict(artifact.getId(), null); // Clear conflict annotation
 
-                RepoArtifactId unversioned = toUnversionedId(artifact.getId());
-                List artifacts = (List)merged.get(unversioned);
+                List unversionedIds = toUnversionedIds(artifact);
 
-                if (artifacts == null) {
-                    artifacts = new ArrayList();
-                    merged.put(unversioned, artifacts);
+                for (Iterator k = unversionedIds.iterator(); k.hasNext();) {
+                    RepoArtifactId unversioned = (RepoArtifactId)k.next();
+
+                    List artifacts = (List)merged.get(unversioned);
+
+                    if (artifacts == null) {
+                        artifacts = new ArrayList();
+                        merged.put(unversioned, artifacts);
+                    }
+
+                    artifacts.add(artifact);
                 }
-
-                artifacts.add(artifact);
             }
         }
 
@@ -384,6 +435,38 @@ public class Resolver {
         } else {
             return mergedPath;
         }
+    }
+
+    public ResolvedPath override(ResolvedPath path, ResolvedPath with) {
+        // Make sure there are no conflicts within the paths given
+        path = merge(Collections.singleton(path));
+        with = merge(Collections.singleton(with));
+
+        // Get a map of the overriding versions
+        Map withVersions = new HashMap();
+
+        for (Iterator i = with.getArtifacts().iterator(); i.hasNext();) {
+            RepoArtifact artifact = (RepoArtifact)i.next();
+            withVersions.put(toUnversionedIds(artifact), artifact.getId().getVersion());
+        }
+
+        ResolvedPath overridden = new ResolvedPath();
+        overridden.setId("Overridden '" + path.getId() + "' with '" + with.getId() + "'");
+
+        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
+            RepoArtifact artifact = (RepoArtifact)i.next();
+            artifact = (RepoArtifact)artifact.clone();
+
+            Version withVersion = (Version)withVersions.get(toUnversionedIds(artifact));
+
+            if ((withVersion != null) && !withVersion.equals(artifact.getId().getVersion())) {
+                artifact.setId(override(artifact.getId(), withVersion));
+            }
+
+            overridden.add(artifact);
+        }
+
+        return overridden;
     }
 
     /**
@@ -451,7 +534,7 @@ public class Resolver {
             formatPath(path.getArtifacts(), artifact, onlyConflicted, sb, "    ");
         }
 
-        if (sb.length() != 0) {
+        if ((sb.length() != 0) || !onlyConflicted) {
             return path.getId() + "\n" + sb.toString();
         }
 
@@ -482,7 +565,34 @@ public class Resolver {
         }
     }
 
-    private RepoArtifactId toUnversionedId(RepoArtifactId id) {
-        return new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), Version.parse("0"));
+    /**
+     * Converts the artifact to an id that can be compared regardless of version. If the artifact
+     * has an original id set, it will use this instead, making comparisons valid across renames.
+     * If the original id has a version set then it means that there are 2 copies of the same
+     * artfiact in the repository (this can happen for example when sun.spec.servlet-api is
+     * and alias to apache.gernonimo.spec.servlet-api-2.5). In this case 2 ids are returned.
+     */
+    private List toUnversionedIds(RepoArtifact artifact) {
+        RepoArtifactId id = artifact.getId();
+        RepoArtifactId idUnversioned = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), Version.parse("0"));
+
+        if (artifact.getOriginalId() == null) {
+            return Collections.singletonList(idUnversioned);
+        }
+
+        id = artifact.getOriginalId();
+
+        RepoArtifactId originalUnversioned = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(),
+                Version.parse("0"));
+
+        if (artifact.getOriginalId().getVersion() == null) {
+            return Collections.singletonList(originalUnversioned);
+        }
+
+        List unversioned = new ArrayList();
+        unversioned.add(idUnversioned);
+        unversioned.add(originalUnversioned);
+
+        return unversioned;
     }
 }

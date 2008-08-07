@@ -54,7 +54,7 @@ public class ResolverTest extends AbstractTest {
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121");
     }
 
     public void testPrintPath() {
@@ -64,9 +64,9 @@ public class ResolverTest extends AbstractTest {
         dep(root, get("dep1"), "root");
 
         ResolvedPath path = resolver.resolvePath("root", root);
-        assertEquals("Path: root\n" + "    dep1:dep1:jar:1.0\n" + "        dep1_1:dep1_1:jar:1.0\n"
-            + "            dep1_1_1:dep1_1_1:jar:1.0\n" + "        dep1_2:dep1_2:jar:1.0\n"
-            + "            dep1_2_1:dep1_2_1:jar:1.0\n", resolver.formatPath(path, false));
+        assertEquals("Path: root\n" + "    dep1:dep1:jar:1.0\n" + "        dep11:dep11:jar:1.0\n"
+            + "            dep111:dep111:jar:1.0\n" + "        dep12:dep12:jar:1.0\n"
+            + "            dep121:dep121:jar:1.0\n", resolver.formatPath(path, false));
         assertEquals("", resolver.formatPath(path, true));
     }
 
@@ -75,45 +75,109 @@ public class ResolverTest extends AbstractTest {
 
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
-        dep(get("dep1_1"), get("dep1"), "runtime");
+        dep(get("dep11"), get("dep1"), "runtime");
 
         try {
             resolver.resolvePath("root", root);
             fail("Expected exception");
         } catch (Exception e) {
-            assertTrue(e.getMessage().indexOf("Cycle detected") != -1);
+            assertTrue(e.getMessage().indexOf("cycle detected") != -1);
         }
     }
 
     public void testOptionsWithMultipleLevels() {
         RepoArtifact root = createRoot();
         artifact("dep1");
-        artifact("dep1_1");
-        artifact("dep1_1_1");
-        artifact("dep1_2");
-        artifact("dep1_2_1");
+        artifact("dep11");
+        artifact("dep111");
+        artifact("dep12");
+        artifact("dep121");
 
         // Add a heap of optional dependencies
-        dep(root, get("dep1"), "root+(dep1_1(dep1_1_1),dep1_2)");
-        dep(get("dep1"), get("dep1_1"), "runtime+");
-        dep(get("dep1"), get("dep1_2"), "runtime+");
-        dep(get("dep1_2"), get("dep1_2_1"), "runtime+");
-        dep(get("dep1_1"), get("dep1_1_1"), "runtime+");
+        dep(root, get("dep1"), "root+(dep11(dep111),dep12)");
+        dep(get("dep1"), get("dep11"), "runtime+");
+        dep(get("dep1"), get("dep12"), "runtime+");
+        dep(get("dep12"), get("dep121"), "runtime+");
+        dep(get("dep11"), get("dep111"), "runtime+");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2");
+        assertPath(path, "dep1, dep11, dep111, dep12");
+    }
+
+    public void testOptionsWithGroups() {
+        RepoArtifact root = createRoot();
+        artifact("group1:dep1");
+        artifact("group1:dep2");
+        artifact("group2:dep2");
+
+        // Add a heap of optional dependencies
+        dep(root, get("group1:dep1"), "root+(group1:dep2, group2:dep2)");
+        dep(get("group1:dep1"), get("group1:dep2"), "runtime+");
+        dep(get("group1:dep1"), get("group2:dep2"), "runtime+");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "group1:dep1, group1:dep2, group2:dep2");
+    }
+
+    public void testOptionsWithGroups2() {
+        RepoArtifact root = createRoot();
+        artifact("group1:dep1");
+        artifact("group1:dep2");
+        artifact("group2:dep2");
+
+        // Add a heap of optional dependencies
+        dep(root, get("group1:dep1"), "root+(group1:dep2)");
+        dep(get("group1:dep1"), get("group1:dep2"), "runtime+");
+        dep(get("group1:dep1"), get("group2:dep2"), "runtime+");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "group1:dep1, group1:dep2");
+    }
+
+    public void testOptionsWithGroupsAmbiguous() {
+        RepoArtifact root = createRoot();
+        artifact("group1:dep1");
+        artifact("group1:dep2");
+        artifact("group2:dep2");
+
+        // Add a heap of optional dependencies
+        dep(root, get("group1:dep1"), "root+(dep2)");
+        dep(get("group1:dep1"), get("group1:dep2"), "runtime+");
+        dep(get("group1:dep1"), get("group2:dep2"), "runtime+");
+
+        try {
+            resolver.resolvePath("root", root);
+            fail("Exception expected");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().indexOf("does not uniquely identify the dependency") != -1);
+        }
     }
 
     public void testExplicitOverride() {
         createArtifacts1();
 
         RepoArtifact root = createRoot();
-        dep(root, get("dep1"), "root(dep1_1:dep1_1(dep1_1_1@2.0))");
+        dep(root, get("dep1"), "root(dep11:dep11(dep111@2.0))");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1:dep1_1_1:jar:2.0, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111:dep111:jar:2.0, dep12, dep121");
+    }
+
+    public void testGlobalPrecedenceOverExplicitOverride() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        artifact("dep111:dep111:jar:2.1");
+        override(root, "root", "dep111", "1.0", "2.1", null);
+        dep(root, get("dep1"), "root(dep11:dep11(dep111@2.0))");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "dep1, dep11, dep111:dep111:jar:2.1, dep12, dep121");
     }
 
     public void testPrintPathWithConflicts() {
@@ -171,15 +235,15 @@ public class ResolverTest extends AbstractTest {
 
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
-        dep(get("dep1_1"), get("dep3"), "runtime"); // Duplicate dep3
-        dep(get("dep1_2"), get("dep3"), "runtime");
+        dep(get("dep11"), get("dep3"), "runtime"); // Duplicate dep3
+        dep(get("dep12"), get("dep3"), "runtime");
 
         // Test with merging
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
         assertEquals(7, path.getArtifacts().size());
         path = resolver.merge(Collections.singleton(path));
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep3, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111, dep3, dep12, dep121");
     }
 
     public void testResolvePathOptionalDescend() {
@@ -206,22 +270,66 @@ public class ResolverTest extends AbstractTest {
         createArtifacts1();
 
         RepoArtifact root = createRoot();
-        dep(root, get("dep1"), "root!+(dep1_1)");
+        dep(root, get("dep1"), "root!+(dep11)");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1");
+        assertPath(path, "dep1, dep11, dep111");
+    }
+
+    public void testResolvePathWithExclusions() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root(-dep11)");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "dep1, dep12, dep121");
+    }
+
+    public void testResolvePathWithExclusions2() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root(-dep11, -dep12)");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "dep1");
+    }
+
+    public void testResolvePathWithExclusions3() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root(dep11(-dep111), -dep12)");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "dep1, dep11");
+    }
+
+    public void testResolvePathWithExclusions4() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root(dep11(-dep111), dep12(-dep121))");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "dep1, dep11, dep12");
     }
 
     public void testResolvePathOptionalWithPathSpecs2() {
         createArtifacts1();
 
         RepoArtifact root = createRoot();
-        dep(root, get("dep1"), "root!+(dep1_1, dep1_2)");
+        dep(root, get("dep1"), "root!+(dep11, dep12)");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121");
     }
 
     public void testResolvePathOptionalWithMultiplePaths() {
@@ -239,7 +347,7 @@ public class ResolverTest extends AbstractTest {
 
         ResolvedPath path2 = resolver.resolvePath("path2", root);
         printPath(path2);
-        assertPath(path2, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1");
+        assertPath(path2, "dep1, dep11, dep111, dep12, dep121");
     }
 
     public void testOverrideVersion() {
@@ -247,41 +355,53 @@ public class ResolverTest extends AbstractTest {
 
         // Override a simple leaf version
         //    dep1:dep1:jar:1.0
-        //        dep1_1:dep1_1:jar:1.0
-        //            dep1_1_1:dep1_1_1:jar:1.0
-        //        dep1_2:dep1_2:jar:1.0
-        //            dep1_2_1:dep1_2_1:jar:1.0
+        //        dep11:dep11:jar:1.0
+        //            dep111:dep111:jar:1.0
+        //        dep12:dep12:jar:1.0
+        //            dep121:dep121:jar:1.0
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
-        artifact("dep1_2_1:dep1_2_1:jar:2.0");
-        override(root, "root", "dep1_2_1", "1.0", "2.0", null);
+        artifact("dep121:dep121:jar:2.0");
+        override(root, "root", "dep121", "1.0", "2.0", null);
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1:dep1_2_1:jar:2.0");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121:dep121:jar:2.0");
 
         // Override the version occuring throughout the tree
         root = createRoot();
         dep(root, get("dep1"), "root");
-        dep(get("dep1_1"), get("dep1_2_1"), "runtime"); // Add to 1.2.1 to 1.1
-        override(root, "root", "dep1_2_1", "1.0", "2.0", null);
+        dep(get("dep11"), get("dep121"), "runtime"); // Add to 1.2.1 to 1.1
+        override(root, "root", "dep121", "1.0", "2.0", null);
         path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1:dep1_2_1:jar:2.0");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121:dep121:jar:2.0");
 
         // Test it doesn't alter other paths
         root = createRoot();
         root.addPath(path("root2", true, true));
         dep(root, get("dep1"), "root");
         dep(root, get("dep1"), "root2");
-        artifact("dep1_2_1:dep1_2_1:jar:2.0");
-        override(root, "root", "dep1_2_1", "1.0", "2.0", null);
+        artifact("dep121:dep121:jar:2.0");
+        override(root, "root", "dep121", "1.0", "2.0", null);
         path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1:dep1_2_1:jar:2.0");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121:dep121:jar:2.0");
         path = resolver.resolvePath("root2", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121");
+    }
+
+    public void testOverrideMandatoryGlobally() {
+        createArtifacts1();
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root");
+        override(root, "root", null, null, null, "?+"); // Makes every dependency optional for root path
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+        assertPath(path, "");
     }
 
     public void testOverridePathSpecification() {
@@ -289,19 +409,19 @@ public class ResolverTest extends AbstractTest {
 
         // Override a simple leaf version
         //    dep1:dep1:jar:1.0
-        //        dep1_1:dep1_1:jar:1.0
-        //            dep1_1_1:dep1_1_1:jar:1.0
-        //        dep1_2:dep1_2:jar:1.0
-        //            dep1_2_1:dep1_2_1:jar:1.0
+        //        dep11:dep11:jar:1.0
+        //            dep111:dep111:jar:1.0
+        //        dep12:dep12:jar:1.0
+        //            dep121:dep121:jar:1.0
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
 
-        // Override the path specification to make it not descend by default an include dep1_1 only
-        override(root, "root", "dep1", "1.0", null, "+(dep1_1)");
+        // Override the path specification to make it not descend by default an include dep11 only
+        override(root, "root", "dep1", "1.0", null, "+(dep11)");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1");
+        assertPath(path, "dep1, dep11, dep111");
 
         // Repeat, changing version at the same time
         root = createRoot();
@@ -320,23 +440,23 @@ public class ResolverTest extends AbstractTest {
 
         // Override a simple leaf version
         //    dep1:dep1:jar:1.0
-        //        dep1_1:dep1_1:jar:1.0
-        //            dep1_1_1:dep1_1_1:jar:1.0
-        //        dep1_2:dep1_2:jar:1.0
-        //            dep1_2_1:dep1_2_1:jar:1.0
+        //        dep11:dep11:jar:1.0
+        //            dep111:dep111:jar:1.0
+        //        dep12:dep12:jar:1.0
+        //            dep121:dep121:jar:1.0
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
 
         // Add an optional dependency from 1_1 -> 1_1_2
-        artifact("dep1_1_2");
-        dep(get("dep1_1"), get("dep1_1_2"), "runtime?+");
+        artifact("dep112");
+        dep(get("dep11"), get("dep112"), "runtime?+");
 
-        // Override dep1_1 to include the new dependency
-        override(root, "root", "dep1_1", null, null, "(dep1_1_2)");
+        // Override dep11 to include the new dependency
+        override(root, "root", "dep11", null, null, "(dep112)");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_1_2, dep1_2, dep1_2_1");
+        assertPath(path, "dep1, dep11, dep111, dep112, dep12, dep121");
     }
 
     public void testOverridePathSpecificationWithinTreeWithUniquePaths() {
@@ -344,23 +464,23 @@ public class ResolverTest extends AbstractTest {
         RepoArtifact root = artifact("root", path("root", true, true));
         artifact("root", path("root", true, true));
         artifact("dep1", path("dep1", true, true));
-        artifact("dep1_1", path("dep1_1", true, true));
-        artifact("dep1_1_1", path("dep1_1_1", true, true));
-        artifact("dep1_1_2", path("dep1_1_2", true, true));
+        artifact("dep11", path("dep11", true, true));
+        artifact("dep111", path("dep111", true, true));
+        artifact("dep112", path("dep112", true, true));
         artifact("dep2", path("dep2", true, true));
 
         dep(root, get("dep1"), "root=dep1");
-        dep(get("dep1"), get("dep1_1"), "dep1=dep1_1");
-        dep(get("dep1_1"), get("dep1_1_1"), "dep1_1=dep1_1_1");
-        dep(get("dep1_1"), get("dep1_1_2"), "dep1_1?=dep1_1_2"); // Optional
+        dep(get("dep1"), get("dep11"), "dep1=dep11");
+        dep(get("dep11"), get("dep111"), "dep11=dep111");
+        dep(get("dep11"), get("dep112"), "dep11?=dep112"); // Optional
         dep(root, get("dep2"), "root=dep2");
 
-        // Override dep1_1 to include dep1_1_2
-        override(root, "root", "dep1_1", null, null, "dep1_1(dep1_1_2)");
+        // Override dep11 to include dep112
+        override(root, "root", "dep11", null, null, "dep11(dep112)");
 
         ResolvedPath path = resolver.resolvePath("root", root);
         printPath(path);
-        assertPath(path, "dep1, dep1_1, dep1_1_1, dep1_1_2, dep2");
+        assertPath(path, "dep1, dep11, dep111, dep112, dep2");
     }
 
     private void printPath(ResolvedPath path) {
@@ -394,35 +514,35 @@ public class ResolverTest extends AbstractTest {
     private void createArtifacts1() {
 //      This method creates the following structure
 //        dep1:dep1:jar:1.0
-//            dep1_1:dep1_1:jar:1.0
-//                dep1_1_1:dep1_1_1:jar:1.0
-//            dep1_2:dep1_2:jar:1.0
-//                dep1_2_1:dep1_2_1:jar:1.0
+//            dep11:dep11:jar:1.0
+//                dep111:dep111:jar:1.0
+//            dep12:dep12:jar:1.0
+//                dep121:dep121:jar:1.0
 //        dep2:dep2:jar:1.0
-//            dep2_1:dep2_1:jar:1.0
+//            dep21:dep21:jar:1.0
 //        dep3:dep3:jar:1.0
 //        dep3:dep3:jar:2.0
-//            dep3_1:dep3_1:jar:2.0
+//            dep31:dep31:jar:2.0
         artifact("dep1");
         artifact("dep1:dep1:jar:2.0");
-        artifact("dep1_1");
-        artifact("dep1_1_1");
-        artifact("dep1_1_1:dep1_1_1:jar:2.0");
-        artifact("dep1_2");
-        artifact("dep1_2_1");
+        artifact("dep11");
+        artifact("dep111");
+        artifact("dep111:dep111:jar:2.0");
+        artifact("dep12");
+        artifact("dep121");
         artifact("dep2");
-        artifact("dep2_1");
+        artifact("dep21");
         artifact("dep3");
         artifact("dep3:dep3:jar:2.0");
-        artifact("dep3_1:dep3_1:jar:2.0");
+        artifact("dep31:dep31:jar:2.0");
 
         // Add dependencies
-        dep(get("dep1"), get("dep1_1"), "runtime");
-        dep(get("dep1"), get("dep1_2"), "runtime");
-        dep(get("dep1_2"), get("dep1_2_1"), "runtime");
-        dep(get("dep1_1"), get("dep1_1_1"), "runtime");
-        dep(get("dep2"), get("dep2_1"), "runtime");
-        dep(get("dep3:dep3:jar:2.0"), get("dep3_1:dep3_1:jar:2.0"), "runtime");
+        dep(get("dep1"), get("dep11"), "runtime");
+        dep(get("dep1"), get("dep12"), "runtime");
+        dep(get("dep12"), get("dep121"), "runtime");
+        dep(get("dep11"), get("dep111"), "runtime");
+        dep(get("dep2"), get("dep21"), "runtime");
+        dep(get("dep3:dep3:jar:2.0"), get("dep31:dep31:jar:2.0"), "runtime");
     }
 
     private RepoPath path(String id, boolean descendDefault, boolean mandatoryDefault) {
@@ -440,10 +560,13 @@ public class ResolverTest extends AbstractTest {
             override.addPath((String)i.next());
         }
 
-        String[] tokens = Strings.split(id, ":");
-        override.setGroup(tokens[0]);
-        override.setName((tokens.length > 1) ? tokens[1] : tokens[0]);
-        override.setType((tokens.length > 2) ? tokens[2] : "jar");
+        if (id != null) {
+            String[] tokens = Strings.split(id, ":");
+            override.setGroup(tokens[0]);
+            override.setName((tokens.length > 1) ? tokens[1] : tokens[0]);
+            override.setType((tokens.length > 2) ? tokens[2] : "jar");
+        }
+
         override.setVersion((version == null) ? null : VersionRangeUnion.parse(version));
         override.setWithVersion((withVersion == null) ? null : Version.parse(withVersion));
 
@@ -452,6 +575,7 @@ public class ResolverTest extends AbstractTest {
             override.addWithPathSpec(spec);
         }
 
+        override.validate();
         artifact.addOverride(override);
     }
 
@@ -500,9 +624,72 @@ public class ResolverTest extends AbstractTest {
         }
     }
 
+    public void testOverride() {
+        ResolvedPath path = new ResolvedPath();
+        ResolvedPath with = new ResolvedPath();
+
+        assertPath(resolver.override(path, with), "");
+        path.add(artifact("dep1"));
+        assertPath(resolver.override(path, with), "dep1");
+        path.add(artifact("dep2"));
+        assertPath(resolver.override(path, with), "dep1, dep2");
+        with.add(artifact("dep1:dep1:jar:2.0"));
+        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2");
+        path.add(artifact("dep3"));
+        path.add(artifact("dep4"));
+        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2, dep3, dep4");
+        with.add(artifact("dep4:dep4:jar:3.0"));
+        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2, dep3, dep4:dep4:jar:3.0");
+    }
+
+    public void testConflictWithOriginalId() {
+        artifact("dep1");
+
+        RepoArtifact dep2 = artifact("dep2:dep2:jar:2.0");
+        dep2.setOriginalId(id("dep1")); // Indicate dep2 was dep1
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root");
+        dep(root, get("dep2:dep2:jar:2.0"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+
+        try {
+            resolver.merge(Collections.singleton(path));
+            fail("Expected exception");
+        } catch (BuildException e) {
+            System.out.println(resolver.formatPath(path, true));
+            assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
+        }
+    }
+
+    public void testConflictWithOriginalIdVersioned() {
+        artifact("dep1");
+        artifact("dep1:dep1:jar:2.0");
+
+        RepoArtifact dep2 = artifact("dep2:dep2:jar:2.0");
+        dep2.setOriginalId(id("dep1:dep1:jar:1.0")); // Indicate dep2 was dep1
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep1"), "root");
+        dep(root, get("dep1:dep1:jar:2.0"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        printPath(path);
+
+        try {
+            resolver.merge(Collections.singleton(path));
+            fail("Expected exception");
+        } catch (BuildException e) {
+            System.out.println(resolver.formatPath(path, true));
+            assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
+        }
+    }
+
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
-    public class MockRepository extends AbstractRepository {
+    public static class MockRepository extends AbstractRepository {
         private Map artifacts = new HashMap();
 
         public void add(RepoArtifact artifact) {
@@ -538,6 +725,14 @@ public class ResolverTest extends AbstractTest {
 
         public boolean supportsInstall(RepoArtifactId artifactId) {
             return false;
+        }
+
+        public RepoArtifact updateSnapshot(RepoArtifact artifact) {
+            return null;
+        }
+
+        public Collection availableVersions(String group, String name, String type) {
+            return null;
         }
     }
 }
