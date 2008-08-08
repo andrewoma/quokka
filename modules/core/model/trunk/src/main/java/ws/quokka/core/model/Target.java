@@ -50,6 +50,7 @@ public class Target extends AnnotatedObject implements Cloneable {
     private boolean implemented = false;
     private String alias;
     private boolean main = false;
+    private PluginDependencyTarget pluginDependencyTarget;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -253,5 +254,13 @@ public class Target extends AnnotatedObject implements Cloneable {
 
     public boolean isMain() {
         return main;
+    }
+
+    public PluginDependencyTarget getPluginDependencyTarget() {
+        return pluginDependencyTarget;
+    }
+
+    public void setPluginDependencyTarget(PluginDependencyTarget pluginDependencyTarget) {
+        this.pluginDependencyTarget = pluginDependencyTarget;
     }
 }

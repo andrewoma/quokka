@@ -35,6 +35,7 @@ public class PluginDependencyTarget extends AnnotatedObject {
     private String template;
     private String alias;
     private List dependencies = new ArrayList();
+    private List dependencyOf = new ArrayList();
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
@@ -93,6 +94,14 @@ public class PluginDependencyTarget extends AnnotatedObject {
 
     public void addDependency(String dependency) {
         dependencies.add(dependency);
+    }
+
+    public List getDependencyOf() {
+        return Collections.unmodifiableList(dependencyOf);
+    }
+
+    public void addDependencyOf(String dependency) {
+        dependencyOf.add(dependency);
     }
 
     public boolean equals(Object o) {
