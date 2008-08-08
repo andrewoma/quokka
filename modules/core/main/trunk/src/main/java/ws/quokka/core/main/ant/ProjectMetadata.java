@@ -502,4 +502,16 @@ public class ProjectMetadata implements Metadata {
     public void copyPath(List path, File destination, String pattern) {
         CopyPathTask.copyPath(projectModel.getAntProject(), path, destination, pattern);
     }
+
+    public void addArtifact(RepoArtifactId id, String description, Map exportedPaths) {
+        Artifact artifact = new Artifact(id);
+        artifact.setDescription(description);
+
+        for (Iterator i = exportedPaths.entrySet().iterator(); i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            artifact.addExportedPath((String)entry.getKey(), (String)entry.getValue());
+        }
+
+        projectModel.getProject().addArtifact(artifact);
+    }
 }

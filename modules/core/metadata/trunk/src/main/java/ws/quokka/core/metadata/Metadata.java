@@ -20,10 +20,11 @@ package ws.quokka.core.metadata;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoType;
 
+import java.io.File;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.io.File;
 
 
 /**
@@ -79,4 +80,13 @@ public interface Metadata {
      * @param pattern as per translate above, may be null then defaults to #{group}_#{name}_#{type}_#{version}.#{extension}
      */
     void copyPath(List path, File destination, String pattern);
+
+    /**
+     * Adds an artifact to the project
+     * @param id
+     * @param description
+     * @param exportedPaths a map of paths to export with this artifact, the key is the project path id
+     * and the value is the exported path id
+     */
+    void addArtifact(RepoArtifactId id, String description, Map exportedPaths);
 }
