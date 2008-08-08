@@ -34,11 +34,11 @@
             <target name="transform-docbook-html" template="transform" prefix="transform-docbook-html"
                     depends="transform-docbook"/>
         </plugin>
-        <plugin group="quokka.plugin.help" version="0.1">
+        <plugin group="quokka.plugin.help" version="0.1.1">
             <target name="generate-summary" depends="transform-html"/>
         </plugin>
         <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <plugin group="quokka.plugin.help" version="0.1"/>
+        <plugin group="quokka.plugin.help" version="0.1.1"/>
         <plugin group="quokka.plugin.resources" version="0.1">
             <target name="extract-resources" template="extract" prefix="extract-resources"/>
         </plugin>

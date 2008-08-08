@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project relativePaths="true" version="4">
   <component name="AntConfiguration">
-    <defaultAnt name="Quokka" />
+    <defaultAnt name="Quokka 0.1.1" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/../../core/metadata/build.xml">
       <additionalClassPath />
@@ -22,6 +24,150 @@
       <customJdkName value="" />
       <maximumHeapSize value="128" />
       <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/bundle/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/bootstrap/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../depset/jar/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../archetype/jar/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/main/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/junit/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/plugin-spi/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/jee/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/jetty/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/repo-resolver/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/ant-optional-1-7-0/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/repo-spi/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/maven/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/resources/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/repository/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/bootstrap-util/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -74,6 +220,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
@@ -81,6 +228,19 @@
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
+  </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="web">
+        <modules>
+          <module name="plugin.jee">
+            <files>
+              <file url="file://$PROJECT_DIR$/../../plugin/jee/src/test/resources/JeePluginITest/src/main/webapp/WEB-INF/web.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
   </component>
   <component name="IdProvider" IDEtalkID="FE698F770C135476F6C7C8AD82E12625" />
   <component name="InspectionProjectProfileManager">
@@ -270,6 +430,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../archetype/depset/archetype.depset.iml" filepath="$PROJECT_DIR$/../../archetype/depset/archetype.depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" filepath="$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" filepath="$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../core/ant-optional-1-7-0/core.ant-optional-1-7-0.iml" filepath="$PROJECT_DIR$/../../core/ant-optional-1-7-0/core.ant-optional-1-7-0.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" filepath="$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" filepath="$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bundle/core.bundle.iml" filepath="$PROJECT_DIR$/../../core/bundle/core.bundle.iml" />
@@ -278,6 +439,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../core/metadata/core.metadata.iml" filepath="$PROJECT_DIR$/../../core/metadata/core.metadata.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/model/core.model.iml" filepath="$PROJECT_DIR$/../../core/model/core.model.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/plugin-spi/core.plugin-spi.iml" filepath="$PROJECT_DIR$/../../core/plugin-spi/core.plugin-spi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../core/repo-resolver/core.repo-resolver.iml" filepath="$PROJECT_DIR$/../../core/repo-resolver/core.repo-resolver.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/repo-spi/core.repo-spi.iml" filepath="$PROJECT_DIR$/../../core/repo-spi/core.repo-spi.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/repo-standard/core.repo-standard.iml" filepath="$PROJECT_DIR$/../../core/repo-standard/core.repo-standard.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/test/core.test.iml" filepath="$PROJECT_DIR$/../../core/test/core.test.iml" />
@@ -285,6 +447,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../core/version/core.version.iml" filepath="$PROJECT_DIR$/../../core/version/core.version.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../depset/jar/depset.jar.iml" filepath="$PROJECT_DIR$/../../depset/jar/depset.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" filepath="$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" filepath="$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" />
       <module fileurl="file://$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" filepath="$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/internal.master.iml" filepath="$PROJECT_DIR$/internal.master.iml" />
       <module fileurl="file://$PROJECT_DIR$/../module-depset/internal.module-depset.iml" filepath="$PROJECT_DIR$/../module-depset/internal.module-depset.iml" />
@@ -299,10 +462,14 @@
       <module fileurl="file://$PROJECT_DIR$/../../plugin/jarbundle/plugin.jarbundle.iml" filepath="$PROJECT_DIR$/../../plugin/jarbundle/plugin.jarbundle.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/javac/plugin.javac.iml" filepath="$PROJECT_DIR$/../../plugin/javac/plugin.javac.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/javadoc/plugin.javadoc.iml" filepath="$PROJECT_DIR$/../../plugin/javadoc/plugin.javadoc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/jee/plugin.jee.iml" filepath="$PROJECT_DIR$/../../plugin/jee/plugin.jee.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/jetty/plugin.jetty.iml" filepath="$PROJECT_DIR$/../../plugin/jetty/plugin.jetty.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/junit/plugin.junit.iml" filepath="$PROJECT_DIR$/../../plugin/junit/plugin.junit.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/junitreport/plugin.junitreport.iml" filepath="$PROJECT_DIR$/../../plugin/junitreport/plugin.junitreport.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/lifecycle/plugin.lifecycle.iml" filepath="$PROJECT_DIR$/../../plugin/lifecycle/plugin.lifecycle.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/maven/plugin.maven.iml" filepath="$PROJECT_DIR$/../../plugin/maven/plugin.maven.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/release/plugin.release.iml" filepath="$PROJECT_DIR$/../../plugin/release/plugin.release.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/repository/plugin.repository.iml" filepath="$PROJECT_DIR$/../../plugin/repository/plugin.repository.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/resources/plugin.resources.iml" filepath="$PROJECT_DIR$/../../plugin/resources/plugin.resources.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/standard-lifecycle/plugin.standard-lifecycle.iml" filepath="$PROJECT_DIR$/../../plugin/standard-lifecycle/plugin.standard-lifecycle.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/subversion/plugin.subversion.iml" filepath="$PROJECT_DIR$/../../plugin/subversion/plugin.subversion.iml" />
@@ -335,12 +502,6 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../archetype/multiproject" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../plugin/help" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../plugin/jalopy" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../plugin/release" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../plugin/subversion" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/../../plugin/versioncontrol" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
@@ -356,6 +517,7 @@
         <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant_jar.jar!/" />
         <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant-launcher_jar.jar!/" />
         <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/jsch_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/launcher_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

@@ -6,12 +6,12 @@
         <artifact/>
     </artifacts>
 
-    <bootstrap core="[0.1,0.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <dependency-set group="quokka.depset.resourcebundle" version="0.1"/>
         <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <plugin group="quokka.plugin.help" version="0.1"/>
+        <plugin group="quokka.plugin.help" version="0.1.1"/>
         <plugin group="quokka.plugin.release" version="0.1"/>
         <plugin group="quokka.plugin.subversion" version="0.1"/>
     </dependency-set>

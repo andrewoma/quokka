@@ -10,7 +10,7 @@
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
     </plugin>
-    <plugin group="quokka.plugin.help" version="0.1.1" use-defaults="false">
+    <plugin group="quokka.plugin.help" version="0.1.2" use-defaults="false">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
         <target name="generate-help"/>

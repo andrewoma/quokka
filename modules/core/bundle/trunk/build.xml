@@ -1,6 +1,7 @@
 <project name="core.bundle.ext">
 
-    <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
+    <!--<target name="dist" depends="quokka.lifecycle:package, docbook-pdf">-->
+    <target name="dist" depends="quokka.lifecycle:package">
         <property name="distdir" location="${quokka.project.targetDir}/dist/quokka-${quokka.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}">
@@ -12,6 +13,7 @@
               file="${quokka.lifecycle.packageOutput}/${quokka.project.artifact.group}_core_jar_${quokka.project.artifact.version}.jar"/>
         <property name="distfile" location="${quokka.project.targetDir}/quokka-${quokka.project.artifact.version}.zip"/>
         <copy todir="${distdir}" file="${docbook-pdf.out}"/>
+        <chmod file="${distdir}/bin/quokka" perm="a+x"/>
 
         <!-- Make a zip file, fixing cr and permisisons for quokka script -->
         <fixcrlf srcdir="${distdir}" includes="**/quokka" cr="remove"/>

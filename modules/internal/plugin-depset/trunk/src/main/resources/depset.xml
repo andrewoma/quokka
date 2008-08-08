@@ -3,20 +3,22 @@
     <path id="quokka-itest" description="Path for running quokka integration tests"/>
     <dependency group="apache.ant" version="1.7.0" paths="quokka-itest"/>
     <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="quokka-itest"/>
-    <dependency group="quokka.core.main" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.metadata" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.plugin-spi" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.repo-spi" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.repo-standard" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.util" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.model" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.bootstrap" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.bootstrap-util" version="0.1" paths="quokka-itest+"/>
-    <dependency group="quokka.core.version" version="0.1" paths="quokka-itest+"/>
+    <dependency group="quokka.core.main" version="0.1.2-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.metadata" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.plugin-spi" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.repo-spi" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.repo-standard" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.repo-resolver" version="0.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.util" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.model" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.bootstrap" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.bootstrap-util" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.version" version="0.1.1-ss" paths="quokka-itest+"/>
+    <dependency group="quokka.core.ant-optional-1-7-0" version="1.0-ss" paths="quokka-itest+"/>
 
     <!-- Integration test -->
-    <dependency group="quokka.core.itest" version="0.1.1" paths="itest,quokka-itest+"/>
+    <dependency group="quokka.core.itest" version="0.1.2-ss" paths="itest,quokka-itest+"/>
 
     <!--<plugin group="quokka.plugin.plugin" version="0.1"/>-->
-    <dependency-set group="quokka.internal.module-depset" version="0.1.1"/>
+    <dependency-set group="quokka.internal.module-depset" version="0.1.2"/>
 </dependency-set>

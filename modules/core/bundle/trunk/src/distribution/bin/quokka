@@ -3,7 +3,7 @@
 # quokka's bootstrapping mechanism. Set the following to match your most commonly used
 # configuration to prevent bootstrapping from forking another JVM:
 
-defaultQuokka="0.1.1"
+defaultQuokka="0.1.2-ss"
 defaultAnt="1.7"
 defaultOpts="-Xmx512m"
 #JAVACMD=</path/to your most commonly used jdk/java>
@@ -25,13 +25,12 @@ home="`dirname "$home"`/.."
 home=`cd "$home" && pwd`
 
 # Cygwin users: do not leave trailing slashes on any paths
-#JAVACMD=</path/to your most commonly used jdk/java>
 if [ -z "$QUOKKA_OPTS" ] ; then
     QUOKKA_OPTS=$defaultOpts
 fi
 launcherCp=$home/lib/apache.ant_ant-launcher_jar_$defaultAnt.jar
 quokkaCp=$home/lib/apache.ant_ant_jar_$defaultAnt.jar
-#quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
 quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_$defaultQuokka.jar
 
 # Get the java command
@@ -71,7 +70,10 @@ case "`uname`" in
   ;;
 esac
 
-standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\" -Dquokka.bootstrap.maxMemory=512m -Dquokka.bootstrap.jmvArgs=$QUOKKA_OPTS"
-standardArgs="-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib"
-cmd="\"$JAVACMD\" $standardOpts $QUOKKA_OPTS -classpath \"$launcherCp\" \"-Dant.home=$home\" org.apache.tools.ant.launch.Launcher $standardArgs $QUOKKA_ARGS -cp \"$quokkaCp\" $@"
+standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\""
+standardArgs="-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib -Dquokka.bootstrap.script=true"
+# Work-around bug in Ant exec when executing bootstrapped command lines containing nested quotes
+escOpts=`echo $QUOKKA_OPTS | sed "s/\'/@apos@/g"`
+
+cmd="\"$JAVACMD\" $standardOpts $QUOKKA_OPTS '-Dquokka.bootstrap.jvmArgs=$escOpts' -classpath \"$launcherCp\" \"-Dant.home=$home\" org.apache.tools.ant.launch.Launcher $standardArgs $QUOKKA_ARGS -cp \"$quokkaCp\" $@"
 eval $cmd

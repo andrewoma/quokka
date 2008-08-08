@@ -1,10 +1,6 @@
 <project>
-    <target name="clean">
-    </target>
-    <target name="install">
-    </target>
-    <!--<target name="cobertura-report">-->
-    <!--</target>-->
-    <!--<target name="junit-report">-->
-    <!--</target>-->
+    <target name="clean"/>
+    <target name="install"/>
+    <target name="format"/>
+    <target name="cobertura"/>
 </project>

@@ -1,0 +1,32 @@
+# Sun specs from Geronimo
+org.apache.geronimo.specs:geronimo-activation_1.1_spec:jar::1.0.2
+org.apache.geronimo.specs:geronimo-javamail_1.4_spec:jar::1.4
+
+# Ant 1.7.1
+org.apache.ant:ant-antlr:jar::1.7.1
+org.apache.ant:ant-apache-bcel:jar::1.7.1
+org.apache.ant:ant-apache-bsf:jar::1.7.1
+org.apache.ant:ant-apache-log4j:jar::1.7.1
+org.apache.ant:ant-apache-oro:jar::1.7.1
+org.apache.ant:ant-apache-regexp:jar::1.7.1
+org.apache.ant:ant-apache-resolver:jar::1.7.1
+org.apache.ant:ant-commons-logging:jar::1.7.1
+org.apache.ant:ant-commons-net:jar::1.7.1
+org.apache.ant:ant-jai:jar::1.7.1
+org.apache.ant:ant-javamail:jar::1.7.1
+org.apache.ant:ant-jdepend:jar::1.7.1
+org.apache.ant:ant-jmf:jar::1.7.1
+org.apache.ant:ant-jsch:jar::1.7.1
+org.apache.ant:ant-junit:jar::1.7.1
+org.apache.ant:ant-launcher:jar::1.7.1
+org.apache.ant:ant-netrexx:jar::1.7.1
+org.apache.ant:ant-nodeps:jar::1.7.1
+org.apache.ant:ant-starteam:jar::1.7.1
+org.apache.ant:ant-stylebook:jar::1.7.1
+org.apache.ant:ant-swing:jar::1.7.1
+org.apache.ant:ant-testutil:jar::1.7.1
+org.apache.ant:ant-trax:jar::1.7.1
+org.apache.ant:ant-weblogic:jar::1.7.1
+org.apache.ant:ant:jar::1.7.1
+
+#org.mortbay.jetty:jetty:jar::6.1.11
