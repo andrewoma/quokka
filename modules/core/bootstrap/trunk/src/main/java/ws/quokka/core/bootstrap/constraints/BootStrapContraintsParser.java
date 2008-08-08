@@ -17,6 +17,8 @@
 
 package ws.quokka.core.bootstrap.constraints;
 
+import org.apache.tools.ant.Project;
+
 import org.w3c.dom.Element;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -42,10 +44,12 @@ public class BootStrapContraintsParser extends XmlParser {
     private Set activeProfiles;
     private File file;
     private ProfilesMatcher profilesMatcher = new ProfilesMatcher();
+    private Project project;
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public BootStrapContraintsParser(File file, Set activeProfiles) {
+    public BootStrapContraintsParser(Project project, File file, Set activeProfiles) {
+        this.project = project;
         this.activeProfiles = activeProfiles;
         this.file = file;
     }
@@ -63,6 +67,22 @@ public class BootStrapContraintsParser extends XmlParser {
         Assert.isTrue(bootStrapEls.size() == 1, "There can only be one active bootstrap element at a time");
 
         Element bootStrapEl = (Element)bootStrapEls.iterator().next();
+
+        // Check if the bootstrapping is defined in a separate file
+        String fileAttribute = getAttribute(bootStrapEl, "file");
+
+        if (fileAttribute != null) {
+            String message = "If the 'file' attribute is specified, it must be the only attribute on 'bootstrap' "
+                + " and 'bootstrap' can have no children";
+            Assert.isTrue(bootStrapEl.getAttributes().getLength() == 1, message);
+
+            // TODO: make sure there are no child elements. Easy way?
+            file = project.resolveFile(fileAttribute);
+            Assert.isTrue(file.exists(),
+                "'file' attribute specified by the 'bootstrap' element does not exist: " + file.getPath());
+
+            return parse();
+        }
 
         BootStrapConstraints bootStrap = parseShortHand(bootStrapEl);
 

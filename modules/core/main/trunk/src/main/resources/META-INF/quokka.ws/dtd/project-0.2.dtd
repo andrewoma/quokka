@@ -39,6 +39,7 @@
 <!ATTLIST bootstrap jvm-args CDATA #IMPLIED >
 <!ATTLIST bootstrap profiles CDATA #IMPLIED >
 <!ATTLIST bootstrap spec-version CDATA #IMPLIED >
+<!ATTLIST bootstrap file CDATA #IMPLIED >
 
 <!ELEMENT core EMPTY >
 <!ATTLIST core profiles CDATA #IMPLIED >

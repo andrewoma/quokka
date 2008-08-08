@@ -17,6 +17,8 @@
 
 package ws.quokka.core.bootstrap.constraints;
 
+import org.apache.tools.ant.Project;
+
 import ws.quokka.core.test.AbstractTest;
 import ws.quokka.core.version.VersionRangeUnion;
 
@@ -43,8 +45,8 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
     }
 
     public void testParsingShorthand() {
-        BootStrapContraintsParser parser = new BootStrapContraintsParser(getTestCaseResource(
-                    "bootstrap-quokka-shorthand.xml"), Collections.EMPTY_SET);
+        BootStrapContraintsParser parser = new BootStrapContraintsParser(null,
+                getTestCaseResource("bootstrap-quokka-shorthand.xml"), Collections.EMPTY_SET);
         BootStrapConstraints bootStrap = parser.parse();
         List cores = bootStrap.getCoreConstraints();
         assertEquals(1, cores.size());
@@ -56,8 +58,8 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
     }
 
     public void testParsingWithDefaults() {
-        BootStrapContraintsParser parser = new BootStrapContraintsParser(getTestCaseResource(
-                    "bootstrap-quokka-defaults.xml"), Collections.EMPTY_SET);
+        BootStrapContraintsParser parser = new BootStrapContraintsParser(null,
+                getTestCaseResource("bootstrap-quokka-defaults.xml"), Collections.EMPTY_SET);
         BootStrapConstraints bootStrap = parser.parse();
 
         // Check the cores
@@ -104,8 +106,8 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         Set profiles = new HashSet();
         profiles.add("p1");
 
-        BootStrapContraintsParser parser = new BootStrapContraintsParser(getTestCaseResource(
-                    "bootstrap-quokka-profiles.xml"), profiles);
+        BootStrapContraintsParser parser = new BootStrapContraintsParser(null,
+                getTestCaseResource("bootstrap-quokka-profiles.xml"), profiles);
         BootStrapConstraints bootStrap = parser.parse();
 
         // Check the cores
@@ -134,6 +136,19 @@ public class BootStrapConstraintsParserTest extends AbstractTest {
         // This also checks the default values if none are supplied in attributes
         assertDependency("group-default", "group-default", "1", (DependencyConstraint)dependencies.get(0));
         assertDependency("group-p1", "group-p1", "1", (DependencyConstraint)dependencies.get(1));
+    }
+
+    public void testParseWithFileAttribute() {
+        Project project = new Project();
+        project.init();
+        project.setBasedir(getTestCaseResource("").getPath());
+
+        BootStrapContraintsParser parser = new BootStrapContraintsParser(project,
+                getTestCaseResource("bootstrap-with-file.xml"), new HashSet());
+        BootStrapConstraints bootStrap = parser.parse();
+        List cores = bootStrap.getCoreConstraints();
+        assertEquals(1, cores.size());
+        assertCore("[1.1,1.1]", (CoreConstraint)cores.get(0));
     }
 
     private void assertDependency(String group, String name, String version, DependencyConstraint dependency) {

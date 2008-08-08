@@ -20,6 +20,8 @@ package ws.quokka.core.bootstrap.constraints;
 import ws.quokka.core.bootstrap.resources.Jdk;
 import ws.quokka.core.test.AbstractTest;
 import ws.quokka.core.version.VersionRangeUnion;
+import ws.quokka.core.bootstrap_util.Log;
+import ws.quokka.core.bootstrap_util.MockLogger;
 
 import java.io.File;
 
@@ -50,6 +52,7 @@ public class JdkConstraintTest extends AbstractTest {
 
         jdk.setLocation(new File("C:\\SomeDir\\java.exe"));
         jdkConstraint.setJvmArgs("1024m");
+        Log.set(new MockLogger());
     }
 
     public void testMatchJdkDefault() {

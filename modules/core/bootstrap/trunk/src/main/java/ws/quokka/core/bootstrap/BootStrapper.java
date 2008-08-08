@@ -297,7 +297,7 @@ public class BootStrapper {
 
     public void initialise() {
         if (constraints == null) {
-            constraints = new BootStrapContraintsParser(quokkaFile, profiles).parse();
+            constraints = new BootStrapContraintsParser(project, quokkaFile, profiles).parse();
         }
 
         if ((constraints == null) || constraints.isEmpty()) {
