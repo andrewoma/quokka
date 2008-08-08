@@ -141,6 +141,7 @@
 <!ELEMENT target ( property )* >
 <!ATTLIST target alias CDATA #IMPLIED >
 <!ATTLIST target depends CDATA #IMPLIED >
+<!ATTLIST target dependency-of CDATA #IMPLIED >
 <!ATTLIST target name CDATA #IMPLIED >
 <!ATTLIST target prefix CDATA #IMPLIED >
 <!ATTLIST target template CDATA #IMPLIED >

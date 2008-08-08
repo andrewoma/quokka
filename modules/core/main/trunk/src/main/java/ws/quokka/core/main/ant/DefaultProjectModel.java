@@ -180,8 +180,8 @@ public class DefaultProjectModel implements ProjectModel {
                 PluginDependencyTarget dependencyTarget = (PluginDependencyTarget)j.next();
                 Target targetInstance = null;
 
-                // Test of enabling a target
                 if (dependencyTarget.getTemplate() == null) {
+                    // Enabling a target
                     String name = dependencyTarget.getName();
                     name = (name.indexOf(":") != -1) ? name : (target.getPlugin().getNameSpace() + ":" + name);
 
@@ -202,7 +202,7 @@ public class DefaultProjectModel implements ProjectModel {
                         targetInstance = target;
                     }
                 } else {
-                    // Test instantiation of a template
+                    // Instantiation of a template
                     String template = dependencyTarget.getTemplate();
                     template = (template.indexOf(":") != -1) ? template
                                                              : (target.getPlugin().getNameSpace() + ":" + template);
@@ -224,6 +224,10 @@ public class DefaultProjectModel implements ProjectModel {
                         String dependency = (String)k.next();
                         targetInstance.addDependency(dependency);
                     }
+
+                    // Record the plugin dependency target that introduced the target
+                    // This will be used later for dependency-of processing
+                    targetInstance.setPluginDependencyTarget(dependencyTarget);
 
                     addTarget(resolved, targetInstance);
                     j.remove();

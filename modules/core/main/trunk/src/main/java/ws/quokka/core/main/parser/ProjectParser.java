@@ -306,6 +306,13 @@ public class ProjectParser {
                 target.addDependency(dependency);
             }
 
+            List dependencyOf = Strings.commaSepList(element.getAttribute("dependency-of"));
+
+            for (Iterator i = dependencyOf.iterator(); i.hasNext();) {
+                String dependency = (String)i.next();
+                target.addDependencyOf(dependency);
+            }
+
             DependencySet dependencySet = (DependencySet)getContext("dependencySet");
             addProperties(dependencySet.getProperties(),
                 (target.getPrefix() == null) ? "" : (target.getPrefix() + "."), element);

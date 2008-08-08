@@ -348,12 +348,28 @@ public class ProjectHelper extends ProjectHelper2 {
 
                         for (Iterator k = targets.iterator(); k.hasNext();) {
                             String dependencyOfTarget = (String)k.next();
-                            org.apache.tools.ant.Target antTarget = (Target)antTargets.get(dependencyOfTarget);
+                            org.apache.tools.ant.Target antTarget = (Target)antProject.getTargets().get(dependencyOfTarget);
                             Assert.isTrue(antTarget != null, task.getLocation(),
                                 "Dependency-of task refers to an unknown target: " + dependencyOfTarget);
                             antTarget.addDependency(target.getName());
                         }
                     }
+                }
+            }
+        }
+
+        // Handle any dependency-of's declared by plugin dependency targets.
+        // Note: this can only be done here are any imports have been included
+        for (Iterator i = projectModel.getTargets().values().iterator(); i.hasNext();) {
+            ws.quokka.core.model.Target target = (ws.quokka.core.model.Target)i.next();
+
+            if (target.getPluginDependencyTarget() != null) {
+                for (Iterator j = target.getPluginDependencyTarget().getDependencyOf().iterator(); j.hasNext();) {
+                    String dependencyOfTarget = (String)j.next();
+                    org.apache.tools.ant.Target antTarget = (Target)antProject.getTargets().get(dependencyOfTarget);
+                    Assert.isTrue(antTarget != null, target.getPluginDependencyTarget().getLocator(),
+                        "Dependency-of task refers to an unknown target: " + dependencyOfTarget);
+                    antTarget.addDependency(target.getName());
                 }
             }
         }
