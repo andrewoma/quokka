@@ -115,15 +115,6 @@
         <property name="quokka.bootstrap.initialise" value="true" />
       </properties>
     </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/../../core/ant-optional-1-7-0/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
-      <properties>
-        <property name="quokka.bootstrap.initialise" value="true" />
-      </properties>
-    </buildFile>
     <buildFile url="file://$PROJECT_DIR$/../../core/repo-spi/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
@@ -161,6 +152,33 @@
       </properties>
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/../../core/bootstrap-util/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/xml/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../core/model/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/../../plugin/release/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
       <customJdkName value="" />
@@ -430,7 +448,6 @@
       <module fileurl="file://$PROJECT_DIR$/../../archetype/depset/archetype.depset.iml" filepath="$PROJECT_DIR$/../../archetype/depset/archetype.depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" filepath="$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" filepath="$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../core/ant-optional-1-7-0/core.ant-optional-1-7-0.iml" filepath="$PROJECT_DIR$/../../core/ant-optional-1-7-0/core.ant-optional-1-7-0.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" filepath="$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" filepath="$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bundle/core.bundle.iml" filepath="$PROJECT_DIR$/../../core/bundle/core.bundle.iml" />
