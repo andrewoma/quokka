@@ -54,7 +54,8 @@ public class Resolver {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public ResolvedPath resolvePath(String pathId, RepoArtifact artifact, List appliedOverrides) {
+    public ResolvedPath resolvePath(String pathId, RepoArtifact artifact, List appliedOverrides, boolean permitStubs,
+        boolean retrieveArtifacts) {
         Assert.isTrue(artifact.getPath(pathId) != null, "Path '" + pathId + "' does not exist in artifact: " + artifact);
         Assert.isTrue(appliedOverrides.size() == 0, "appliedOverrides should have a size of 0");
 
@@ -70,15 +71,32 @@ public class Resolver {
 
             for (Iterator j = pathSpecs.iterator(); j.hasNext();) {
                 RepoPathSpec pathSpec = (RepoPathSpec)j.next();
-                resolvePath(path, pathSpec, new HashSet(), false, null, overrides, appliedOverrides);
+                resolvePath(path, pathSpec, new HashSet(), false, null, overrides, appliedOverrides, retrieveArtifacts);
             }
+        }
+
+        if (!permitStubs) {
+            assertNoStubs(path);
         }
 
         return path;
     }
 
+    /**
+     * Ensure that the path contains no stubs (artifacts where the actual artifact cannot be distributed
+     * due to licensing restrictions)
+     */
+    private void assertNoStubs(ResolvedPath path) {
+        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
+            RepoArtifact artifact = (RepoArtifact)i.next();
+            Assert.isTrue(!artifact.isStub() || (artifact.getLocalCopy() != null),
+                "Path '" + path.getId() + "' contains a stub for '" + artifact.getId().toShortString() + "'.\n"
+                + "Due to licensing restrictions it cannot be distributed - you must download and install the artifact manually.");
+        }
+    }
+
     public ResolvedPath resolvePath(String pathId, RepoArtifact artifact) {
-        return resolvePath(pathId, artifact, new ArrayList());
+        return resolvePath(pathId, artifact, new ArrayList(), false, true);
     }
 
     /**
@@ -168,7 +186,7 @@ public class Resolver {
     }
 
     private void resolvePath(ResolvedPath path, RepoPathSpec pathSpec, Set options, boolean force,
-        RepoArtifactId declaredBy, List overrides, List appliedOverrides) {
+        RepoArtifactId declaredBy, List overrides, List appliedOverrides, boolean retrieveArtifacts) {
         // TODO: do proper cycle detection
         if (path.getArtifacts().size() > 150) {
             StringBuffer sb = new StringBuffer("Cycle detected!\n");
@@ -191,7 +209,7 @@ public class Resolver {
         }
 
         // Add the artifact to the path
-        RepoArtifact artifact = getArtifact(pathSpec.getDependency().getId());
+        RepoArtifact artifact = getArtifact(pathSpec.getDependency().getId(), retrieveArtifacts);
         artifact.getId().getAnnotations().put(DECLARED_BY, declaredBy);
 
 //        System.out.println("Adding: " + artifact.getId().toShortString() + " declared by " + (declaredBy == null ? "" : declaredBy.toShortString()));
@@ -238,7 +256,8 @@ public class Resolver {
                             && !areExclusions(matchingOptions)
                         )) {
                     resolvePath(path, dependencyPathSpec, nextLevelOptions(matchingOptions),
-                        matchingOptions.size() > 0, artifact.getId(), combinedOverrides, appliedOverrides);
+                        matchingOptions.size() > 0, artifact.getId(), combinedOverrides, appliedOverrides,
+                        retrieveArtifacts);
                 }
             }
         }
@@ -248,8 +267,8 @@ public class Resolver {
             + topLevelOptions + ", dependencies=" + artifact.getDependencies());
     }
 
-    private RepoArtifact getArtifact(RepoArtifactId artifactId) {
-        return (RepoArtifact)repository.resolve(artifactId).clone(); // Clone to allow additional annotations to be added within context
+    private RepoArtifact getArtifact(RepoArtifactId artifactId, boolean retrieveArtifact) {
+        return (RepoArtifact)repository.resolve(artifactId, retrieveArtifact).clone(); // Clone to allow additional annotations to be added within context
     }
 
     private Set splitTopLevelOptions(Set options) {

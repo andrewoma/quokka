@@ -7,7 +7,7 @@
 
     <subtitle>Quokka Reference Documentation</subtitle>
 
-    <releaseinfo>0.1</releaseinfo>
+    <releaseinfo>0.2</releaseinfo>
   </bookinfo>
 
   <toc></toc>
@@ -145,14 +145,14 @@
             enter:</para>
 
             <screen>$ quokka -version
-Quokka version 0.1                        </screen>
+Quokka version 0.2                        </screen>
           </listitem>
 
           <listitem>
             <para>Ensure that output matches the version you installed. When
             you run quokka for the first time, it will create a .quokka
             directory in your $HOME directory and seed it with some default
-            settings. See TODO for more information.</para>
+            settings.</para>
           </listitem>
         </itemizedlist>
       </sect1>
@@ -174,7 +174,7 @@ Quokka version 0.1                        </screen>
           <para>Go to the command console and change to (or create) an empty
           directory for new project. Enter the following command:</para>
 
-          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar:0.1 -Dgroup=mygroup.myname
+          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar:0.2 -Dgroup=mygroup.myname
 Buildfile: C:\Temp\quokkatest\temp-19405.xml
 
 archetype:
@@ -468,7 +468,9 @@ Default target: package                    </screen>
 
                 <listitem>
                   <para>Project properties
-                  (<literal>build-quokka.properties</literal>)</para>
+                  (<literal>build-quokka.properties</literal> or
+                  <literal>property</literal> elements within
+                  <literal>build-quokka.xml</literal>)</para>
                 </listitem>
               </itemizedlist>
             </listitem>
@@ -525,8 +527,8 @@ Default target: package                    </screen>
           file in detail now. Here's our project file:</para>
 
           <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1"
-    "http://quokka.ws/dtd/project-0.1.dtd"&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2"
+    "http://quokka.ws/dtd/project-0.2.dtd"&gt;
 
 &lt;project default-target="package"&gt;
     &lt;artifacts group="mygroup.myname" version="0.1"&gt;
@@ -772,80 +774,42 @@ Default target: package                    </screen>
           an overview of how repositories are resolved by quokka and what the
           defaults are.</para>
 
-          <para>Repositories are divided into <emphasis>project</emphasis> and
-          <emphasis>global</emphasis> repositories. Project repositories are
-          local to a project and usually reside in version control along side
-          the project itself. Global repositories are available to all
-          projects and commonly reside outside of version control. Below is an
-          outline of the default repository configuration.</para>
+          <para>On startup quokka will look for a <literal>project</literal>
+          repository. If that doesn't exist it will use the
+          <literal>shared</literal> repository. The locations and types of
+          <literal>project</literal> and <literal>shared</literal> are is
+          defined via properties. Project repositories are local to a project
+          and should only be defined in properties local to a particular
+          project. The <literal>shared</literal> repository is usually defined
+          in the user properties
+          (<literal>$HOME/.quokka/quokka.properties</literal>) and is
+          available to all projects. By default the <literal>shared</literal>
+          repository is defined as follows:</para>
 
-          <itemizedlist>
-            <listitem>
-              <para>Root (delegating)</para>
+          <programlisting>quokka.repo.shared.url=delegate:snapshot,release
 
-              <itemizedlist>
-                <listitem>
-                  <para>Project (no defaults defined globally)</para>
-                </listitem>
+# Snapshot: Local snapshots
+quokka.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
 
-                <listitem>
-                  <para>Global</para>
+# Release: Local cache of the global repository and location where any local releases are installed
+quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
 
-                  <itemizedlist>
-                    <listitem>
-                      <para>snapshots ($HOME/.quokka/repo/snapshots)</para>
-                    </listitem>
+# Global: the global quokka repository
+quokka.repo.quokka.url=url:http://quokka.ws/repository/
+</programlisting>
 
-                    <listitem>
-                      <para>releases ($HOME/.quokka/repo/releases)</para>
+          <para>The definition above results in snapshots (versions of
+          artifacts under development) being stored in
+          <literal>${user.home}/.quokka/snapshots</literal> and releases being
+          stored in <literal>${user.home}/.quokka/releases</literal>.
+          Additionally, if releases are not found locally, they will be
+          attempted to be downloaded from
+          <literal>http://quokka.ws/repository</literal>. See <link
+          linkend="repositories">Repositories</link> for more
+          information.</para>
 
-                      <itemizedlist>
-                        <listitem>
-                          <para>global-releases
-                          (http://quokka.ws/repo/global-releases)</para>
-                        </listitem>
-                      </itemizedlist>
-                    </listitem>
-                  </itemizedlist>
-                </listitem>
-              </itemizedlist>
-            </listitem>
-          </itemizedlist>
-
-          <para>To resolve an artifact, quokka searches the Project
-          repositories first if they are defined and then (optionally) the
-          Global repositories. Quokka searches the repositories in order,
-          asking if the repository <emphasis>supports</emphasis> the artifact
-          in question. If the repository supports the artifact, it attempts to
-          resolve it, otherwise it moves on to the next repository.</para>
-
-          <para>An example of this is the <literal>snapshots</literal> and
-          <literal>releases</literal> repositories.
-          <literal>Snapshot</literal> supports snapshot releases. These are
-          releases that are under development where the artifact in the
-          repository may change over time even though the version remains
-          static (by default, snapshots are identified by versions that end in
-          <literal>-ss</literal>). <literal>Releases</literal> on the other
-          hand, only supports final releases where the artifact will never
-          change for a specific version.</para>
-
-          <para>At the next level down is the relationship between releases
-          and global-releases. This is a parent-child relationship. Quokka
-          never accesses <literal>global-releases</literal> directly, only
-          ever via <literal>releases</literal>. <literal>Releases</literal>
-          internally has a reference to the <literal>global-releases</literal>
-          repository and will delegate requests to it it if it cannot resolve
-          the artifact itself. It then stores the artifact locally for
-          subsequent requests. In effect, it acts as a cache for the
-          <literal>global-releases</literal> repository as well as a location
-          to store local releases.</para>
-
-          <para>The structure outlined above it just the defaults. There can
-          be any number of root repositories under Project and Global and they
-          may in turn have any level of nested repositories within them. The
-          repository structure is a little daunting at first, however it
-          allows for a great deal of flexibility. For example, the following
-          scenarios are all supported:</para>
+          <para>The structure outlined above it just the defaults. Quokka can
+          be configured to support any of the following scenarios:</para>
 
           <itemizedlist>
             <listitem>
@@ -854,14 +818,14 @@ Default target: package                    </screen>
             </listitem>
 
             <listitem>
-              <para>All project dependencies are retrieved from the global
+              <para>All project dependencies are retrieved from the shared
               repository</para>
             </listitem>
 
             <listitem>
-              <para>Dependencies available in the global repository are
-              resolved from there, with only the subset not available globally
-              stored with the project</para>
+              <para>Dependencies available in the shared repository are
+              resolved from there, with only the subset not available stored
+              with the project</para>
             </listitem>
 
             <listitem>
@@ -1001,7 +965,7 @@ quokka.project.java.target=1.5                    </programlisting>
           <para>Plugins generally add default targets to your project and are
           configured to reasonable default settings. However, the default
           settings can usually be overridden by setting properties and
-          <emphasis>build resources</emphasis> . See the specific plugin
+          <emphasis>build resources</emphasis>. See the specific plugin
           documentation for configuration options.</para>
 
           <para><emphasis>Build resources</emphasis> are a hierarchy of files
@@ -1148,7 +1112,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>Unit testing with jUnit or TestNG</para>
+            <para>Unit testing with jUnit</para>
           </listitem>
 
           <listitem>
@@ -1231,8 +1195,8 @@ quokka.project.java.target=1.5                    </programlisting>
         example:</para>
 
         <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1"
-                  "http://quokka.ws/dtd/project-0.1.dtd"&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2"
+                  "http://quokka.ws/dtd/project-0.2.dtd"&gt;
 
 &lt;project default-target="package"&gt;
     &lt;artifacts group="somegroup" version="1.0"&gt;
@@ -1555,7 +1519,8 @@ quokka.project.java.target=1.5                    </programlisting>
 
                 <listitem>
                   <para>Mandatory. The id of the path that the dependencies
-                  are being copied to.</para>
+                  are being copied to. Note: Must be omitted when applied to
+                  plugin paths.</para>
                 </listitem>
               </varlistentry>
 
@@ -1608,6 +1573,15 @@ quokka.project.java.target=1.5                    </programlisting>
                   <literal>group</literal> as well, separated by a colon. e.g.
                   <literal>apache:log4j</literal> instead of
                   <literal>log4j</literal>.</para>
+
+                  <para>Options can also be used to exclude a transitive
+                  dependency. This is useful in siutations when the meta data
+                  incorrectly states a depenendency is mandatory, where it is
+                  in fact optional. To exclude it, prefix the option with a
+                  minus sign. e.g. use
+                  <literal>options="testng(-qdox)"</literal> to exclude the
+                  <literal>qdox</literal> dependency when using
+                  <literal>testng</literal>. </para>
 
                   <para>Note: the options will be added regardless of the
                   value of the <literal>descend</literal> attribute.</para>
@@ -1706,7 +1680,7 @@ quokka.project.java.target=1.5                    </programlisting>
               <para>The shorthand form is specified via the
               <literal>paths</literal> attribute on the
               <literal>dependency</literal> element. It has the following
-              grammar: <literal>to[?][+|&lt;][from][(options)]</literal>,
+              grammar: <literal>to[!|?][+|&lt;][from][(options)]</literal>,
               where:</para>
 
               <variablelist>
@@ -1714,7 +1688,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   <term>to</term>
 
                   <listitem>
-                    <para>Is the <literal>to</literal> path id.</para>
+                    <para>Is the <literal>to</literal> path id. </para>
                   </listitem>
                 </varlistentry>
 
@@ -1723,8 +1697,18 @@ quokka.project.java.target=1.5                    </programlisting>
 
                   <listitem>
                     <para>If present, <literal>mandatory</literal> is
-                    <literal>false</literal>, otherwise
-                    <literal>true</literal></para>
+                    <literal>false</literal>, otherwise the path
+                    default<literal></literal></para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>!</term>
+
+                  <listitem>
+                    <para>If present, <literal>mandatory</literal> is
+                    <literal>true</literal>, otherwise the path default
+                    <literal></literal></para>
                   </listitem>
                 </varlistentry>
 
@@ -1733,8 +1717,8 @@ quokka.project.java.target=1.5                    </programlisting>
 
                   <listitem>
                     <para>If present, <literal>descend</literal> is
-                    <literal>false</literal>, otherwise the default is
-                    used</para>
+                    <literal>false</literal>, otherwise the path
+                    default</para>
                   </listitem>
                 </varlistentry>
 
@@ -1743,8 +1727,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
                   <listitem>
                     <para>If present, <literal>descend</literal> is
-                    <literal>true</literal>, otherwise the default is
-                    used</para>
+                    <literal>true</literal>, otherwise the path default</para>
                   </listitem>
                 </varlistentry>
 
@@ -1907,6 +1890,20 @@ quokka.project.java.target=1.5                    </programlisting>
               </varlistentry>
 
               <varlistentry>
+                <term>dependency-of</term>
+
+                <listitem>
+                  <para>Optional. A comma separated list of targets that
+                  depend on this target. If the targets are not defined in the
+                  plugin they must be fully qualified with the plugin name
+                  space. e.g. <literal>quokka.lifecycle:package</literal>, not
+                  package. Together with <literal>depends</literal>, this
+                  allows you to insert this target in a precise location in
+                  the build sequence.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
                 <term>alias</term>
 
                 <listitem>
@@ -1934,13 +1931,20 @@ quokka.project.java.target=1.5                    </programlisting>
                 <term>prefix</term>
 
                 <listitem>
-                  <para>Optional. For templates only. The prefix for any
+                  <para>Optional. For templates, it defines the prefix for any
                   properties the template uses for configuration. Prefixes
                   should be unique (including prefixes used by default
-                  targets).</para>
+                  targets). For standard targets, it must match the
+                  pre-defined prefix and is only useful when defining nested
+                  property elements.</para>
                 </listitem>
               </varlistentry>
             </variablelist>
+
+            <para>Targets may also contain nested <literal>property</literal>
+            elements. Such properties will automatically be prefixed with the
+            <literal>prefix</literal> defined in the parent
+            <literal>target</literal> element.</para>
           </sect3>
 
           <sect3 id="nested-sets">
@@ -2123,17 +2127,17 @@ quokka.project.java.target=1.5                    </programlisting>
             those that are compatible. Note that transitive dependency
             versions might also change as a result.</para>
 
-            <para>The second mechanism for overriding has a global scope and
-            can change a range of version to another version. It is achieved
-            using a nested the <literal>override</literal> element within a
-            <literal>dependency-set.</literal> Attributes are:</para>
+            <para>The second mechanism for overriding has a much wider scope
+            and can change a range of versions to another version. It is
+            achieved using a nested the <literal>override</literal> element
+            within a <literal>dependency-set.</literal> Attributes are:</para>
 
             <variablelist>
               <varlistentry>
                 <term>group</term>
 
                 <listitem>
-                  <para>Mandatory. The artifact group to match</para>
+                  <para>Mandatory. The artifact group to match.</para>
                 </listitem>
               </varlistentry>
 
@@ -2141,7 +2145,7 @@ quokka.project.java.target=1.5                    </programlisting>
                 <term>version</term>
 
                 <listitem>
-                  <para>Mandatory. A version range union to match. See <link
+                  <para>Optional. A version range union to match. See <link
                   linkend="versioning">Versioning</link> below for more
                   details on version ranges.</para>
                 </listitem>
@@ -2155,9 +2159,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   all names match within the group.</para>
                 </listitem>
               </varlistentry>
-            </variablelist>
 
-            <variablelist>
               <varlistentry>
                 <term>type</term>
 
@@ -2168,23 +2170,84 @@ quokka.project.java.target=1.5                    </programlisting>
               </varlistentry>
 
               <varlistentry>
+                <term>paths</term>
+
+                <listitem>
+                  <para>Optional. The project paths to match. "*" is a
+                  wildcard matching all project paths. If not present, the
+                  override will not apply to project paths.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>plugin-paths</term>
+
+                <listitem>
+                  <para>Optional. The plugin paths to match. "*" is a wildcard
+                  matching all plugin paths. If not present, the override will
+                  not apply to project paths. The format is
+                  <literal>pluginGroup[:pluginName]=path1[:pathn]</literal>.
+                  Multiple plugins may defined in a comma separated list.
+                  </para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
                 <term>with</term>
 
                 <listitem>
-                  <para>Mandatory. The overriding version to set all matches
-                  to.</para>
+                  <para>Mandatory if with-paths not supplied. The overriding
+                  version to set all matches to. </para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>with-paths</term>
+
+                <listitem>
+                  <para>Optional. The overriding path specification. The path
+                  specification should not include a <literal>to</literal> id
+                  and will match against any dependency with a matching
+                  <literal>from</literal> id. The options and descend and
+                  mandatory value will then be overwritten with those
+                  supplied.</para>
                 </listitem>
               </varlistentry>
             </variablelist>
 
-            <para>The following example will globally set all versions of
+            <para>The following example will set all versions of
             <literal>log4j</literal> <literal>1.2.x</literal> to
-            <literal>1.2.15</literal>.</para>
+            <literal>1.2.15</literal> within project paths.</para>
 
-            <programlisting>&lt;override group="apache.log4j" version="[1.2.0, 1.3.0)" with="1.2.15"/&gt;</programlisting>
+            <programlisting>&lt;override group="apache.log4j" paths="*" version="[1.2.0, 1.3.0)" with="1.2.15"/&gt;</programlisting>
 
             <para>Note: versions must be in the standard format to support
             ranges, otherwise specific versions must be listed.</para>
+
+            <para>The following example will force the
+            <literal>xml-apis</literal> to be automatically added any time
+            <literal>dom4j</literal> is used in a plugin path.</para>
+
+            <programlisting>&lt;override group="dom4j" name="dom4j" plugin-paths="*" with-paths="runtime(xml-apis)"/&gt;</programlisting>
+
+            <para>Notes:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>If you use an override that applies to a project path,
+                it will be exported automatically to the repository defintion
+                during packaging.</para>
+              </listitem>
+
+              <listitem>
+                <para>Quokka does not provide automatic conflict resolution.
+                This is to ensure that your project has as few dependencies as
+                possible. Automatic conflict resolution requires all versions
+                of dependencies to be touched before culling the conflicts. On
+                the other hand, specifying overrides allows the culling to
+                happen up front.</para>
+              </listitem>
+            </orderedlist>
           </sect3>
         </sect2>
 
@@ -2196,44 +2259,102 @@ quokka.project.java.target=1.5                    </programlisting>
           startup quokka can automatically select the correct version of
           itself to use. Bootstrapping is not restricted to the quokka version
           itself, but also allows a specific JDK to be selected, along with
-          the maximum memory or heap.</para>
+          JVM arguments.</para>
 
-          <para>Bootstrapping is defined by the
-          <literal>bootstrapping</literal> element, a nested element within
-          the <literal>project</literal> element. Below is an example that
-          would only build if quokka version <literal>0.1</literal> and a
-          Windows java <literal>1.6</literal> implementation were
-          available:</para>
+          <para>Bootstrapping is defined by the <literal>bootstrap</literal>
+          element, a nested element within the <literal>project</literal>
+          element. Below is an example that would only build if quokka version
+          <literal>0.1</literal> and a Windows java <literal>1.6</literal>
+          implementation were available:</para>
 
           <programlisting>&lt;bootstrap&gt;
     &lt;cores&gt;
         &lt;core version="0.1"/&gt;
     &lt;/cores&gt;
     &lt;jdks&gt;
-        &lt;jdk jvm-args="512m" spec-version="[1.6, 1.6]"&gt;
+        &lt;jdk jvm-args="-Xmx512m" spec-version="[1.6, 1.6]"&gt;
             &lt;sysproperty name="os.arch" value="Windows" required="true"/&gt;
         &lt;/jdk&gt;
     &lt;/jdks&gt;
 &lt;/bootstrap&gt;</programlisting>
 
-          <para>Note: the above is a little long-winded - a shorthand form for
-          the common cases will be available soon. Part of the reason for the
-          full declaration is that each element may have a
-          <literal>profiles</literal> attribute.</para>
+          <para>Note: the above is a little long-winded as it is designed to
+          work in conjunction with profiles. However, there is a shorthand
+          form that accepts common attributes within the bootstrap element
+          itself. e.g. the following requires quokka <literal>0.1</literal> to
+          <literal>0.2</literal>, a heap of <literal>512MB</literal> and a
+          Java version from <literal>1.4</literal> to <literal>1.6</literal>
+          to build.</para>
 
-          <para>As you can see, a <literal>bootstrap</literal> element can
-          have nested <literal>cores</literal> and <literal>jdks</literal>
-          elements. The <literal>cores</literal> element allows you to specify
-          the quokka version that the project requires. Attributes are:</para>
+          <programlisting>&lt;bootstrap core="[0.1,0.2]" jvm-args="-Xmx512m" spec-version="[1.4,1.6]/&gt;
+</programlisting>
+
+          <para>The <literal>bootstrap</literal> element supports the
+          following attributes (all are optional):</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>core</term>
+
+              <listitem>
+                <para>A shorthand way to specify the core version (as a
+                version range union).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>file</term>
+
+              <listitem>
+                <para>A file containing the bootstrap file. This can be useful
+                if the bootstrapping is complicated and shared across
+                modules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>java-version, jvm-version &amp; spec-version</term>
+
+              <listitem>
+                <para>Matches the JDK system properties java.version,
+                java.vm.version and java.specification.version respectively.
+                The value specified is a version range union. See <link
+                linkend="versioning">Versioning</link> below.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>java-vendor, java-jvm-vendor</term>
+
+              <listitem>
+                <para>Matches against the JDK system properties java.vendor
+                and java.vm.vendor respectively using a string
+                comparison.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>jvmArgs</term>
+
+              <listitem>
+                <para>Checks that the quokka JVM was started with the
+                specified arguments. Note: If additional arguments were
+                supplied it is still considered a match</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>A <literal>bootstrap</literal> element can have nested
+          <literal>cores</literal> and <literal>jdks</literal> elements. The
+          <literal>cores</literal> element allows you to specify the quokka
+          version that the project requires. Attributes are:</para>
 
           <variablelist>
             <varlistentry>
               <term>version</term>
 
               <listitem>
-                <para>A version range union of quokka versions. See <link
-                linkend="versioning">Versioning</link> below for more
-                information.</para>
+                <para>A version range union of quokka versions.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -2256,8 +2377,7 @@ quokka.project.java.target=1.5                    </programlisting>
               <term>jvmArgs</term>
 
               <listitem>
-                <para>Optional. Checks that the maximum heap size matches the
-                value specified.</para>
+                <para>Optional. See above.</para>
               </listitem>
             </varlistentry>
 
@@ -2265,10 +2385,7 @@ quokka.project.java.target=1.5                    </programlisting>
               <term>java-version, jvm-version &amp; spec-version</term>
 
               <listitem>
-                <para>Optional. Matches the JDK system properties
-                java.version, java.vm.version and java.specification.version
-                respectively. The value specified is a version range union.
-                See <link linkend="versioning">Versioning</link> below.</para>
+                <para>Optional. See above.</para>
               </listitem>
             </varlistentry>
 
@@ -2276,9 +2393,7 @@ quokka.project.java.target=1.5                    </programlisting>
               <term>java-vendor, java-jvm-vendor</term>
 
               <listitem>
-                <para>Optional. Matches against the JDK system properties
-                java.vendor and java.vm.vendor respectively using a string
-                comparison.</para>
+                <para>Optional. See above.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -2348,12 +2463,22 @@ quokka.project.java.target=1.5                    </programlisting>
                 <para>The standard attributes to identify an artifact.</para>
               </listitem>
             </varlistentry>
-          </variablelist>
 
-          <para>After declaring the boot-dependency, you must copy the
-          artifact to your quokka installation directory, under the
-          <literal>lib</literal> directory with a name of
-          group_name_jar_version.jar.</para>
+            <varlistentry>
+              <term>file &amp; url</term>
+
+              <listitem>
+                <para>Optional, mutually exclusive. The location of the
+                dependency. This is useful if you need to specifiy a boot
+                dependency, but have no control over the installation
+                environment. Note however, that the forking of a new JVM will
+                always occur in this case. If you do not specify a file or
+                url, you must copy the artifact to your quokka installation
+                directory, under the <literal>lib</literal> directory with a
+                name of group_name_jar_version.jar</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
 
           <tip>
             <para>Combining bootstrapping and profiles can be a powerful way
@@ -2390,7 +2515,8 @@ quokka.project.java.target=1.5                    </programlisting>
             <listitem>
               <para>Project properties (usually
               <literal>build-quokka.properties</literal> in the project base
-              directory)</para>
+              directory, or within <literal>build-quokka.xml</literal>
+              itself)</para>
             </listitem>
 
             <listitem>
@@ -2681,7 +2807,7 @@ prefix.*=${prefix.defs}</programlisting>
         possible.</para>
 
         <para>The standard format is:
-        major[.minor[.micro[.update]]][-qualifier][:repositoryVersion],
+        major[.minor[.micro[.update]]][-qualifier][~repositoryVersion],
         where:</para>
 
         <variablelist>
@@ -2717,7 +2843,7 @@ prefix.*=${prefix.defs}</programlisting>
         </variablelist>
 
         <para>Examples of valid versions are: <literal>1, 1.2, 1.0.2.3, 0.1,
-        2.2:2</literal></para>
+        2.2~2</literal></para>
 
         <para>When versions are compared the numeric portion is compared as
         you expect (as if there were padded zeroes when any value is not
@@ -2867,54 +2993,66 @@ prefix.*=${prefix.defs}</programlisting>
       relevant section in the project reference for more information.</para>
 
       <para>There are multiple types of repositories and an SPI so that you
-      can write your own implementation. By default quokka uses a delegating
-      repository implementation that delegates repository requests to
-      underlying implementations based on the
-      <literal>quokka.project.repoRoots</literal> and
-      <literal>quokka.global.repoRoots</literal> properties.
-      <literal>quokka.project.repoRoots</literal> is for defining project
-      local repositories that are stored in version control along with the
-      project. If <literal>quokka.project.repoRoots</literal> is specified,
-      then <literal>quokka.global.repoRoots</literal> property is
-      ignored.</para>
+      can write your own implementation. At startup, quokka looks for a
+      repository named <literal>project</literal>. If it doesn't exist it
+      looks for a repository named <literal>shared</literal>.
+      <literal>Project</literal> repositories allow for projects to store
+      their dependencies locally if desired. As such project repositories
+      should only be defined within a particular project's properties.</para>
+
+      <para>The <literal>shared</literal> repository is intended to be shared
+      amongst all projects. The actual implementation of the project and
+      shared repositories can vary depending on the project and/or
+      installation. Quokka determines the installation from the standard
+      properties, those starting with
+      <literal>quokka.repo.&lt;repositoryName&gt;</literal> controlling
+      repository configuration.</para>
 
       <para>The default installation of quokka creates the following
       configuration in your <literal>$HOME/.quokka/quokka.properties</literal>
       file:</para>
 
-      <programlisting>quokka.global.repoRoots=snapshot, localRelease
-
-# WARNING: the next line is an alias definition, do not delete
-#{repo=quokka.repo.}
+      <programlisting># Defines shared repositories across all projects. Used unless quokka.repo.project is defined
+# Note: DO NOT define quokka.repo.project here, it is reserved for individual projects to define their
+#       own local repositories
+quokka.repo.shared.url=delegate:snapshot,release
 
 # Snapshot: Local snapshots
-repo!snapshot.class=file
-repo!snapshot.rootDir=${user.home}/.quokka/snapshots
-repo!snapshot.snapshots=true
+quokka.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
 
-# Release: Local cache of the global repository and location where 
-# any local releases are installed
-repo!release.class=file
-repo!release.rootDir=${user.home}/.quokka/releases
-repo!release.parents=global
-repo!release.confirmImport=false
+# Release: Local cache of the global repository and location where any local releases are installed
+quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
 
-# Global: the global repository
-repo!global.class=url
-repo!global.rootUrl=http://quokka.ws/repository</programlisting>
+# Global: the global quokka repository
+quokka.repo.quokka.url=url:http://quokka.ws/repository/
+</programlisting>
+
+      <para>The above configuration defines that the <literal>shared</literal>
+      repository delegate requests to the <literal>snapshot</literal> and
+      <literal>release</literal> repositories. Furthermore, the
+      <literal>release</literal> repository will attempt to retrieve artifacts
+      from it's parent (the <literal>quokka</literal> global repository) if an
+      artifact cannot be found. </para>
 
       <para>While this is a reasonable configuration to get you up and running
       it is strongly recommended that you change it to store your releases
-      repository under version control. See <link
-      linkend="release-repo">Release Configurations</link> below.</para>
+      under version control. See <link linkend="release-repo">Release
+      Configurations</link> below.</para>
 
-      <para>When resolving an artifact, the delegating repository will iterate
-      through <literal>repoRoots</literal> asking each repository if it
-      supports the artifact. If it does, it will attempt to resolve it using
-      that repository. If the repository didn't contain the artifact it will
-      try the remaining repositories.</para>
+      <para>The syntax used above is a short hand URL notation, that is
+      automatically converted into properties. The format is
+      <literal>&lt;class&gt;[:root][;property1=value1]*</literal>. </para>
 
-      <para>When initialising, the delegating repository looks for a property
+      <para>So
+      <literal>quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false</literal>
+      could be rewritten as:</para>
+
+      <programlisting>quokka.repo.release.class=file
+quokka.repo.release.root=${user.home}/.quokka/releases
+quokka.repo.release.parents=quokka
+quokka.repo.release.confirmImport=false</programlisting>
+
+      <para>When initialising a repository quokka looks for a property
       matching the name with a
       <literal>quokka.repo.&lt;name&gt;.class</literal>. The class property
       can be the fully qualified class name of your custom repository
@@ -2946,10 +3084,59 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
             actual artifacts in held in a parent repository</para>
           </listitem>
         </varlistentry>
+
+        <varlistentry>
+          <term>delegate</term>
+
+          <listitem>
+            <para>Delegating repository. All requests are forwarded to the
+            named repositories in order, returning after one of the
+            repositories completes the request.</para>
+          </listitem>
+        </varlistentry>
       </variablelist>
 
       <para>The following properties are common to all of the repository
       implementations:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>root</term>
+
+          <listitem>
+            <para>Mandtory. The value required depends on the class of
+            repository.<variablelist>
+                <varlistentry>
+                  <term>file, checksum</term>
+
+                  <listitem>
+                    <para>The root directory of the repository</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist><variablelist>
+                <varlistentry>
+                  <term>url</term>
+
+                  <listitem>
+                    <para>The root url of the repository</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>delegate</term>
+
+                  <listitem>
+                    <para>A comma separated list of names of repositories to
+                    delegate to</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist></para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The <literal>file</literal> and <literal>checksum</literal>
+      repositories have the following additional properties:</para>
 
       <variablelist>
         <varlistentry>
@@ -3007,7 +3194,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
 
           <listitem>
             <para>Optional. If true, the repository supports release artifact
-            resolution. Defaults to true.</para>
+            resolution. Defaults to !snapshots.</para>
           </listitem>
         </varlistentry>
 
@@ -3027,21 +3214,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
           <listitem>
             <para>Optional. A list of regular expressions of artifacts that
             are supported. This allows for example a particular repository to
-            only contain <literal>apache.*</literal> artifacts. Note: this is
-            not currently implemented.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <para>The <literal>file</literal> and <literal>checksum</literal>
-      repositories have the following additional properties:</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>rootDir</term>
-
-          <listitem>
-            <para>Mandatory. The root directory of the repository</para>
+            only contain <literal>apache.*</literal> artifacts.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -3050,14 +3223,6 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
       properties:</para>
 
       <variablelist>
-        <varlistentry>
-          <term>url</term>
-
-          <listitem>
-            <para>Mandatory. The root url of the repository</para>
-          </listitem>
-        </varlistentry>
-
         <varlistentry>
           <term>user</term>
 
@@ -3078,14 +3243,16 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
       </variablelist>
 
       <para>Using the above information, we can now explore the default
-      configuration in detail. <literal>The quokka.global.repoRoots</literal>
-      property is set to <literal>snapshot, localRelease</literal>. So
+      configuration in detail. <literal>The quokka.repo.share.url</literal>
+      property is set to <literal>delegate:snapshot,release</literal>. So
       assuming your project has not defined a
-      <literal>quokka.project.repoRoots</literal> property, the
-      <literal>snapshot</literal> and <literal>localRelease</literal> will be
-      used to resolve and install artifacts.</para>
+      <literal>quokka.repo.project.url</literal> property, the
+      <literal>shared</literal> repository will be used. The
+      <literal>shared</literal> repository is a delegating repository, so will
+      forward requests to the <literal>snapshot</literal> and
+      <literal>release</literal> repositories.</para>
 
-      <para>Releases and snapshot have been separated in different
+      <para>Releases and snapshots have been separated in different
       repositories to simply the migration of releases to a better location
       later. Snapshots need not be as tightly controlled as releases as they
       vary over time. Specifically, a release of a product should never depend
@@ -3096,20 +3263,19 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
       The delegating repository asks the <literal>snapshot</literal>
       repository if it supports the artifact. As it does, it will attempt to
       resolve it. If it cannot resolve it, it will try the
-      <literal>localReleases</literal> repository. As
-      <literal>localReleases</literal> doesn't support it, it will throw an
-      exception.</para>
+      <literal>releases</literal> repository. As <literal>releases</literal>
+      doesn't support it, it will throw an exception.</para>
 
       <para>In the case of a release artifact (anything that doesn't end in
       <literal>-ss</literal>), the delegating repository finds the first
-      supporting repository, <literal>localReleases</literal>. If
-      <literal>localreleases</literal> contains the artifact, it returns it
-      and the request ends. However, if it is not found, the parent
-      repositories are searched, in this case <literal>global</literal>. If
-      the artifact is found in <literal>global</literal>, it will be imported
-      into the <literal>localReleases</literal> repository (without
-      confirmation). Subsequent requests for the artifact will now find it in
-      the <literal>localReleases</literal> repository.</para>
+      supporting repository, <literal>releases</literal>. If
+      <literal>releases</literal> contains the artifact, it returns it and the
+      request ends. However, if it is not found, the parent repositories are
+      searched, in this case <literal>quokka</literal>. If the artifact is
+      found in <literal>quokka</literal>, it will be imported into the
+      <literal>releases</literal> repository (without confirmation).
+      Subsequent requests for the artifact will now find it in the
+      <literal>releases</literal> repository.</para>
 
       <sect1 id="release-repo">
         <title id="release-configurations">Release Repository
@@ -3141,14 +3307,16 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
             build will still be reproducible as the repository is in the same
             branch as your source and will be checked out with it.</para>
 
-            <para>To implement this, set the
-            <literal>quokka.project.repoRoots</literal> property and point it
-            to a file repository that uses a <literal>rootDir</literal>
-            relative to the <literal>basedir</literal> of your project. You
-            will also want to set up a parent repository pointing to your
-            corporate repository (file repository under a different version
-            control module) to automatically import from a shared
-            source.</para>
+            <para>To implement this, you would use a project repository with
+            the following properties:</para>
+
+            <programlisting>quokka.repo.project.url=delegate:local,shared
+quokka.repo.local.url=file:build/repository;parents=shared</programlisting>
+
+            <para>This will store all releases locally in your project's
+            build/repository directory, automatically importing them from the
+            shared repository as required. Snapshots will be delegated to the
+            shared repository.</para>
 
             <para><emphasis role="bold">Pros:</emphasis> Guaranteed
             reproducibility. You are aware when dependencies are added to your
@@ -3172,14 +3340,11 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
             the actual artifacts such as .jar files, a checksum is stored
             instead and the artifact itself is retrieved from a parent.</para>
 
-            <para>To implement this, set the
-            <literal>quokka.project.repoRoots</literal> property and point it
-            to a <emphasis role="bold">checksum</emphasis> repository that
-            uses a <literal>rootDir</literal> relative to the
-            <literal>basedir</literal> of your project. You will also want to
-            set up a parent repository pointing to your corporate repository
-            (file repository under a different version control module) to act
-            as the parent to retrieve artifacts and allow imports.</para>
+            <para>To implement this, you would use a project repository with
+            the following properties:</para>
+
+            <programlisting>quokka.repo.project.url=delegate:local,shared
+quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
 
             <para><emphasis role="bold">Pros:</emphasis> Reproducibility is
             not guaranteed, but it can detect if a build is not reproducible.
@@ -3198,18 +3363,19 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
 
           <listitem>
             <para><emphasis role="bold">Use a shared corporate repository
-            under version control</emphasis>. In this option, the
-            localReleases repository <literal>rootDir</literal> should point
-            to a directory that is under version control. All projects would
-            share this repository.</para>
+            under version control</emphasis>. In this option, the releases
+            repository <literal>root</literal> should point to a directory
+            that is under version control. All projects would share this
+            repository.</para>
 
-            <para>To implement this, you change the <literal>rootDir</literal>
-            to the working copy of the shared repository. Set
+            <para>To implement this, you change the <literal>root</literal> to
+            the working copy of the shared repository. Set
             <literal>confirmImport</literal> to true to be informed any time
             an artifact is imported into the shared repository. At this point,
             update you working copy to see if it has been added by another
-            developer. (TODO: add retry option at confirm prompt). If not,
-            confirm the import and commit it to the shared repository.</para>
+            developer. If it has CTRL+C to quit and re-run to pick up the new
+            dependency. If not, confirm the import and commit it to the shared
+            repository.</para>
 
             <para><emphasis role="bold">Pros:</emphasis> There is an inbuilt
             review mechansim in the process as all developers will be aware
@@ -3244,25 +3410,18 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         breaks your build. This happens with maven as it uses an expiry period
         to check repositories for updates.</para>
 
-        <para>Quokka does not intend to implement expiry for this very reason.
-        Instead it plans to implement a command to
-        <literal>update-snapshots</literal> that will traverse all
-        repositories to find the latest version on demand. Unfortunately, this
-        has not been implemented yet - although it is a high priority. In the
-        mean time you will manually have to copy updates from any parent
-        repositories yourself. This is simple to do by adding a
-        <literal>update-snapshots</literal> target to your
-        <literal>build.xml</literal> file and using Ant's copy or get tasks to
-        transfer snapshots from one repository to another.</para>
+        <para>Quokka does not implement expiry for this very reason. Instead
+        repository plugin has a <literal>update-snapshots</literal> target
+        that will traverse all repositories to find the latest version
+        available on demand. </para>
 
-        <para>Getting back to recommended configurations, it is recommended
-        that you leave the default snapshots configuration where it is, but
-        add a parent repository that points to your continuous integration
-        (CI) server (assuming you have one). Then any snapshots from the CI
-        server will be picked up automatically and anything you generate
-        locally will override them. Whenever you want to pick up the latest
-        snapshots from the CI server, use <literal>update-snapshots</literal>
-        as described earlier.</para>
+        <para>It is recommended that you leave the default snapshots
+        configuration where it is, but add a parent repository that points to
+        your continuous integration (CI) server (assuming you have one). Then
+        any snapshots from the CI server will be picked up automatically and
+        anything you generate locally will override them. Whenever you want to
+        pick up the latest snapshots from the CI server, use
+        <literal>update-snapshots</literal> as described earlier.</para>
       </sect1>
 
       <sect1>
@@ -3271,7 +3430,12 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         <para>If you require a 3rd party library (one that you don't build and
         install yourself), the chances are it won't be in the global
         repository. Therefore, you'll need to add it to one of your local
-        release repositories. To do this:</para>
+        release repositories. If the artifact exists in the maven repository,
+        you can use the quokka maven plugin to import the artifact. This will
+        import the artifact along with any dependencies it has automatically.
+        See Importing from Maven below. </para>
+
+        <para>Alternatively, you can add it manually:</para>
 
         <itemizedlist>
           <listitem>
@@ -3318,8 +3482,8 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         Below is an example for the Cobertura plugin:</para>
 
         <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.1"
-                   "http://quokka.ws/dtd/repository-0.1.dtd"&gt;
+&lt;!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.2"
+                   "http://quokka.ws/dtd/repository-0.2.dtd"&gt;
 
 &lt;artifact group="quokka.plugin.cobertura" name="cobertura" type="jar" version="0.1"&gt;
     &lt;paths&gt;
@@ -3411,6 +3575,21 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
             </listitem>
           </itemizedlist>
         </sect2>
+
+        <sect2 id="naming-standards">
+          <title lang="">Importing from Maven</title>
+
+          <para>If the dependency you need exists in the Maven2 repository,
+          then importing it can be a be the easiest option. Importing has the
+          advantage that any runtime dependencies can be imported
+          automatically. Unfortunately, to perform the import it is necessary
+          to have maven installed (versions greater than 2.0.8 are
+          recommended). </para>
+
+          <para></para>
+
+          <para></para>
+        </sect2>
       </sect1>
     </chapter>
 
@@ -3449,6 +3628,24 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
               <para>Are any properties that the particular archetype
               understands. Consult the archetype documentation for a list of
               available properties.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>repositoryId</term>
+
+            <listitem>
+              <para>Optional. The id of the repository to retrieve the
+              archetype from </para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>repository</term>
+
+            <listitem>
+              <para>Optional. The url of the repository to retrieve the
+              archetype from</para>
             </listitem>
           </varlistentry>
         </variablelist>
@@ -3915,7 +4112,7 @@ repo!global.rootUrl=http://quokka.ws/repository</programlisting>
         This effectively provides a quick a dirty way of writing plugins using
         nothing but Ant tasks. See <link
         linkend="creating-dependency-sets">Creating Dependency Sets</link> for
-        more information. </para>
+        more information.</para>
       </sect1>
     </chapter>
 

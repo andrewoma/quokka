@@ -53,6 +53,10 @@ public class CachingRepository implements Repository {
     }
 
     public RepoArtifact resolve(RepoArtifactId artifactId) {
+        return resolve(artifactId, true);
+    }
+
+    public RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact) {
         project.log("\nResolving: " + artifactId.toShortString(), Project.MSG_DEBUG);
 
         synchronized (cache) {
@@ -62,8 +66,14 @@ public class CachingRepository implements Repository {
                 return artifact;
             }
 
-            artifact = repository.resolve(artifactId);
-            cache.put(artifactId, artifact);
+            artifact = repository.resolve(artifactId, retrieveArtifact);
+
+            if (retrieveArtifact || (artifact.getLocalCopy() != null)) {
+                // Make sure cache doesn't contain artifacts without content
+                // TODO: Add a separate cache for them ...
+                cache.put(artifactId, artifact);
+            }
+
             project.log("Resolved: " + artifact, Project.MSG_DEBUG);
 
             return artifact;
@@ -78,8 +88,8 @@ public class CachingRepository implements Repository {
         repository.remove(artifactId);
     }
 
-    public Collection listArtifactIds() {
-        return repository.listArtifactIds();
+    public Collection listArtifactIds(boolean includeReferenced) {
+        return repository.listArtifactIds(false);
     }
 
     public boolean supportsReslove(RepoArtifactId artifactId) {
@@ -110,5 +120,9 @@ public class CachingRepository implements Repository {
 
     public Collection availableVersions(String group, String name, String type) {
         return repository.availableVersions(group, name, type);
+    }
+
+    public void rebuildCaches() {
+        repository.rebuildCaches();
     }
 }

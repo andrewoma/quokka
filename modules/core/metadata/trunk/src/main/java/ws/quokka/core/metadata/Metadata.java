@@ -41,9 +41,13 @@ public interface Metadata {
 
     List getExportedArtifacts();
 
+    Map getLocalLicenses();
+
     RepoType getType(String id);
 
     List getProjectPath(String id);
+
+    List getProjectPath(String id, boolean mergeWithCore, boolean flatten);
 
     Map getExportedPaths(RepoArtifactId id);
 

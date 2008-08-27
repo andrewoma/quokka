@@ -48,6 +48,7 @@ public class DependencySet extends AnnotatedObject {
     private List overrides = new ArrayList();
     private Map buildResources = new HashMap();
     private List profiles = new ArrayList();
+    private List licenses = new ArrayList();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -153,5 +154,13 @@ public class DependencySet extends AnnotatedObject {
 
     public List getProfiles() {
         return Collections.unmodifiableList(profiles);
+    }
+
+    public void addLicense(License license) {
+        licenses.add(license);
+    }
+
+    public List getLicenses() {
+        return Collections.unmodifiableList(licenses);
     }
 }

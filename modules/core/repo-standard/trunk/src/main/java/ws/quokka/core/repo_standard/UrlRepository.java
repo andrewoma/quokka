@@ -19,6 +19,8 @@ package ws.quokka.core.repo_standard;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.Get;
 import org.apache.tools.ant.util.Base64Converter;
 
@@ -51,6 +53,11 @@ public class UrlRepository extends AbstractStandardRepository {
     private URL url;
     private String user;
     private String password;
+    private File index;
+    private File indexArchive;
+    private File indexExpanded;
+    private long indexExpiry;
+    private ChecksumRepository indexRepository;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -67,22 +74,46 @@ public class UrlRepository extends AbstractStandardRepository {
 
         user = getProperty("user", false);
         password = getProperty("password", false);
+
+        String defaultIndex = System.getProperty("user.home") + "/.quokka/cache/repository/" + getName() + "-index";
+        index = normalise(new File(getProperty("index", defaultIndex)));
+        indexArchive = new File(index, "_index.zip");
+        indexExpanded = new File(index, "_index");
+        indexExpiry = Integer.parseInt(getProperty("indexExpiry", "360")); // Defaults to hourly
+
+        String indexUrl = "checksum:" + indexExpanded.getPath() + ";hierarchical=false";
+        String indexId = getName() + "-index";
+        getFactory().getProperties().put("quokka.repo." + indexId + ".url", indexUrl);
+        indexRepository = (ChecksumRepository)getFactory().getOrCreate(indexId, true);
+
         Assert.isTrue(getParents().size() == 0, "Url repositories cannot have parents");
     }
 
-    public RepoArtifact resolve(RepoArtifactId id) {
+    public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
+        // Try the index when called when not retrieving artifacts as this is
+        // called when retrieving metadata for artifacts not stored locally.
+        if (!retrieveArtifact) {
+            updateIndex();
+
+            try {
+                return indexRepository.resolve(id, false);
+            } catch (UnresolvedArtifactException e) {
+                // Fall through and hit the actual remote repository
+            }
+        }
+
         File artifactFile = getRemoteArtifact(id);
         RepoArtifact remoteArtifact = getRemoteRepositoryFile(id);
 
         if ((artifactFile != null) || (remoteArtifact != null)) {
-            Assert.isTrue(id.getType().equals("paths") || (artifactFile != null),
+            RepoArtifact artifact = (remoteArtifact == null) ? new RepoArtifact(id) : remoteArtifact;
+            Assert.isTrue(id.getType().equals("paths") || artifact.isStub() || (artifactFile != null),
                 "Repository is corrupt. repository.xml exists, but artifact is missing: " + id.toShortString());
 
             if (artifactFile != null) {
                 artifactFile.deleteOnExit();
             }
 
-            RepoArtifact artifact = (remoteArtifact == null) ? new RepoArtifact(id) : remoteArtifact;
             artifact.setLocalCopy(artifactFile);
 
             return artifact;
@@ -185,8 +216,61 @@ public class UrlRepository extends AbstractStandardRepository {
         throw new UnsupportedOperationException();
     }
 
-    public Collection listArtifactIds() {
-        throw new UnsupportedOperationException();
+    public Collection listArtifactIds(boolean includeReferenced) {
+        updateIndex();
+
+        return indexRepository.listArtifactIds(false);
+    }
+
+    protected void updateIndex() {
+        boolean exists = indexArchive.exists();
+        boolean expired = (System.currentTimeMillis() - indexArchive.lastModified()) > (indexExpiry * 1000);
+
+        if (exists && !expired) {
+            return;
+        }
+
+        boolean available = getRemoteIndex();
+
+        if (!available && !exists) {
+            throw new UnsupportedOperationException(); // Not an indexed repository
+        }
+
+        if (available) {
+            extractIndex();
+        }
+    }
+
+    private boolean getRemoteIndex() {
+        boolean available;
+
+        try {
+            available = getRemoteFile("_index.zip", indexArchive); // Ant's get uses temp file internally, so is safe
+        } catch (Exception e) {
+            // Ignore ... there may not be an index, or we might be off line
+            log().debug("Unable to get index for '" + getName() + "': " + e.getMessage());
+            available = false;
+        }
+
+        return available;
+    }
+
+    protected void extractIndex() {
+        File temp = new File(indexExpanded.getPath() + ".tmp");
+        Delete delete = (Delete)getProject().createTask("delete");
+        delete.setDir(temp);
+        delete.execute();
+
+        Expand expand = (Expand)getProject().createTask("unzip");
+        expand.setSrc(indexArchive);
+        expand.setDest(temp);
+        expand.execute();
+
+        delete.setDir(indexExpanded);
+        delete.execute();
+
+        Assert.isTrue(temp.renameTo(indexExpanded),
+            "Could not rename " + temp.getPath() + " to " + indexExpanded.getPath());
     }
 
     public URL getUrl() {
@@ -245,5 +329,13 @@ public class UrlRepository extends AbstractStandardRepository {
         }
 
         return latest;
+    }
+
+    public void rebuildCaches() {
+        boolean available = getRemoteIndex();
+
+        if (available) {
+            extractIndex();
+        }
     }
 }

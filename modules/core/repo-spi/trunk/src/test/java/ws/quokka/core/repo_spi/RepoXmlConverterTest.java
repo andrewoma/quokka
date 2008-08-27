@@ -41,8 +41,10 @@ public class RepoXmlConverterTest extends AbstractTest {
         artifact.setDescription("Some description");
         artifact.setOriginalId(new RepoArtifactId("originalgroup", "originalname", "originaltype", "1.1"));
         artifact.setTimestamp(new Date());
+        artifact.setStub(true);
+        artifact.addLicense(new RepoArtifactId("license.apache", "apache", "license", "2.0"));
+        artifact.addLicense(new RepoArtifactId("license.gpl", "somename", "license", "1.0"));
 
-        //        artifact.setLocalCopy(new File("C:\\Temp"));
         RepoDependency dependency = new RepoDependency();
         dependency.setId(new RepoArtifactId("dgroup", "dname", "dtype", new Version("dversion")));
 

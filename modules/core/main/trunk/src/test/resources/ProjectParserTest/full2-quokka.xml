@@ -2,6 +2,8 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project default-target="default-target" name="name">
+    <description>Some project</description>
+
     <artifacts group="group.subgroup" version="0.1">
         <artifact name="pack1" paths="path1"/>
         <artifact name="pack2" type="war" description="Some artifact" paths="path1:something"/>
@@ -14,11 +16,14 @@
     </artifacts>
     
     <!--<artifacts group="blah" version="blah" type="war"/>-->
-
     <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]" jvm-args="-Xmx1024m"/>
     <bootstrap core="[0.2,0.2.1]" spec-version="[1.7,1.8]" java-jvm-vendor="sun" profiles="skip"/>
 
     <dependency-set>
+        <license group="license.apache" name="apache" version="2.0"/>
+        <license file="NOTICE.txt"/>
+        <license file="license.txt" name="somename"/>
+
         <profile id="skip" description="Skip description"/>
         <profile id="profile2" description="Another profile"/>
 

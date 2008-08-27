@@ -104,6 +104,34 @@ public class AbstractTest extends TestCase {
         return properties;
     }
 
+    protected void delete(File dir) {
+        if (!dir.exists()) {
+            return;
+        }
+
+        File[] files = dir.listFiles();
+
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+
+            if (file.isDirectory()) {
+                delete(file);
+            } else {
+                assertTrue("Could not delete file: " + file.getPath(), file.delete());
+            }
+        }
+
+        assertTrue("Could not delete dir: " + dir.getPath(), dir.delete());
+    }
+
+    protected File getOutputDir() {
+        return new File(normalise(new File(getModuleHome(), "target/test/" + getClassName()).getAbsolutePath()));
+    }
+
+    protected void deleteOutputDir() {
+        delete(getOutputDir());
+    }
+
     public Properties loadProperties(String name) {
         InputStream in = getClass().getClassLoader().getResourceAsStream(name);
 
@@ -248,16 +276,33 @@ public class AbstractTest extends TestCase {
     }
 
     public void assertContainsEntries(File file, String[] entries) {
+        assertEntries(file, entries, true);
+    }
+
+    public void assertEntries(File file, String[] entries, boolean contains) {
         try {
             JarFile jarFile = new JarFile(file);
 
-            for (int i = 0; i < entries.length; i++) {
-                String entry = entries[i];
-                JarEntry jarEntry = jarFile.getJarEntry(entry);
-                assertNotNull("Cannot find entry '" + entry + "' in " + file.getPath(), jarEntry);
+            try {
+                for (int i = 0; i < entries.length; i++) {
+                    String entry = entries[i];
+                    JarEntry jarEntry = jarFile.getJarEntry(entry);
+
+                    if (contains) {
+                        assertNotNull("Cannot find entry '" + entry + "' in " + file.getPath(), jarEntry);
+                    } else {
+                        assertNull("Found entry '" + entry + "' in " + file.getPath(), jarEntry);
+                    }
+                }
+            } finally {
+                jarFile.close();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void assertNotContainsEntries(File file, String[] entries) {
+        assertEntries(file, entries, false);
     }
 }

@@ -106,13 +106,13 @@ public class ArchetypeTask extends Task implements RepositoryAware {
 
         if (repositoryUrl != null) {
             factory.getProperties().put("quokka.repo.archetype.url", repositoryUrl);
-            repository = factory.getOrCreate("archetype");
+            repository = factory.getOrCreate("archetype", true);
         }
 
         String repositoryId = getProject().getProperty("repositoryId");
 
         if (repositoryId != null) {
-            repository = factory.getOrCreate(repositoryId);
+            repository = factory.getOrCreate(repositoryId, true);
         }
     }
 

@@ -460,4 +460,10 @@ public class StringsTest extends TestCase {
     public void testTrimsNull() {
         assertNull(Strings.trim(null));
     }
+
+    public void testPad() {
+        assertEquals("123456789 ", Strings.pad("123456789", 10, ' '));
+        assertEquals("123456789", Strings.pad("123456789", 1, ' '));
+        assertEquals("          ", Strings.pad("", 10, ' '));
+    }
 }

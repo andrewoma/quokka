@@ -406,6 +406,10 @@ public class BootStrapper {
     }
 
     private String unescape(String string) {
+        if (string == null) {
+            return null;
+        }
+
         for (int i = 0; i < ESCAPE_CHARS.length; i++) {
             String with = ESCAPE_CHARS[i];
             String escape = ESCAPE_CHARS[++i];

@@ -696,14 +696,18 @@ public class ResolverTest extends AbstractTest {
             artifacts.put(artifact.getId(), artifact);
         }
 
-        public RepoArtifact resolve(RepoArtifactId id) {
-            RepoArtifact artifact = (RepoArtifact)artifacts.get(id);
+        public RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact) {
+            RepoArtifact artifact = (RepoArtifact)artifacts.get(artifactId);
 
             if (artifact == null) {
-                throw new UnresolvedArtifactException(id);
+                throw new UnresolvedArtifactException(artifactId);
             }
 
             return artifact;
+        }
+
+        public RepoArtifact resolve(RepoArtifactId id) {
+            return resolve(id, true);
         }
 
         public void initialise() {
@@ -715,7 +719,7 @@ public class ResolverTest extends AbstractTest {
         public void remove(RepoArtifactId artifactId) {
         }
 
-        public Collection listArtifactIds() {
+        public Collection listArtifactIds(boolean includeReferenced) {
             return null;
         }
 
@@ -733,6 +737,9 @@ public class ResolverTest extends AbstractTest {
 
         public Collection availableVersions(String group, String name, String type) {
             return null;
+        }
+
+        public void rebuildCaches() {
         }
     }
 }

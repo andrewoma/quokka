@@ -107,16 +107,20 @@ public class URLs {
 
         JarFile pluginFile = new JarFile(file);
 
-        for (Enumeration e = pluginFile.entries(); e.hasMoreElements();) {
-            JarEntry entry = (JarEntry)e.nextElement();
+        try {
+            for (Enumeration e = pluginFile.entries(); e.hasMoreElements();) {
+                JarEntry entry = (JarEntry)e.nextElement();
 
-            if (entry.getName().startsWith(path)) {
-                String key = entry.getName().substring(path.length());
+                if (entry.getName().startsWith(path)) {
+                    String key = entry.getName().substring(path.length());
 
-                if (!key.equals("")) { // Don't add the root itself
-                    entries.put(key, new URL("jar:" + toURL(file) + "!/" + entry.getName()));
+                    if (!key.equals("")) { // Don't add the root itself
+                        entries.put(key, new URL("jar:" + toURL(file) + "!/" + entry.getName()));
+                    }
                 }
             }
+        } finally {
+            pluginFile.close();
         }
 
         return entries;
@@ -157,12 +161,17 @@ public class URLs {
         path = path.replace('\\', '/');
 
         JarFile pluginFile = new JarFile(file);
-        JarEntry repositoryEntry = pluginFile.getJarEntry(path);
 
-        if ((repositoryEntry == null) && !path.equals("")) {
-            return null;
-        } else {
-            return new URL("jar:" + toURL(file) + "!/" + path);
+        try {
+            JarEntry repositoryEntry = pluginFile.getJarEntry(path);
+
+            if ((repositoryEntry == null) && !path.equals("")) {
+                return null;
+            } else {
+                return new URL("jar:" + toURL(file) + "!/" + path);
+            }
+        } finally {
+            pluginFile.close();
         }
     }
 

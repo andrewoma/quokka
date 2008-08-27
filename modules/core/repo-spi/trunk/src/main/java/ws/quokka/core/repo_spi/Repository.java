@@ -34,11 +34,18 @@ public interface Repository {
 
     RepoArtifact resolve(RepoArtifactId artifactId);
 
+    RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact);
+
     void install(RepoArtifact artifact);
 
     void remove(RepoArtifactId artifactId);
 
-    Collection listArtifactIds();
+    /**
+     * List artifact ids that are resolvable from this repository.
+     * @param includeReferenced if true, the ids will include artifacts that may exist in other repositories
+     * referenced by this one.
+     */
+    Collection listArtifactIds(boolean includeReferenced);
 
     boolean supportsReslove(RepoArtifactId artifactId);
 
@@ -58,4 +65,11 @@ public interface Repository {
     RepoArtifact updateSnapshot(RepoArtifact artifact);
 
     Collection availableVersions(String group, String name, String type);
+
+    /**
+     * If the repository uses any form of caching internally, this should force it to rebuild them.
+     * e.g. IndexedRepositories will rebuild the index, BundledRepositories will re-extract their bundles
+     * and UrlRepositories will download their indexes again.
+     */
+    void rebuildCaches();
 }

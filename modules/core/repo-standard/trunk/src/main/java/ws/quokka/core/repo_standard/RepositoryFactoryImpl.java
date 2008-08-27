@@ -55,10 +55,8 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
         classes.put("url", UrlRepository.class.getName());
         classes.put("checksum", ChecksumRepository.class.getName());
         classes.put("delegate", DelegatingRepository.class.getName());
-
-//        classes.put("maven2", FullMaven2Repository.class.getName());
-//        classes.put("maven2basic", Maven2Repository.class.getName());
         classes.put("bundle", BundledRepository.class.getName());
+        classes.put("indexed", IndexedRepository.class.getName());
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -83,7 +81,7 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
         this.repositoryVersion = repositoryVersion;
     }
 
-    public synchronized Repository getOrCreate(String id) {
+    public synchronized Repository getOrCreate(String id, boolean throwIfUndefined) {
         // Treat 'shared' as a special case and try looking for a versioned shared repository
         // This allows multiple incompatible repositories to be defined in the user's properties
         // and for the correct version to be selected automatically.
@@ -96,7 +94,10 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
             }
         }
 
-        return _getOrCreate(id);
+        Repository repository = _getOrCreate(id);
+        Assert.isTrue(!throwIfUndefined || (repository != null), "Repository with id '" + id + "' has not been defined");
+
+        return repository;
     }
 
     private Repository _getOrCreate(String id) {
@@ -187,11 +188,22 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
         return type;
     }
 
-    protected Map getTypes() {
+    public Map getTypes() {
         return types;
     }
 
     public Map getRepositories() {
         return Collections.unmodifiableMap(repositories);
+    }
+
+    public RepositoryFactoryImpl copy() {
+        RepositoryFactoryImpl copy = new RepositoryFactoryImpl();
+        copy.setProject(project);
+        copy.setProperties(properties);
+        copy.types = types;
+        copy.repositoryVersion = repositoryVersion;
+        copy.repositories = repositories;
+
+        return copy;
     }
 }

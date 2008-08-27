@@ -129,27 +129,47 @@ public class VersionRange {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
 
-        VersionRange that = (VersionRange) o;
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
 
-        if (isHighInclusive != that.isHighInclusive) return false;
-        if (isLowInclusive != that.isLowInclusive) return false;
-        if (high != null ? !high.equals(that.high) : that.high != null) return false;
-        if (low != null ? !low.equals(that.low) : that.low != null) return false;
-        if (toString != null ? !toString.equals(that.toString) : that.toString != null) return false;
+        VersionRange that = (VersionRange)o;
+
+        if (isHighInclusive != that.isHighInclusive) {
+            return false;
+        }
+
+        if (isLowInclusive != that.isLowInclusive) {
+            return false;
+        }
+
+        if ((high != null) ? (!high.equals(that.high)) : (that.high != null)) {
+            return false;
+        }
+
+        if ((low != null) ? (!low.equals(that.low)) : (that.low != null)) {
+            return false;
+        }
+
+        if ((toString != null) ? (!toString.equals(that.toString)) : (that.toString != null)) {
+            return false;
+        }
 
         return true;
     }
 
     public int hashCode() {
         int result;
-        result = (low != null ? low.hashCode() : 0);
-        result = 31 * result + (isLowInclusive ? 1 : 0);
-        result = 31 * result + (high != null ? high.hashCode() : 0);
-        result = 31 * result + (isHighInclusive ? 1 : 0);
-        result = 31 * result + (toString != null ? toString.hashCode() : 0);
+        result = ((low != null) ? low.hashCode() : 0);
+        result = (31 * result) + (isLowInclusive ? 1 : 0);
+        result = (31 * result) + ((high != null) ? high.hashCode() : 0);
+        result = (31 * result) + (isHighInclusive ? 1 : 0);
+        result = (31 * result) + ((toString != null) ? toString.hashCode() : 0);
+
         return result;
     }
 }

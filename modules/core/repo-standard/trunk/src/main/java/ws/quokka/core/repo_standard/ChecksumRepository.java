@@ -18,9 +18,11 @@
 package ws.quokka.core.repo_standard;
 
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.Repository;
+import ws.quokka.core.repo_spi.UnresolvedArtifactException;
 
 import java.io.File;
 
@@ -40,13 +42,16 @@ public class ChecksumRepository extends FileRepository {
 
     public void initialise() {
         super.initialise();
-        Assert.isTrue(getParents().size() == 1,
-            "Checksum repository must have a single parent. Artifacts will be retrieved from the parent and installs will be delegated to it.");
-        parent = (Repository)getParents().get(0);
-        verifyChecksums = getBoolean("verifyChecksums", true);
+        Assert.isTrue(getParents().size() <= 1,
+            "Checksum repository must have at most a single parent. Artifacts will be retrieved from the parent and installs will be delegated to it.");
+        parent = (Repository)((getParents().size() == 0) ? null : getParents().get(0));
+        verifyChecksums = getBoolean("verifyChecksums", false);
     }
 
-    public RepoArtifact resolve(RepoArtifactId id) {
+    public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
+        Assert.isTrue(!retrieveArtifact || (parent != null),
+            "Incorrect configuration: a checksum repository must have a parent with retrieving artifacts");
+
         File artifactFile = getArtifactFile(id);
         File repositoryFile = getRepositoryFile(id);
 
@@ -56,21 +61,35 @@ public class ChecksumRepository extends FileRepository {
 
             RepoArtifact artifact = repositoryFile.exists() ? parse(id, repositoryFile) : new RepoArtifact(id);
 
-            // This repository only stores signatures, so get the actual artifact from the parent
-            ResolvedArtifact resolved = resolveFromParents(id, true, false);
-            artifact.setLocalCopy(resolved.getArtifact().getLocalCopy());
+            if (retrieveArtifact) {
+                // This repository only stores signatures, so get the actual artifact from the parent
+                ResolvedArtifact resolved = resolveFromParents(id, true, false, true);
+                artifact.setLocalCopy(resolved.getArtifact().getLocalCopy());
 
-            if (verifyChecksums) {
-                // Check the artifact MD5 matches
-                verifyChecksum(resolved.getArtifact().getLocalCopy(), artifactFile);
+                if (verifyChecksums) {
+                    // Check the artifact MD5 matches
+                    verifyChecksum(resolved.getArtifact().getLocalCopy(), artifactFile);
+                }
+            } else {
+                // Make the hash available when the artifact isn't retrieved
+                if (artifactFile.exists()) {
+                    artifact.setHash(new IOUtils().fileToString(artifactFile, "UTF8"));
+                }
             }
 
             return artifact;
         }
 
         // Artifact doesn't exist, so check parents
-        ResolvedArtifact resolved = resolveFromParents(id, true, isConfirmImport());
-        importArtifact(resolved.getArtifact(), artifactFile, repositoryFile, resolved.getRepository());
+        if (parent == null) {
+            throw new UnresolvedArtifactException(id);
+        }
+
+        ResolvedArtifact resolved = resolveFromParents(id, true, isConfirmImport(), retrieveArtifact);
+
+        if (retrieveArtifact) {
+            importArtifact(resolved.getArtifact(), artifactFile, repositoryFile, resolved.getRepository());
+        }
 
         return resolved.getArtifact();
     }
@@ -82,20 +101,43 @@ public class ChecksumRepository extends FileRepository {
         generateChecksum(artifact.getLocalCopy(), artifactFile);
     }
 
-    protected File getArtifactFile(RepoArtifactId id) {
+    public File getArtifactFile(RepoArtifactId id) {
         return new File(super.getArtifactFile(id).getAbsolutePath() + ".MD5");
     }
 
-    public void install(RepoArtifact artifact) {
-        // Install locally
-        generateChecksum(artifact.getLocalCopy(), getArtifactFile(artifact.getId()));
+    public void install(RepoArtifact artifact, boolean skipParent) {
+        // Create the parent dir
+        File dest = getArtifactFile(artifact.getId());
+        File parent = dest.getParentFile();
+        Assert.isTrue(parent.exists() || parent.mkdirs(), "Could not create: " + parent);
+
+        // Generate the checksum if there is an artifact
+        if (artifact.getLocalCopy() != null) {
+            generateChecksum(artifact.getLocalCopy(), dest);
+        }
+
         writeRepositoryFile(artifact, getRepositoryFile(artifact.getId()));
 
         // Delegate installation of the actual artiact to the parent
-        parent.install(artifact);
+        if (!skipParent) {
+            this.parent.install(artifact);
+        }
     }
 
-    public Collection listArtifactIds() {
-        return null;
+    public void install(RepoArtifact artifact) {
+        if (parent == null) {
+            throw new UnsupportedOperationException();
+        }
+
+        install(artifact, false);
+    }
+
+    public void remove(RepoArtifactId artifactId) {
+        if (parent == null) {
+            throw new UnsupportedOperationException();
+        }
+
+        super.remove(artifactId);
+        parent.remove(artifactId);
     }
 }

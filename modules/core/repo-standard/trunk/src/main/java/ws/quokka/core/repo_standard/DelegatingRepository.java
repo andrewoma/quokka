@@ -27,6 +27,7 @@ import ws.quokka.core.util.Strings;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,11 +52,11 @@ public class DelegatingRepository extends AbstractRepository {
 
         for (int i = 0; i < roots.length; i++) {
             root = roots[i];
-            repositories.add(getFactory().getOrCreate(root));
+            repositories.add(getFactory().getOrCreate(root, true));
         }
     }
 
-    public RepoArtifact resolve(RepoArtifactId artifactId) {
+    public RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact) {
         List urls = new ArrayList();
 
         for (Iterator i = repositories.iterator(); i.hasNext();) {
@@ -63,7 +64,7 @@ public class DelegatingRepository extends AbstractRepository {
 
             if (repository.supportsReslove(artifactId)) {
                 try {
-                    return repository.resolve(artifactId);
+                    return repository.resolve(artifactId, retrieveArtifact);
                 } catch (UnresolvedArtifactException e) {
                     // Ignore ... try other repos
                     urls.addAll(e.getUrls());
@@ -90,15 +91,19 @@ public class DelegatingRepository extends AbstractRepository {
         throw new UnsupportedOperationException("Remove is not supported for the DelegatingRepository");
     }
 
-    public Collection listArtifactIds() {
+    public Collection listArtifactIds(boolean includeReferenced) {
+        if (!includeReferenced) {
+            return Collections.EMPTY_LIST; // Delegating repositories don't actually contain any artifacts
+        }
+
         Set ids = new HashSet();
 
         for (Iterator i = repositories.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
-            ids.addAll(repository.listArtifactIds());
+            ids.addAll(repository.listArtifactIds(true));
         }
 
-        return ids;
+        return filterUnresolvable(ids);
     }
 
     public boolean supportsInstall(RepoArtifactId artifactId) {
@@ -149,5 +154,12 @@ public class DelegatingRepository extends AbstractRepository {
 
     public Collection availableVersions(String group, String name, String type) {
         throw new UnsupportedOperationException();
+    }
+
+    public void rebuildCaches() {
+        for (Iterator i = repositories.iterator(); i.hasNext();) {
+            Repository repository = (Repository)i.next();
+            repository.rebuildCaches();
+        }
     }
 }

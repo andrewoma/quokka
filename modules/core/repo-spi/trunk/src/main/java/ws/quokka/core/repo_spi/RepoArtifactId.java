@@ -103,6 +103,10 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
     }
 
     public static String defaultName(String group) {
+        if (group == null) {
+            return null;
+        }
+
         String[] tokens = Strings.split(group, ".");
 
         return tokens[tokens.length - 1];
@@ -131,6 +135,11 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
                     "There are invalid characters in the id: " + string);
             }
         }
+    }
+
+    public void validateComplete() {
+        Assert.isTrue(!Strings.isBlank(group) && !Strings.isBlank(name) && !Strings.isBlank(type) && (version != null),
+            "Id is not valid: " + toShortString());
     }
 
     public String toShortString() {
@@ -219,9 +228,9 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
     public int compareTo(Object o) {
         RepoArtifactId other = (RepoArtifactId)o;
         int result = nullSafeCompare(group, other.group);
+        result = (result == 0) ? nullSafeCompare(version, other.version) : result;
         result = (result == 0) ? nullSafeCompare(name, other.name) : result;
         result = (result == 0) ? nullSafeCompare(type, other.type) : result;
-        result = (result == 0) ? nullSafeCompare(version, other.version) : result;
 
         return result;
     }

@@ -20,8 +20,9 @@ package ws.quokka.core.repo_standard;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
+import org.apache.tools.ant.input.InputRequest;
+import org.apache.tools.ant.input.MultipleChoiceInputRequest;
 import org.apache.tools.ant.taskdefs.Checksum;
-import org.apache.tools.ant.taskdefs.Input;
 import org.apache.tools.ant.util.FileUtils;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -47,6 +48,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
 
 
 /**
@@ -72,7 +76,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         log = new ProjectLogger(getProject());
 
         hierarchical = getBoolean("hierarchical", true);
-        confirmImport = getBoolean("confirmImport", true);
+        confirmImport = getBoolean("confirmImport", false);
         snapshots = getBoolean("snapshots", false);
         installSnapshots = getBoolean("installSnapshots", snapshots);
         releases = getBoolean("releases", !snapshots);
@@ -86,7 +90,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
         for (Iterator i = names.iterator(); i.hasNext();) {
             String name = (String)i.next();
-            parents.add(getFactory().getOrCreate(name));
+            parents.add(getFactory().getOrCreate(name, true));
         }
     }
 
@@ -154,15 +158,16 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
     protected boolean confirmImport(RepoArtifactId id, Repository parent) {
         String from = parent.getName();
-        Input input = (Input)getProject().createTask("input");
-        input.setValidargs("y,n");
-        input.setDefaultvalue("y");
-        input.setAddproperty("result");
-        input.setMessage(id.toShortString() + " is not available in repository '" + getName() + "'. Import from '"
-            + from + "'? ");
-        input.execute();
+        Vector choices = new Vector();
+        choices.add("y");
+        choices.add("n");
 
-        return ("y".equals(getProject().getProperty("result")));
+        InputRequest request = new MultipleChoiceInputRequest(id.toShortString() + " is not available in repository '"
+                + getName() + "'. Import from '" + from + "'? ", choices);
+        request.setDefaultValue("y");
+        getProject().getInputHandler().handleInput(request);
+
+        return ("y".equals(request.getInput()));
     }
 
     protected void importArtifact(RepoArtifact artifact, File artifactFile, File repositoryFile, Repository parent) {
@@ -187,8 +192,10 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected void copyArtifact(RepoArtifact artifact, File artifactFile) {
-        copy(artifact.getLocalCopy(), artifactFile, false, true);
-        artifact.setLocalCopy(artifactFile);
+        if (artifact.getLocalCopy() != null) {
+            copy(artifact.getLocalCopy(), artifactFile, false, true);
+            artifact.setLocalCopy(artifactFile);
+        }
     }
 
     protected RepoArtifact parse(RepoArtifactId id, File xml) {
@@ -203,7 +210,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     protected static void generateChecksum(File file, File checksum) {
-        new IOUtils().stringToFile(checksum(file), checksum);
+        new IOUtils().stringToFile(checksum(file), checksum, "UTF8");
     }
 
     protected static void verifyChecksum(File file, File checksum) {
@@ -233,7 +240,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
     }
 
     public ResolvedArtifact resolveFromParents(RepoArtifactId artifactId, boolean throwIfUnresolved,
-        boolean confirmImport) {
+        boolean confirmImport, boolean retrieveArtifact) {
         // Artifact doesn't exist at this level, so try the parents
         List urls = new ArrayList();
 
@@ -241,7 +248,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
             Repository repository = (Repository)i.next();
 
             try {
-                RepoArtifact artifact = repository.resolve(artifactId);
+                RepoArtifact artifact = repository.resolve(artifactId, retrieveArtifact);
 
                 if (confirmImport) {
                     if (confirmImport(artifactId, repository)) {
@@ -315,6 +322,17 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
     public Collection availableVersions(String group, String name, String type) {
         throw new UnsupportedOperationException();
+    }
+
+    protected Collection listParentIds() {
+        Set ids = new TreeSet();
+
+        for (Iterator i = getParents().iterator(); i.hasNext();) {
+            Repository repository = (Repository)i.next();
+            ids.addAll(repository.listArtifactIds(true));
+        }
+
+        return ids;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------

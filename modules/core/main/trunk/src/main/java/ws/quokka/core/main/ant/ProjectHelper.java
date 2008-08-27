@@ -729,14 +729,13 @@ public class ProjectHelper extends ProjectHelper2 {
         String override = properties.getProperty("quokka.repositoryOverride");
 
         if (override != null) {
-            repository = factory.getOrCreate(override);
-            Assert.isTrue(repository != null, "Override repository '" + override + "' is not defined");
+            repository = factory.getOrCreate(override, true);
         } else {
             // Try 'project' repository, then 'shared'
-            repository = factory.getOrCreate("project");
+            repository = factory.getOrCreate("project", false);
 
             if (repository == null) {
-                repository = factory.getOrCreate("shared");
+                repository = factory.getOrCreate("shared", false);
             }
 
             Assert.isTrue(repository != null, "Either a 'project' or 'shared' repository must be defined");
@@ -755,7 +754,6 @@ public class ProjectHelper extends ProjectHelper2 {
         factory.setProject(antProject);
         factory.setProperties(properties);
         factory.registerType(new RepoType("jar", "Java Archive (.jar) file", "jar"));
-        factory.registerType(new RepoType("war", "Web Archive (.war) file", "war"));
         factory.registerType(new RepoType("license", "License file", "txt"));
         factory.registerType(new RepoType("paths", "Repository file", "xml"));
         antProject.addReference(REPOSITORY_FACTORY, factory);

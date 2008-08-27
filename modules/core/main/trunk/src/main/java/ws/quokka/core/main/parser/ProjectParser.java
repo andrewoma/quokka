@@ -27,6 +27,7 @@ import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
+import ws.quokka.core.model.License;
 import ws.quokka.core.model.Override;
 import ws.quokka.core.model.Path;
 import ws.quokka.core.model.PathSpec;
@@ -50,6 +51,7 @@ import ws.quokka.core.util.xml.Element;
 import ws.quokka.core.util.xml.LocatorDomParser;
 import ws.quokka.core.util.xml.ReflectionConverter;
 import ws.quokka.core.util.xml.XmlConverter;
+import ws.quokka.core.version.Version;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -362,6 +364,13 @@ public class ProjectParser {
 
             Converter converter;
 
+            // Description
+            Element descriptionEl = projectEl.getChild("description");
+
+            if (descriptionEl != null) {
+                project.setDescription(descriptionEl.getText());
+            }
+
             // Dependency set
             // Important: parse first as dependency sets must be recursed first to discover profiles, overrides and paths
             Element dependencySetEl = applyProfilesChild(projectEl, "dependency-set");
@@ -393,6 +402,16 @@ public class ProjectParser {
                 }
             }
 
+            // Default the artifact description to the project description if there is a single artifact
+            if (project.getArtifacts().size() == 1) {
+                Artifact artifact = (Artifact)project.getArtifacts().iterator().next();
+
+                if (artifact.getDescription() == null) {
+                    artifact.setDescription(project.getDescription());
+                }
+            }
+
+            // Default the project name to the group, if none is supplied
             if ((project.getName() == null) && (project.getArtifacts().size() > 0)) {
                 project.setName(((Artifact)project.getArtifacts().iterator().next()).getId().getGroup());
             }
@@ -565,6 +584,22 @@ public class ProjectParser {
 
                 // Build resources
                 dependencySet.addBuildResources(URLs.toURLEntries(projectFile.getParentFile(), "build/resources/"));
+            }
+
+            // Licenses
+            List licenseEls = dependencySetEl.getChildren("license");
+
+            for (Iterator i = licenseEls.iterator(); i.hasNext();) {
+                Element licenseEl = (Element)i.next();
+                Locator locator = LocatorDomParser.getLocator(licenseEl.getElement());
+
+                String file = licenseEl.getAttribute("file");
+                RepoArtifactId id = (RepoArtifactId)getConverter(RepoArtifactId.class).fromXml(licenseEl);
+                Assert.isTrue(((file == null) && (id.getGroup() != null) && (id.getVersion() != null))
+                    || ((file != null) && (id.getGroup() == null) && (id.getVersion() == null)), locator,
+                    "license element must have either single a 'file' attribute, or have 'group' and 'version' attributes set");
+                id = id.merge(new RepoArtifactId(null, null, "license", (Version)null));
+                dependencySet.addLicense(new License((file == null) ? null : new File(file), id));
             }
 
             return dependencySet;

@@ -63,22 +63,18 @@ public class TypedProperties {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public TypedProperties(String prefix) {
+    public TypedProperties(String prefix, Map properties, Project project) {
         this.prefix = prefix;
+        this.properties = properties;
+        this.project = project;
+
+        // TODO: evaluate whether eagerly filtering the properties is a good idea
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public Project getProject() {
         return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void setProperties(Map properties) {
-        this.properties = properties;
     }
 
     public String getString(String key) {
@@ -207,11 +203,7 @@ public class TypedProperties {
     }
 
     public TypedProperties sub(String suffix) {
-        TypedProperties props = new TypedProperties(prefix + suffix);
-        props.setProperties(properties);
-        props.setProject(project);
-
-        return props;
+        return new TypedProperties(prefix + suffix, properties, project);
     }
 
     public FileSet getExistingFileSet(String key) {
@@ -261,9 +253,7 @@ public class TypedProperties {
                 TypedProperties mapValue = (TypedProperties)map.get(mapKey);
 
                 if (mapValue == null) {
-                    mapValue = new TypedProperties("");
-                    mapValue.setProject(project);
-                    mapValue.setProperties(new HashMap());
+                    mapValue = new TypedProperties("", new HashMap(), project);
                     map.put(mapKey, mapValue);
                 }
 

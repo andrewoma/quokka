@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.core.repo-standard" version="0.1.1-ss">
+    <artifacts group="quokka.core.repo-standard" version="0.2-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
@@ -13,7 +13,7 @@
         <dependency group="quokka.core.bootstrap-util" version="0.1.1-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.version" version="0.1.1-ss" paths="compile, runtime+"/>
 
-        <dependency group="quokka.core.repo-spi" version="0.1.1-ss" paths="compile, runtime+"/>
+        <dependency group="quokka.core.repo-spi" version="0.2-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.util" version="0.1.1-ss" paths="compile, runtime+"/>
         <dependency group="apache.ant" version="1.7.0" paths="compile, runtime+"/>
         <dependency group="quokka.core.test" version="0.1.1-ss" paths="test-compile(junit)"/>

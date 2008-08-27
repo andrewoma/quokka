@@ -45,6 +45,10 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     private List overrides = new ArrayList();
     private String description;
     private Date timestamp; // Only set for snapshots to allow updates from parents
+    private String importedFrom;
+    private boolean stub = false;
+    private Set licenses = new HashSet();
+    private String hash; // Optional MD5 hash encoded as a hex string (lowercase)
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
@@ -93,6 +97,22 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
 
     public void addDependency(RepoDependency dependency) {
         dependencies.add(dependency);
+    }
+
+    public boolean isStub() {
+        return stub;
+    }
+
+    public void setStub(boolean stub) {
+        this.stub = stub;
+    }
+
+    public void addLicense(RepoArtifactId id) {
+        licenses.add(id);
+    }
+
+    public Set getLicenses() {
+        return licenses;
     }
 
     public Set getPaths() {
@@ -160,7 +180,16 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         this.timestamp = timestamp;
     }
 
+    public String getImportedFrom() {
+        return importedFrom;
+    }
+
+    public void setImportedFrom(String importedFrom) {
+        this.importedFrom = importedFrom;
+    }
+
     public boolean equals(Object o) {
+        // Note: localCopy, hash and annotations are excluded from equality testing
         if (this == o) {
             return true;
         }
@@ -169,37 +198,45 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
             return false;
         }
 
-        RepoArtifact that = (RepoArtifact)o;
+        RepoArtifact artifact = (RepoArtifact)o;
 
-        if ((dependencies != null) ? (!dependencies.equals(that.dependencies)) : (that.dependencies != null)) {
+        if (stub != artifact.stub) {
             return false;
         }
 
-        if ((description != null) ? (!description.equals(that.description)) : (that.description != null)) {
+        if ((dependencies != null) ? (!dependencies.equals(artifact.dependencies)) : (artifact.dependencies != null)) {
             return false;
         }
 
-        if ((id != null) ? (!id.equals(that.id)) : (that.id != null)) {
+        if ((description != null) ? (!description.equals(artifact.description)) : (artifact.description != null)) {
             return false;
         }
 
-        if ((localCopy != null) ? (!localCopy.equals(that.localCopy)) : (that.localCopy != null)) {
+        if ((id != null) ? (!id.equals(artifact.id)) : (artifact.id != null)) {
             return false;
         }
 
-        if ((originalId != null) ? (!originalId.equals(that.originalId)) : (that.originalId != null)) {
+        if ((importedFrom != null) ? (!importedFrom.equals(artifact.importedFrom)) : (artifact.importedFrom != null)) {
             return false;
         }
 
-        if ((overrides != null) ? (!overrides.equals(that.overrides)) : (that.overrides != null)) {
+        if ((licenses != null) ? (!licenses.equals(artifact.licenses)) : (artifact.licenses != null)) {
             return false;
         }
 
-        if ((paths != null) ? (!paths.equals(that.paths)) : (that.paths != null)) {
+        if ((originalId != null) ? (!originalId.equals(artifact.originalId)) : (artifact.originalId != null)) {
             return false;
         }
 
-        if ((timestamp != null) ? (!timestamp.equals(that.timestamp)) : (that.timestamp != null)) {
+        if ((overrides != null) ? (!overrides.equals(artifact.overrides)) : (artifact.overrides != null)) {
+            return false;
+        }
+
+        if ((paths != null) ? (!paths.equals(artifact.paths)) : (artifact.paths != null)) {
+            return false;
+        }
+
+        if ((timestamp != null) ? (!timestamp.equals(artifact.timestamp)) : (artifact.timestamp != null)) {
             return false;
         }
 
@@ -210,12 +247,14 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         int result;
         result = ((id != null) ? id.hashCode() : 0);
         result = (31 * result) + ((dependencies != null) ? dependencies.hashCode() : 0);
-        result = (31 * result) + ((localCopy != null) ? localCopy.hashCode() : 0);
         result = (31 * result) + ((paths != null) ? paths.hashCode() : 0);
         result = (31 * result) + ((originalId != null) ? originalId.hashCode() : 0);
         result = (31 * result) + ((overrides != null) ? overrides.hashCode() : 0);
         result = (31 * result) + ((description != null) ? description.hashCode() : 0);
         result = (31 * result) + ((timestamp != null) ? timestamp.hashCode() : 0);
+        result = (31 * result) + ((importedFrom != null) ? importedFrom.hashCode() : 0);
+        result = (31 * result) + (stub ? 1 : 0);
+        result = (31 * result) + ((licenses != null) ? licenses.hashCode() : 0);
 
         return result;
     }
@@ -226,5 +265,17 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         Date otherDate = (other.timestamp != null) ? other.timestamp : new Date(0);
 
         return thisDate.compareTo(otherDate) > 0;
+    }
+
+    /**
+     * Optional field for some repository types. In general, if you are not returning the actual artifact
+     * you should set the hash. At present this is done by UrlRepositories when listing remote artifacts
+     */
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 }

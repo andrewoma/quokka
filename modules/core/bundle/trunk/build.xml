@@ -1,4 +1,5 @@
 <project name="core.bundle.ext">
+    <import file="../../internal/master/ide-parent.xml"/>
 
     <!--<target name="dist" depends="quokka.lifecycle:package, docbook-pdf">-->
     <target name="dist" depends="quokka.lifecycle:package">

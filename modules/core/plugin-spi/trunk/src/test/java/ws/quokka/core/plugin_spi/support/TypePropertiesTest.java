@@ -36,16 +36,14 @@ public class TypePropertiesTest extends AbstractTest {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private Project project = new Project();
-    private TypedProperties tp = new TypedProperties("");
     private Properties p = new Properties();
+    private TypedProperties tp = new TypedProperties("", p, project);
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     protected void setUp() throws Exception {
         super.setUp();
-        tp.setProperties(p);
         project.init();
-        tp.setProject(project);
     }
 
     public void testMapString() {

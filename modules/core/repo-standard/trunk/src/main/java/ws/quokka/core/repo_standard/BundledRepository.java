@@ -56,7 +56,7 @@ public class BundledRepository extends FileRepository {
     protected void extractBundle() {
         if (!getRootDir().exists()) {
             String repositoryName = getProperty("repository", true);
-            Repository repository = getFactory().getOrCreate(repositoryName);
+            Repository repository = getFactory().getOrCreate(repositoryName, true);
             RepoArtifact artifact = repository.resolve(bundleId);
 
             Expand expand = new Expand();
@@ -85,10 +85,10 @@ public class BundledRepository extends FileRepository {
         return new RepoArtifactId(tokens[0], name, "jar", version);
     }
 
-    public RepoArtifact resolve(RepoArtifactId id) {
+    public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
         extractBundle();
 
-        return super.resolve(id);
+        return super.resolve(id, retrieveArtifact);
     }
 
     public void remove(RepoArtifactId artifactId) {
@@ -99,8 +99,10 @@ public class BundledRepository extends FileRepository {
         throw new UnsupportedOperationException();
     }
 
-    public Collection listArtifactIds() {
-        throw new UnsupportedOperationException();
+    public Collection listArtifactIds(boolean includeReferenced) {
+        extractBundle();
+
+        return super.listArtifactIds(includeReferenced);
     }
 
     public boolean supportsInstall(RepoArtifactId artifactId) {

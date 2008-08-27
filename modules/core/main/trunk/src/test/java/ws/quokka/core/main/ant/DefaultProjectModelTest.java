@@ -545,8 +545,8 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         mustExist.add(id("quokka.core.bootstrap-util"));
         mustExist.add(id("quokka.core.main"));
         mustExist.add(id("apache.ant:ant"));
-        mustExist.add(id("apache.ant:bcel"));
 
+//        mustExist.add(id("apache.ant:bcel"));
         for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();
             RepoArtifactId artifactId = artifact.getId();
@@ -573,7 +573,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
             artifacts.put(artifact.getId(), artifact);
         }
 
-        public RepoArtifact resolve(RepoArtifactId id) {
+        public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
             RepoArtifact artifact = (RepoArtifact)artifacts.get(id);
 
             if (artifact == null) {
@@ -581,6 +581,10 @@ public class DefaultProjectModelTest extends AbstractMainTest {
             }
 
             return artifact;
+        }
+
+        public RepoArtifact resolve(RepoArtifactId id) {
+            return resolve(id, true);
         }
 
         public void initialise() {
@@ -592,7 +596,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         public void remove(RepoArtifactId artifactId) {
         }
 
-        public Collection listArtifactIds() {
+        public Collection listArtifactIds(boolean includeReferenced) {
             return null;
         }
 
@@ -610,6 +614,9 @@ public class DefaultProjectModelTest extends AbstractMainTest {
 
         public Collection availableVersions(String group, String name, String type) {
             return null;
+        }
+
+        public void rebuildCaches() {
         }
     }
 

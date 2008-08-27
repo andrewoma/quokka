@@ -26,6 +26,8 @@ import ws.quokka.core.util.Strings;
 import ws.quokka.core.version.Version;
 import ws.quokka.core.version.VersionRangeUnion;
 
+import java.io.File;
+
 import java.util.*;
 
 
@@ -141,6 +143,7 @@ public class ProjectParserTest extends AbstractMainTest {
         parse("full2", new Profiles("-skip"));
         assertEquals("name", project.getName());
         assertEquals("default-target", project.getDefaultTarget());
+        assertEquals("Some project", project.getDescription());
 
         // Artifacts
         Set artifacts = new HashSet();
@@ -152,7 +155,8 @@ public class ProjectParserTest extends AbstractMainTest {
         assertEquals(artifacts, results);
 
         // Overrides
-        List overrides = project.getDependencySet().getOverrides();
+        DependencySet dependencySet = project.getDependencySet();
+        List overrides = dependencySet.getOverrides();
         assertEquals(2, overrides.size());
 
         ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)overrides.get(0);
@@ -177,17 +181,17 @@ public class ProjectParserTest extends AbstractMainTest {
         assertEquals(new PathSpec("!+from(hello, there)", false), override.getWithPathSpecs().iterator().next());
 
         // Profiles
-        Profile profile = (Profile)project.getDependencySet().getProfiles().get(0);
+        Profile profile = (Profile)dependencySet.getProfiles().get(0);
         assertEquals("skip", profile.getId());
         assertEquals("Skip description", profile.getDescription());
-        profile = (Profile)project.getDependencySet().getProfiles().get(1);
+        profile = (Profile)dependencySet.getProfiles().get(1);
         assertEquals("profile2", profile.getId());
         assertEquals("Another profile", profile.getDescription());
         assertTrue(project.getActiveProfiles().getElements().contains("-skip"));
         assertTrue(project.getActiveProfiles().getElements().contains("source1.4"));
 
         // Paths
-        Map paths = project.getDependencySet().getPaths();
+        Map paths = dependencySet.getPaths();
         assertEquals(3, paths.size());
         assertEquals(new Path("path1", "path1 description", true, true), paths.get("path1"));
         assertEquals(new Path("path2", "path2 description", false, false), paths.get("path2"));
@@ -202,7 +206,7 @@ public class ProjectParserTest extends AbstractMainTest {
         props.put("quokka.project.java.source", "1.4");
         props.put("t1prefix.prop1", "value1");
         props.put("t1prefix.prop2", "value2");
-        assertEquals(props, project.getDependencySet().getProperties());
+        assertEquals(props, dependencySet.getProperties());
 
         // Dependencies (includes plugins)
         List dependencies = new ArrayList();
@@ -223,9 +227,18 @@ public class ProjectParserTest extends AbstractMainTest {
         target.addDependency("ta");
         target.addDependency("tb");
         dependencies.add(dependency);
-        assertEquals(dependencies, project.getDependencySet().getDependencies());
+        assertEquals(dependencies, dependencySet.getDependencies());
 
-        List subsets = project.getDependencySet().getSubsets();
+        // Licenses
+        assertEquals(3, dependencySet.getLicenses().size());
+        assertEquals(new License(null, new RepoArtifactId("license.apache", "apache", "license", "2.0")),
+            dependencySet.getLicenses().get(0));
+        assertEquals(new License(new File("NOTICE.txt"), new RepoArtifactId(null, null, "license", (Version)null)),
+            dependencySet.getLicenses().get(1));
+        assertEquals(new License(new File("license.txt"), new RepoArtifactId(null, "somename", "license", (Version)null)),
+            dependencySet.getLicenses().get(2));
+
+        List subsets = dependencySet.getSubsets();
         assertEquals(1, subsets.size());
         props = new AnnotatedProperties();
         props.put("nestedfileprop1", "value1");
@@ -334,6 +347,10 @@ public class ProjectParserTest extends AbstractMainTest {
         }
 
         public RepoArtifact resolve(RepoArtifactId id) {
+            return resolve(id, true);
+        }
+
+        public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
             RepoArtifact artifact = (RepoArtifact)artifacts.get(id);
 
             if (artifact == null) {
@@ -352,7 +369,7 @@ public class ProjectParserTest extends AbstractMainTest {
         public void remove(RepoArtifactId artifactId) {
         }
 
-        public Collection listArtifactIds() {
+        public Collection listArtifactIds(boolean includeReferenced) {
             return null;
         }
 
@@ -370,6 +387,9 @@ public class ProjectParserTest extends AbstractMainTest {
 
         public Collection availableVersions(String group, String name, String type) {
             return null;
+        }
+
+        public void rebuildCaches() {
         }
     }
 }

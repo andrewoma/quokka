@@ -42,13 +42,6 @@ public class ChecksumRepositoryTest extends AbstractRepositoryTest {
         initialise();
 
         RepoArtifactId id = new RepoArtifactId("group1", "name1", "jar", new Version("version1"));
-        remove(id);
-
-        try {
-            resolveArtifact(id, 1);
-            resolveArtifact(id, 1);
-        } finally {
-            remove(id);
-        }
+        resolveArtifact(id, 1);
     }
 }

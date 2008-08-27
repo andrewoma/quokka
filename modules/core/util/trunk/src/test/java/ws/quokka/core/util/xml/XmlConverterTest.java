@@ -44,7 +44,7 @@ public class XmlConverterTest extends AbstractTest {
         // Convert to xml
         SomeBean someBean = new SomeBean("name", null, true, Boolean.TRUE, new File("C:\\Temp"),
                 new SomeOtherBean("otherName"));
-        String xml = converter.toXml(someBean, "somebean", "pub", "sys");
+        String xml = converter.toXml(someBean, "somebean", "pub", "http://quokka.ws");
 
         // Convert back
         SomeBean converted = (SomeBean)converter.fromXml(SomeBean.class, xml, new Document.NullEntityResolver());

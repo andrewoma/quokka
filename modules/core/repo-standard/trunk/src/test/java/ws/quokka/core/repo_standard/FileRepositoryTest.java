@@ -20,6 +20,9 @@ package ws.quokka.core.repo_standard;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.version.Version;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  *
@@ -70,6 +73,35 @@ public class FileRepositoryTest extends AbstractRepositoryTest {
         put("url", "file:" + root + ";hierarchical=false");
         initialise();
         resolveArtifact(new RepoArtifactId("group1", "name1", "jar", new Version("version1")), 1);
+    }
+
+    public void testListArtifactsFlat() {
+        put("root", getTestCaseResource("flat-repository").getAbsolutePath());
+        put("hierarchical", "false");
+        initialise();
+
+        Set artifacts = new HashSet();
+        artifacts.add(new RepoArtifactId("group2.subgroup1", "name1", "paths", "2.0"));
+        artifacts.add(new RepoArtifactId("group2.subgroup1", "name1", "paths", "2.0~3"));
+        artifacts.add(new RepoArtifactId("group2", "name1", "paths", "2.0"));
+        artifacts.add(new RepoArtifactId("group1", "name1", "jar", "version1"));
+        artifacts.add(new RepoArtifactId("group1", "name1", "jar", "version1~2"));
+        artifacts.add(new RepoArtifactId("group1", "name1", "jar", "version2-SNAPSHOT"));
+        assertEquals(artifacts, repository.listArtifactIds(false));
+    }
+
+    public void testListArtifactsHierachical() {
+        put("root", getTestCaseResource("hierarchical-repository").getAbsolutePath());
+        initialise();
+
+        Set artifacts = new HashSet();
+        artifacts.add(new RepoArtifactId("group1", "name1", "jar", "version1"));
+        artifacts.add(new RepoArtifactId("group1", "name1", "jar", "version1~2"));
+        artifacts.add(new RepoArtifactId("group1", "name2", "jar", "version1"));
+        artifacts.add(new RepoArtifactId("group1", "name2", "jar", "version1~2"));
+        artifacts.add(new RepoArtifactId("group2.subgroup1", "name3", "paths", "1.1"));
+        artifacts.add(new RepoArtifactId("group2.subgroup1", "name3", "paths", "1.1~3"));
+        assertEquals(artifacts, repository.listArtifactIds(false));
     }
 
     public void testResolveFromParents() {

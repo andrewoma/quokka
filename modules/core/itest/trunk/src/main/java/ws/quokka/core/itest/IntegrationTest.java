@@ -21,7 +21,12 @@ import org.apache.tools.ant.BuildException;
 
 import ws.quokka.core.test.AbstractTest;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -143,6 +148,7 @@ public abstract class IntegrationTest extends AbstractTest {
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 
             try {
+//                buildFile = filterBuildFile(buildFile);
                 Thread.currentThread().setContextClassLoader(loader);
 
                 Class clazz = loader.loadClass("ws.quokka.core.itest.AntRunner");
@@ -151,6 +157,8 @@ public abstract class IntegrationTest extends AbstractTest {
                         new Class[] { File.class, List.class, Properties.class, Properties.class });
                 results = (Map)method.invoke(antRunner,
                         new Object[] { buildFile, Arrays.asList(targets), properties, pluginState });
+
+//                buildFile.delete(); // Leave around if an exception occurred
             } catch (Throwable e) {
                 if (e instanceof InvocationTargetException) {
                     e = ((InvocationTargetException)e).getTargetException();
@@ -166,6 +174,39 @@ public abstract class IntegrationTest extends AbstractTest {
             }
         } finally {
             System.setProperty(moduleClassPathId, "");
+        }
+    }
+
+    /**
+     * Replace @moduleVersion@ tokens with the real thing. Otherwise it's very easy to forget to
+     * increment the versions between releases
+     */
+    protected File filterBuildFile(File buildFile) throws IOException {
+        File tempDir = new File(getTargetDir());
+        BufferedReader reader = new BufferedReader(new FileReader(buildFile));
+
+        try {
+            File temp = File.createTempFile("ibuild", "-quokka.xml", tempDir);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+
+            try {
+                while (true) {
+                    String line = reader.readLine();
+
+                    if (line == null) {
+                        break;
+                    }
+
+                    line = line.replaceAll("\\@moduleVersion\\@", getITestProperties().getProperty("moduleVersion"));
+                    writer.write(line + "\n");
+                }
+
+                return temp;
+            } finally {
+                writer.close();
+            }
+        } finally {
+            reader.close();
         }
     }
 

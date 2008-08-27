@@ -58,9 +58,7 @@ public abstract class AbstractRepositoryTest extends AbstractTest {
         factory.setProperties(properties);
         factory.registerType(new RepoType("jar", ".jar file", "jar"));
         factory.registerType(new RepoType("paths", "Repository file", "xml"));
-        repository = factory.getOrCreate(name);
-
-//        repository.initialise();
+        repository = factory.getOrCreate(name, true);
     }
 
     protected void put(String key, String value) {

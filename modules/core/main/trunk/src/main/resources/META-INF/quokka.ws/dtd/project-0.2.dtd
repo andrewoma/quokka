@@ -16,7 +16,7 @@
 <!ATTLIST artifact paths CDATA #IMPLIED >
 <!ATTLIST artifact profiles CDATA #IMPLIED >
 
-<!ELEMENT artifacts ( artifact+ ) >
+<!ELEMENT artifacts ( artifact* ) >
 <!ATTLIST artifacts group NMTOKEN #REQUIRED >
 <!ATTLIST artifacts version CDATA #REQUIRED >
 <!ATTLIST artifacts type NMTOKEN #IMPLIED >
@@ -66,7 +66,7 @@
 <!ATTLIST property value CDATA #IMPLIED >
 <!ATTLIST property profiles CDATA #IMPLIED >
 
-<!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin | property )* >
+<!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin | property | license )* >
 <!ATTLIST dependency-set group NMTOKEN #IMPLIED >
 <!ATTLIST dependency-set name NMTOKEN #IMPLIED >
 <!ATTLIST dependency-set version CDATA #IMPLIED >
@@ -95,7 +95,7 @@
 <!ATTLIST jdks spec-version CDATA #IMPLIED >
 
 <!ELEMENT override ( path-spec* ) >
-<!ATTLIST override group NMTOKEN #REQUIRED >
+<!ATTLIST override group NMTOKEN #IMPLIED >
 <!ATTLIST override name NMTOKEN #IMPLIED >
 <!ATTLIST override profiles CDATA #IMPLIED >
 <!ATTLIST override paths CDATA #IMPLIED >
@@ -128,6 +128,12 @@
 <!ATTLIST plugin paths CDATA #IMPLIED >
 <!ATTLIST plugin version CDATA #REQUIRED >
 <!ATTLIST plugin use-defaults ( true | false ) #IMPLIED >
+
+<!ELEMENT license EMPTY >
+<!ATTLIST license group NMTOKEN #IMPLIED >
+<!ATTLIST license name NMTOKEN #IMPLIED >
+<!ATTLIST license version CDATA #IMPLIED >
+<!ATTLIST license file CDATA #IMPLIED >
 
 <!ELEMENT project ( description?, artifacts?, bootstrap*, dependency-set* ) >
 <!ATTLIST project name CDATA #IMPLIED >

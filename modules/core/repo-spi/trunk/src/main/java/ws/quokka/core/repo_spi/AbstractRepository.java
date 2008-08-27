@@ -17,6 +17,9 @@
 
 package ws.quokka.core.repo_spi;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 
 /**
  *
@@ -51,5 +54,24 @@ public abstract class AbstractRepository implements Repository {
 
     public String prefix() {
         return PREFIX + name + ".";
+    }
+
+    public RepoArtifact resolve(RepoArtifactId artifactId) {
+        return resolve(artifactId, true);
+    }
+
+    /**
+     * Remove any ids that can't actually be resolved by this repository
+     */
+    protected Collection filterUnresolvable(Collection ids) {
+        for (Iterator i = ids.iterator(); i.hasNext();) {
+            RepoArtifactId id = (RepoArtifactId)i.next();
+
+            if (!supportsReslove(id)) {
+                i.remove();
+            }
+        }
+
+        return ids;
     }
 }

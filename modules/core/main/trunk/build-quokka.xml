@@ -2,29 +2,29 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.core.main" version="0.1.2-ss">
+    <artifacts group="quokka.core.main" version="0.2-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
     <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
-        <dependency group="quokka.core.repo-spi" version="0.1.1-ss" paths="compile, runtime+"/>
-        <dependency group="quokka.core.repo-standard" version="0.1.1-ss" paths="compile, runtime+"/>
+        <dependency group="quokka.core.repo-spi" version="0.2-ss" paths="compile, runtime+"/>
+        <dependency group="quokka.core.repo-standard" version="0.2-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.repo-resolver" version="0.1-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.metadata" version="0.1.1-ss" paths="compile, runtime+"/>
-        <dependency group="quokka.core.model" version="0.1.1-ss" paths="compile, runtime+"/>
+        <dependency group="quokka.core.model" version="0.2-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.bootstrap" version="0.1.1-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.bootstrap-util" version="0.1.1-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.version" version="0.1.1-ss" paths="compile, runtime+"/>
-        <dependency group="quokka.core.plugin-spi" version="0.1.1-ss" paths="compile, runtime+"/>
+        <dependency group="quokka.core.plugin-spi" version="0.2-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.util" version="0.1.1-ss" paths="compile, runtime+"/>
         <dependency group="apache.ant" version="1.7.0" paths="compile, runtime+"/>
         <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="compile, runtime+"/>
-        <dependency group="quokka.core.ant-optional-1-7-0" version="1.0-ss" paths="test, runtime+"/>
+        <!--<dependency group="quokka.core.ant-optional-1-7-0" version="1.0-ss" paths="test, runtime+"/>-->
 
         <dependency group="quokka.core.test" version="0.1.1-ss" paths="test-compile(junit)"/>
-        <dependency group="quokka.core.itest" version="0.1.2-ss" paths="itest+"/>
+        <dependency group="quokka.core.itest" version="0.2-ss" paths="itest+"/>
 
         <plugin group="quokka.plugin.devreport" version="0.1"/>
         <!--<plugin group="quokka.plugin.help" version="0.1.2"/>-->

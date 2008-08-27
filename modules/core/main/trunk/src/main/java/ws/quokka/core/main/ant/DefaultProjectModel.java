@@ -33,6 +33,7 @@ import ws.quokka.core.metadata.MetadataAware;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
+import ws.quokka.core.model.License;
 import ws.quokka.core.model.ModelFactory;
 import ws.quokka.core.model.ModelFactoryAware;
 import ws.quokka.core.model.Path;
@@ -49,6 +50,7 @@ import ws.quokka.core.plugin_spi.PluginState;
 import ws.quokka.core.plugin_spi.ResourcesAware;
 import ws.quokka.core.repo_resolver.ResolvedPath;
 import ws.quokka.core.repo_resolver.Resolver;
+import ws.quokka.core.repo_resolver.ResolverAware;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoDependency;
@@ -58,6 +60,8 @@ import ws.quokka.core.repo_spi.RepoPathSpec;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryAware;
+import ws.quokka.core.repo_spi.RepositoryFactory;
+import ws.quokka.core.repo_spi.RepositoryFactoryAware;
 import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Annotations;
 import ws.quokka.core.util.PropertyProvider;
@@ -428,6 +432,46 @@ public class DefaultProjectModel implements ProjectModel {
 
             if (set.getImportURL() != null) {
                 resolvedImports.add(set.getImportURL());
+            }
+
+            // Find the unique names for all declared artifacts
+            Set uniqueNames = new HashSet();
+
+            for (Iterator j = project.getArtifacts().iterator(); j.hasNext();) {
+                Artifact artifact = (Artifact)j.next();
+                uniqueNames.add(artifact.getId().getName());
+            }
+
+            // Create artifacts for any licenses referenced by files
+            for (Iterator j = set.getLicenses().iterator(); j.hasNext();) {
+                License license = (License)j.next();
+
+                if (license.getFile() != null) {
+                    Assert.isTrue(project.getArtifacts().size() != 0, license.getLocator(),
+                        "There are no artifacts defined for a license to be applied to.");
+
+                    Artifact artifact = (Artifact)project.getArtifacts().iterator().next();
+                    RepoArtifactId id = artifact.getId();
+
+                    // If no name is specified, default it to name of the artifact if it is unique,
+                    // otherwise use the default from the group
+                    String name = license.getId().getName();
+                    String defaultName = RepoArtifactId.defaultName(id.getGroup());
+
+                    if (name == null) {
+                        if (uniqueNames.size() == 1) {
+                            name = (String)uniqueNames.iterator().next();
+                        } else {
+                            name = defaultName;
+                        }
+                    }
+
+                    Artifact licenseArtifact = new Artifact(id.getGroup(), name, "license", id.getVersion());
+                    licenseArtifact.setDescription("License for " + id.getGroup()
+                        + (name.equals(defaultName) ? "" : (":" + name)));
+                    project.addArtifact(licenseArtifact);
+                    license.setId(licenseArtifact.getId());
+                }
             }
         }
 
@@ -868,7 +912,7 @@ public class DefaultProjectModel implements ProjectModel {
             artifact.addPath(path);
         }
 
-        ResolvedPath path = pathResolver.resolvePath(id, artifact, appliedOverrides);
+        ResolvedPath path = pathResolver.resolvePath(id, artifact, appliedOverrides, false, true);
         path.setId("Project path '" + id + "'");
 
         path = handleMergeAndFlatten(mergeWithCore, flatten, path);
@@ -1008,6 +1052,15 @@ public class DefaultProjectModel implements ProjectModel {
                 ((RepositoryAware)actualPlugin).setRepository(getRepository());
             }
 
+            if (actualPlugin instanceof RepositoryFactoryAware) {
+                ((RepositoryFactoryAware)actualPlugin).setRepositoryFactory((RepositoryFactory)antProject.getReference(
+                        ProjectHelper.REPOSITORY_FACTORY));
+            }
+
+            if (actualPlugin instanceof ResolverAware) {
+                ((ResolverAware)actualPlugin).setResolver(pathResolver);
+            }
+
             if (actualPlugin instanceof ModelFactoryAware) {
                 ((ModelFactoryAware)actualPlugin).setModelFactory(getModelFactory());
             }
@@ -1038,9 +1091,9 @@ public class DefaultProjectModel implements ProjectModel {
         ids.add(new DependencyResource("quokka.core.main", "main",
                 Version.parse(properites.getProperty("artifact.id.version"))));
         ids.addAll(BootStrapper.getDependencies(properites, "runtime"));
-        properites = new ArtifactPropertiesParser().parse("quokka.core.ant-optional-1-7-0", "ant-optional-1-7-0", "jar");
-        ids.addAll(BootStrapper.getDependencies(properites, "bundle"));
 
+//        properites = new ArtifactPropertiesParser().parse("quokka.core.ant-optional-1-7-0", "ant-optional-1-7-0", "jar");
+//        ids.addAll(BootStrapper.getDependencies(properites, "bundle"));
         // Add any additional user specified dependencies
         // TODO: Support additional dependencies for non-bootstrapped builds?
         if (bootStrapper != null) {
@@ -1090,5 +1143,16 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         return applied;
+    }
+
+    public Set getLicenses() {
+        Set licenses = new HashSet();
+
+        for (Iterator i = depthFirst(project.getDependencySet()).iterator(); i.hasNext();) {
+            DependencySet set = (DependencySet)i.next();
+            licenses.addAll(set.getLicenses());
+        }
+
+        return licenses;
     }
 }

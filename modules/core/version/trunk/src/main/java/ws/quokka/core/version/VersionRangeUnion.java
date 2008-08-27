@@ -36,7 +36,7 @@ public class VersionRangeUnion {
 
     public boolean isInRange(Version version) {
         for (Iterator i = ranges.iterator(); i.hasNext();) {
-            VersionRange range = (VersionRange) i.next();
+            VersionRange range = (VersionRange)i.next();
 
             if (range.isInRange(version)) {
                 return true;
@@ -70,7 +70,7 @@ public class VersionRangeUnion {
         StringBuffer sb = new StringBuffer();
 
         for (Iterator i = ranges.iterator(); i.hasNext();) {
-            VersionRange range = (VersionRange) i.next();
+            VersionRange range = (VersionRange)i.next();
             sb.append(range.toString());
 
             if (i.hasNext()) {
@@ -86,17 +86,24 @@ public class VersionRangeUnion {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
 
-        VersionRangeUnion that = (VersionRangeUnion) o;
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
 
-        if (ranges != null ? !ranges.equals(that.ranges) : that.ranges != null) return false;
+        VersionRangeUnion that = (VersionRangeUnion)o;
+
+        if ((ranges != null) ? (!ranges.equals(that.ranges)) : (that.ranges != null)) {
+            return false;
+        }
 
         return true;
     }
 
     public int hashCode() {
-        return (ranges != null ? ranges.hashCode() : 0);
+        return ((ranges != null) ? ranges.hashCode() : 0);
     }
 }

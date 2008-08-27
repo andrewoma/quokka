@@ -63,10 +63,10 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         project = getFactory().getProject();
 
         // Try 'project' repository, then 'shared'
-        repository = getFactory().getOrCreate("project");
+        repository = getFactory().getOrCreate("project", false);
 
         if (repository == null) {
-            repository = getFactory().getOrCreate("shared");
+            repository = getFactory().getOrCreate("shared", false);
         }
 
         if (repository == null) {
@@ -90,7 +90,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         }
     }
 
-    public RepoArtifact resolve(RepoArtifactId artifactId) {
+    public RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact) {
         // Check for a specific override
         if (overrides.containsKey(artifactId.toPathString())) {
             String override = ((String)overrides.get(artifactId.toPathString())).trim();
@@ -193,8 +193,8 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         repository.remove(artifactId);
     }
 
-    public Collection listArtifactIds() {
-        return repository.listArtifactIds();
+    public Collection listArtifactIds(boolean includeReferenced) {
+        return repository.listArtifactIds(false);
     }
 
     public boolean supportsReslove(RepoArtifactId artifactId) {
@@ -211,5 +211,9 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
 
     public Collection availableVersions(String group, String name, String type) {
         return repository.availableVersions(group, name, type);
+    }
+
+    public void rebuildCaches() {
+        repository.rebuildCaches();
     }
 }

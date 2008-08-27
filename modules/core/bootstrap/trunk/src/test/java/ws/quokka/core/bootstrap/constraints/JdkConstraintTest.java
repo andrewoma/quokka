@@ -18,10 +18,10 @@
 package ws.quokka.core.bootstrap.constraints;
 
 import ws.quokka.core.bootstrap.resources.Jdk;
-import ws.quokka.core.test.AbstractTest;
-import ws.quokka.core.version.VersionRangeUnion;
 import ws.quokka.core.bootstrap_util.Log;
 import ws.quokka.core.bootstrap_util.MockLogger;
+import ws.quokka.core.test.AbstractTest;
+import ws.quokka.core.version.VersionRangeUnion;
 
 import java.io.File;
 

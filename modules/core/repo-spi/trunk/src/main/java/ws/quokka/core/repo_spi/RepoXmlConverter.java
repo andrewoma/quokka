@@ -239,10 +239,15 @@ public class RepoXmlConverter {
     }
 
     public static class RepoArtifactConverter extends ReflectionConverter {
+        private static final String LICENSE = "license";
+        private static final String LICENSES = "licenses";
+
         public RepoArtifactConverter(Class clazz) {
             super(clazz);
             addExclusion("localCopy");
             addExclusion("description");
+            addExclusion("hash");
+            addDefault("stub", Boolean.FALSE);
         }
 
         public DateFormat getDateFormat() {
@@ -284,6 +289,23 @@ public class RepoXmlConverter {
                     Element pathEl = (Element)i.next();
                     converter = getConverter(RepoPath.class);
                     artifact.addPath((RepoPath)converter.fromXml(pathEl));
+                }
+            }
+
+            Element licensesEl = artifactEl.getChild(LICENSES);
+
+            if (licensesEl != null) {
+                for (Iterator i = licensesEl.getChildren(LICENSE).iterator(); i.hasNext();) {
+                    Element licenseEl = (Element)i.next();
+                    RepoArtifactId license = ((RepoArtifactId)getConverter(RepoArtifactId.class).fromXml(licenseEl));
+                    license = license.merge(new RepoArtifactId(null, RepoArtifactId.defaultName(license.getGroup()),
+                                LICENSE, (Version)null));
+                    license.validate();
+                    Assert.isTrue(license.getType().equals(LICENSE) || license.getType().equals("notice"),
+                        license.getLocator(),
+                        "Only types of 'license' and 'notice' are permitted for licenses: license="
+                        + license.toShortString());
+                    artifact.addLicense(license);
                 }
             }
 
@@ -399,6 +421,28 @@ public class RepoXmlConverter {
 
                 for (Iterator i = artifact.getOverrides().iterator(); i.hasNext();) {
                     converter.toXml(i.next(), overridesEl.addChild("override"));
+                }
+            }
+
+            if (artifact.getLicenses().size() != 0) {
+                Element licensesEl = artifactEl.addChild(LICENSES);
+
+                for (Iterator i = artifact.getLicenses().iterator(); i.hasNext();) {
+                    RepoArtifactId license = (RepoArtifactId)i.next();
+                    Element licenseEl = licensesEl.addChild(LICENSE);
+
+                    if (license.getGroup() != null) {
+                        licenseEl.setAttribute("group", license.getGroup());
+                    }
+
+                    if ((license.getName() != null)
+                            && !license.getName().equals(RepoArtifactId.defaultName(license.getGroup()))) {
+                        licenseEl.setAttribute("name", license.getName());
+                    }
+
+                    if (license.getVersion() != null) {
+                        licenseEl.setAttribute("version", license.getVersion().toString());
+                    }
                 }
             }
         }

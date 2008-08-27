@@ -27,6 +27,7 @@ import ws.quokka.core.metadata.Metadata;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
+import ws.quokka.core.model.License;
 import ws.quokka.core.model.ModelFactory;
 import ws.quokka.core.model.Path;
 import ws.quokka.core.model.PathGroup;
@@ -78,6 +79,10 @@ public class ProjectMetadata implements Metadata {
         return projectModel.getProjectPath(id, false, true);
     }
 
+    public List getProjectPath(String id, boolean mergeWithCore, boolean flatten) {
+        return projectModel.getProjectPath(id, mergeWithCore, flatten);
+    }
+
     public RepoType getType(String id) {
         return projectModel.getRepository().getFactory().getType(id);
     }
@@ -127,14 +132,24 @@ public class ProjectMetadata implements Metadata {
         for (Iterator i = projectModel.getProject().getArtifacts().iterator(); i.hasNext();) {
             Artifact artifact = (Artifact)i.next();
 
-            if (artifact.getExportedPaths().size() == 0) {
-                continue;
-            }
-
             exportedList.add(createExported(artifact));
         }
 
         return exportedList;
+    }
+
+    public Map getLocalLicenses() {
+        Map licenses = new HashMap();
+
+        for (Iterator i = projectModel.getLicenses().iterator(); i.hasNext();) {
+            License license = (License)i.next();
+
+            if (license.getFile() != null) {
+                licenses.put(license.getId(), license.getFile());
+            }
+        }
+
+        return licenses;
     }
 
     public Map getExportedPaths(RepoArtifactId id) {
@@ -157,6 +172,14 @@ public class ProjectMetadata implements Metadata {
     private RepoArtifact createExported(Artifact artifact) {
         RepoArtifact exported = new RepoArtifact(artifact.getId());
         exported.setDescription(artifact.getDescription());
+
+        // Add licenses
+        if (!artifact.getId().getType().equals("license")) {
+            for (Iterator i = projectModel.getLicenses().iterator(); i.hasNext();) {
+                License license = (License)i.next();
+                exported.addLicense(license.getId());
+            }
+        }
 
         // Add the paths
         for (Iterator i = artifact.getExportedPaths().iterator(); i.hasNext();) {
@@ -249,7 +272,7 @@ public class ProjectMetadata implements Metadata {
     }
 
     public boolean hasReleasableBootStrapper() {
-        return projectModel.getBootStrapper().isReleasable();
+        return (projectModel.getBootStrapper() != null) && projectModel.getBootStrapper().isReleasable();
     }
 
     public Set getDependencies() {

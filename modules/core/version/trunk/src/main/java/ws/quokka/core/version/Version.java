@@ -160,6 +160,7 @@ public class Version implements Comparable {
      */
     public Version(String version) {
         Assert.isTrue(version != null, "version is null");
+
         String original = version;
 
         try {
@@ -199,6 +200,7 @@ public class Version implements Comparable {
                     throw new IllegalArgumentException("invalid characters in version: " + original);
                 }
             }
+
             nonStandardString = original;
             major = 0;
             minor = 0;
@@ -356,7 +358,7 @@ public class Version implements Comparable {
      */
     public int hashCode() {
         if (nonStandardString != null) {
-            return nonStandardString.hashCode();
+            return (nonStandardString.hashCode() * 31) + repositoryVersion;
         }
 
         int result;
@@ -396,7 +398,7 @@ public class Version implements Comparable {
         Version other = (Version)object;
 
         if (nonStandardString != null) {
-            return nonStandardString.equals(other.nonStandardString);
+            return nonStandardString.equals(other.nonStandardString) && (repositoryVersion == other.repositoryVersion);
         }
 
         boolean qualifierEqual = ((qualifier == null) && (other.qualifier == null))
@@ -449,7 +451,13 @@ public class Version implements Comparable {
         }
 
         if ((nonStandardString != null) && (other.nonStandardString != null)) {
-            return nonStandardString.compareTo(other.nonStandardString);
+            int result = nonStandardString.compareTo(other.nonStandardString);
+
+            if (result != 0) {
+                return result;
+            }
+
+            return repositoryVersion - other.repositoryVersion;
         }
 
         int result = major - other.major;
@@ -500,6 +508,7 @@ public class Version implements Comparable {
         if (qualifier == null) {
             return false;
         }
+
         String qualifierL = qualifier.toLowerCase();
 
         return qualifierL.equals("ss") || qualifierL.endsWith("-ss");

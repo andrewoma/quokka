@@ -30,7 +30,7 @@ if [ -z "$QUOKKA_OPTS" ] ; then
 fi
 launcherCp=$home/lib/apache.ant_ant-launcher_jar_$defaultAnt.jar
 quokkaCp=$home/lib/apache.ant_ant_jar_$defaultAnt.jar
-quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
+#quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
 quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_$defaultQuokka.jar
 
 # Get the java command

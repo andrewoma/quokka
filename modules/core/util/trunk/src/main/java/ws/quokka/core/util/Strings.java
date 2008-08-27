@@ -789,4 +789,18 @@ public class Strings {
 
         return (String[])tokens.toArray(new String[tokens.size()]);
     }
+
+    /**
+     * Pads string out to a minimum of the given width with the pad character given
+     */
+    public static String pad(String string, int width, char padChar) {
+        StringBuffer sb = new StringBuffer(Math.max(string.length(), width));
+        sb.append(string);
+
+        for (int i = string.length(); i < width; i++) {
+            sb.append(padChar);
+        }
+
+        return sb.toString();
+    }
 }

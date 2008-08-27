@@ -74,9 +74,7 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
 
         globalProperties = createProperties("quokka.project.");
 
-        typedProjectProperties = new TypedProperties("");
-        typedProjectProperties.setProject(resources.getProject());
-        typedProjectProperties.setProperties(projectProperties);
+        typedProjectProperties = new TypedProperties("", projectProperties, resources.getProject());
 
         logger = resources.getLogger();
         utils = new AntUtils(getProject());
@@ -91,11 +89,7 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
     }
 
     public TypedProperties createProperties(String prefix) {
-        TypedProperties properties = new TypedProperties(prefix);
-        properties.setProject(resources.getProject());
-        properties.setProperties(projectProperties);
-
-        return properties;
+        return new TypedProperties(prefix, projectProperties, resources.getProject());
     }
 
     public Resources getResources() {
@@ -166,5 +160,13 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
 
     public TypedProperties getProjectProperties() {
         return typedProjectProperties;
+    }
+
+    public Map getAntProjectProperties() {
+        return projectProperties;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 }

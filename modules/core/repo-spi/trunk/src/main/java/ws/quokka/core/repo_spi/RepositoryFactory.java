@@ -30,7 +30,7 @@ import java.util.Map;
 public interface RepositoryFactory {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    Repository getOrCreate(String id);
+    Repository getOrCreate(String id, boolean throwIfUndefined);
 
     void registerType(RepoType type);
 
