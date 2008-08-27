@@ -53,14 +53,19 @@ public class ArtifactPropertiesParser {
     private Properties parse_(File file, String group, String name, String type)
             throws IOException {
         JarFile jarFile = new JarFile(file);
-        String entryName = getEntryName(group, name, type);
-        JarEntry entry = jarFile.getJarEntry(entryName);
-        Assert.isTrue(entry != null,
-            "Cannot find properties '" + entryName + "' within file '" + file.getAbsolutePath() + "'");
 
-        InputStream in = jarFile.getInputStream(entry);
+        try {
+            String entryName = getEntryName(group, name, type);
+            JarEntry entry = jarFile.getJarEntry(entryName);
+            Assert.isTrue(entry != null,
+                "Cannot find properties '" + entryName + "' within file '" + file.getAbsolutePath() + "'");
 
-        return new IOUtils().loadProperties(in);
+            InputStream in = jarFile.getInputStream(entry);
+
+            return new IOUtils().loadProperties(in);
+        } finally {
+            jarFile.close();
+        }
     }
 
     private String getEntryName(String group, String name, String type) {

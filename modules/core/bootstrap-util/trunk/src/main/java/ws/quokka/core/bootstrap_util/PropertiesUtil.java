@@ -37,10 +37,18 @@ public class PropertiesUtil {
      * and also means any changes to properties set will not be reflected after the copy is made.
      */
     public static Map getProperties(Project project) {
+        return Collections.unmodifiableMap(getModifiableProperties(project));
+    }
+
+    /**
+     * Uses reflection to gain direct access to the projects properties.
+     * Useful in rare cases to allow removal of properties
+     */
+    public static Map getModifiableProperties(Project project) {
         PropertyHelper ph = PropertyHelper.getPropertyHelper(project);
         Reflect reflect = new Reflect();
         Hashtable properties = (Hashtable)reflect.get(reflect.getField(PropertyHelper.class, "properties"), ph);
 
-        return Collections.unmodifiableMap(properties);
+        return properties;
     }
 }

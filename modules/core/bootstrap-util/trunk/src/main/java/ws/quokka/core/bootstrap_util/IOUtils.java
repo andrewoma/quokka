@@ -133,9 +133,13 @@ public class IOUtils {
     }
 
     public void stringToFile(String string, File file) {
+        stringToFile(string, file, System.getProperty("file.encoding"));
+    }
+
+    public void stringToFile(String string, File file, String encoding) {
         try {
             StringReader reader = new StringReader(string);
-            Writer writer = new BufferedWriter(new FileWriter(file));
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), encoding));
 
             try {
                 while (true) {
@@ -156,9 +160,13 @@ public class IOUtils {
     }
 
     public String fileToString(File file) {
+        return fileToString(file, System.getProperty("file.encoding"));
+    }
+
+    public String fileToString(File file, String encoding) {
         try {
             StringWriter writer = new StringWriter();
-            Reader reader = new BufferedReader(new FileReader(file));
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
 
             try {
                 while (true) {
