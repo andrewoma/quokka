@@ -1,0 +1,8 @@
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<project name="itest">
+    <artifacts group="group" version="version">
+        <artifact name="name1" type="type"/>
+        <artifact name="name2" type="type"/>
+    </artifacts>
+    <dependency-set/>
+</project>
