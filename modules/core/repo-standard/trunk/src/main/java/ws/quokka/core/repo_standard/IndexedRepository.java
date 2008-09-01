@@ -145,8 +145,8 @@ public class IndexedRepository extends AbstractRepository {
         return repository.updateSnapshot(artifact);
     }
 
-    public Collection availableVersions(String group, String name, String type) {
-        return repository.availableVersions(group, name, type);
+    public Collection listArtifactIds(String group, String name, String type, boolean includeReferenced) {
+        return repository.listArtifactIds(group, name, type, true);
     }
 
     public void rebuildCaches() {

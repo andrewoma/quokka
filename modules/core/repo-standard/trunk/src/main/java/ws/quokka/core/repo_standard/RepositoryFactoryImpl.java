@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -188,12 +190,12 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
         return type;
     }
 
-    public Map getTypes() {
-        return types;
+    public Set getTypes() {
+        return Collections.unmodifiableSet(new HashSet(types.values()));
     }
 
-    public Map getRepositories() {
-        return Collections.unmodifiableMap(repositories);
+    public Set getRepositories() {
+        return Collections.unmodifiableSet(new HashSet(repositories.values()));
     }
 
     public RepositoryFactoryImpl copy() {

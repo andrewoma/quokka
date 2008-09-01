@@ -152,10 +152,6 @@ public class DelegatingRepository extends AbstractRepository {
         return latest;
     }
 
-    public Collection availableVersions(String group, String name, String type) {
-        throw new UnsupportedOperationException();
-    }
-
     public void rebuildCaches() {
         for (Iterator i = repositories.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();

@@ -320,10 +320,6 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         return getFactory().getProperties();
     }
 
-    public Collection availableVersions(String group, String name, String type) {
-        throw new UnsupportedOperationException();
-    }
-
     protected Collection listParentIds() {
         Set ids = new TreeSet();
 
