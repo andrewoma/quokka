@@ -47,6 +47,18 @@ public interface Repository {
      */
     Collection listArtifactIds(boolean includeReferenced);
 
+    /**
+     * A convenience methods to return all artifact ids that match the given group, name
+     * and type. This method may result in performance improvement over {@link #listArtifactIds(boolean)}
+     * depending on the underlying implementation.
+     * @param group If not null, the group must match, otherwise any group will match
+     * @param name If not null, the name must match, otherwise any name will match
+     * @param type If not null, the type must match, otherwise any type with match
+     * @param includeReferenced if true, the ids will include artifacts that may exist in other repositories
+     * referenced by this one.
+     */
+    Collection listArtifactIds(String group, String name, String type, boolean includeReferenced);
+
     boolean supportsReslove(RepoArtifactId artifactId);
 
     boolean supportsInstall(RepoArtifactId artifactId);
@@ -63,8 +75,6 @@ public interface Repository {
      *         throw UnresolvedArtifactException
      */
     RepoArtifact updateSnapshot(RepoArtifact artifact);
-
-    Collection availableVersions(String group, String name, String type);
 
     /**
      * If the repository uses any form of caching internally, this should force it to rebuild them.

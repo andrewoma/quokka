@@ -32,7 +32,8 @@ import java.util.Set;
 
 
 /**
- *
+ * RepoArtifact represents a repository artifact, including metadata about dependencies, paths
+ * and licenses
  */
 public class RepoArtifact extends AnnotatedObject implements Cloneable {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -61,16 +62,22 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * @see #getId()
+     */
     public void setId(RepoArtifactId id) {
         this.id = id;
     }
 
+    /**
+     * Returns the artifact id of this artifact
+     */
     public RepoArtifactId getId() {
         return id;
     }
 
     /**
-     * The original id should contain the original group, name and type of the artifact when it was
+     * The original id should contain the original group, name and type (and possibly version) of the artifact when it was
      * first put in the repository. This should be set when an artifact is renamed. e.g. migrates from
      * sourceforge to it's own domain. This allows conflict resolution to detect what are essentially
      * different versions of the same artifact, albeit with different groups, names and/or types.
@@ -79,44 +86,77 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         return originalId;
     }
 
+    /**
+     * @see #getOriginalId()
+     */
     public void setOriginalId(RepoArtifactId originalId) {
         this.originalId = originalId;
     }
 
+    /**
+     * Adds an override
+     */
     public void addOverride(RepoOverride override) {
         overrides.add(override);
     }
 
+    /**
+     * Returns a read-only list of overrides
+     */
     public List getOverrides() {
         return Collections.unmodifiableList(overrides);
     }
 
+    /**
+     * Returns a read-only set of dependencies
+     */
     public Set getDependencies() {
         return Collections.unmodifiableSet(dependencies);
     }
 
+    /**
+     * Adds a dependency
+     */
     public void addDependency(RepoDependency dependency) {
         dependencies.add(dependency);
     }
 
+    /**
+     * Returns true if this is a stub. Stub should be set to true when the actual artifact cannot be
+     * stored in the repository due to licensing restrictions. It is important to mark stub so that
+     * verification of repositories can tell the difference between a broken repository and one
+     * left intentionally empty.
+     */
     public boolean isStub() {
         return stub;
     }
 
+    /**
+     * @see #isStub()
+     */
     public void setStub(boolean stub) {
         this.stub = stub;
     }
 
+    /**
+     * Adds a license to the artifact (licenses are also stored in the repository with a type of 'license')
+     */
     public void addLicense(RepoArtifactId id) {
         licenses.add(id);
     }
 
+    /**
+     * Returns a read-only set of licenses
+     */
     public Set getLicenses() {
-        return licenses;
+        return Collections.unmodifiableSet(licenses);
     }
 
+    /**
+     * Returns a read-only set of paths
+     */
     public Set getPaths() {
-        return paths;
+        return Collections.unmodifiableSet(paths);
     }
 
     public RepoPath getPath(String id) {
@@ -131,18 +171,31 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         return null;
     }
 
+    /**
+     * Adds a path to the artifact
+     */
     public void addPath(RepoPath path) {
         paths.add(path);
     }
 
+    /**
+     * Returns the local copy of the artifact. This may be null if it is a stub or an artifact of
+     * type 'paths'.
+     */
     public File getLocalCopy() {
         return localCopy;
     }
 
+    /**
+     * @see #getLocalCopy()
+     */
     public void setLocalCopy(File localCopy) {
         this.localCopy = localCopy;
     }
 
+    /**
+     * Returns a short description of this artifact, currently just the id
+     */
     public String toShortString() {
         return id.toShortString();
     }
@@ -164,26 +217,48 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         }
     }
 
+    /**
+     * Returns the description. Like javadoc comments, the first sentence of the description should be
+     * a meaningful description that can be used on summary displays.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * @see #getDescription()
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Returns the date the artifact was installed in the repository if it is a snapshot artifact, or null otherwise
+     */
     public Date getTimestamp() {
         return timestamp;
     }
 
+    /**
+     * @see #getTimestamp()
+     */
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
+    /**
+     * Returns a string describing where this artifact was imported from. It has no effect on the general
+     * operation of quokka and is only used as a mechanism to verify a quokka artifact against the source
+     * it was imported from. Currently, it is set when artifacts are imported using quokka.maven:import
+     * and read via quokka.maven:verify
+     */
     public String getImportedFrom() {
         return importedFrom;
     }
 
+    /**
+     * @see #getImportedFrom()
+     */
     public void setImportedFrom(String importedFrom) {
         this.importedFrom = importedFrom;
     }
@@ -259,6 +334,9 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         return result;
     }
 
+    /**
+     * Returns true if this artifact is newer than the one given according to timestamps
+     */
     public boolean isNewerThan(RepoArtifact other) {
         // Comparison shouldn't need to handle nulls, but is useful during migration
         Date thisDate = (timestamp != null) ? timestamp : new Date(0);
@@ -269,12 +347,16 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
 
     /**
      * Optional field for some repository types. In general, if you are not returning the actual artifact
-     * you should set the hash. At present this is done by UrlRepositories when listing remote artifacts
+     * you should set the hash (a MD5 hash converted to a hex string).
+     * At present this is done by UrlRepositories when listing remote artifacts
      */
     public String getHash() {
         return hash;
     }
 
+    /**
+     * @see #getHash()
+     */
     public void setHash(String hash) {
         this.hash = hash;
     }

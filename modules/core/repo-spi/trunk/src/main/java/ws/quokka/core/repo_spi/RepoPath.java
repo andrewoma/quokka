@@ -21,7 +21,8 @@ import ws.quokka.core.util.AnnotatedObject;
 
 
 /**
- *
+ * RepoPath defines a path that dependencies can be assigned to. (Assignment is performed using path
+ * specification on dependencies).
  */
 public class RepoPath extends AnnotatedObject {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -37,10 +38,23 @@ public class RepoPath extends AnnotatedObject {
         this(null, null);
     }
 
+    /**
+     * Calls {@link #RepoPath(String, String, boolean, boolean)} with descendDefault and mandatoryDefault
+     * set to true.
+     */
     public RepoPath(String id, String description) {
         this(id, description, true, true);
     }
 
+    /**
+     * @param id the id, will be used in path specifications, so should be concise
+     * @param description describes what the path is for
+     * @param descendDefault if true, when a dependency is added to this path without modifiers transitive dependencies
+     * will be included by default. Otherwise only the dependency specified will be included. This value can
+     * be overridden when the dependency is added.
+     * @param mandatoryDefault if true, when a dependency is added to this path it will be considered mandatory be default.
+     * Otherwise it will be optional by default. This value can be overridden when the dependency is added.
+     */
     public RepoPath(String id, String description, boolean descendDefault, boolean mandatoryDefault) {
         this.id = id;
         this.description = description;

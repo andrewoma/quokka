@@ -45,7 +45,7 @@ import java.util.TimeZone;
 
 
 /**
- *
+ * RepoXmlConverter converts repository related artifacts to and from XML
  */
 public class RepoXmlConverter {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -64,10 +64,16 @@ public class RepoXmlConverter {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the xml converter instance which can be used to convert all repository objects
+     */
     public static XmlConverter getXmlConverter() {
         return xmlConverter;
     }
 
+    /**
+     * Convenience method to write an artifact to a file
+     */
     public static Writer toXml(final RepoArtifact artifact, final File file) {
         return (Writer)new ExceptionHandler() {
                 public Object run() throws IOException {
@@ -84,6 +90,9 @@ public class RepoXmlConverter {
             }.soften();
     }
 
+    /**
+     * Converts an artifact to XML and writes it to the writer given
+     */
     public static Writer toXml(RepoArtifact artifact, final Writer writer) {
         return getXmlConverter().toXml(artifact, writer, "artifact", "quokka.ws/dtd/repository-0.2",
             "http://quokka.ws/dtd/repository-0.2.dtd");
@@ -116,6 +125,9 @@ public class RepoXmlConverter {
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
+    /**
+     * Converts RepoArtifactIds to and from XML
+     */
     public static class RepoArtifactIdConverter extends ReflectionConverter {
         public RepoArtifactIdConverter(Class clazz) {
             super(clazz);
@@ -142,6 +154,9 @@ public class RepoXmlConverter {
         }
     }
 
+    /**
+     * Converts RepoPaths to and from XML
+     */
     public static class RepoPathConverter extends ReflectionConverter {
         public RepoPathConverter(Class clazz) {
             super(clazz);
@@ -150,6 +165,9 @@ public class RepoXmlConverter {
         }
     }
 
+    /**
+     * Converts RepoDependencies to and from XML
+     */
     public static class RepoDependencyConverter extends ReflectionConverter {
         public RepoDependencyConverter(Class clazz) {
             super(clazz);
@@ -210,8 +228,6 @@ public class RepoXmlConverter {
                 }
 
                 element.setAttribute("paths", pathSpecs.toString());
-
-//                converter.toXml(pathSpec, element.addChild(PATH_SPEC_EL));
             }
         }
 
@@ -238,6 +254,9 @@ public class RepoXmlConverter {
         }
     }
 
+    /**
+     * Converts RepoArtifacts to and from XML
+     */
     public static class RepoArtifactConverter extends ReflectionConverter {
         private static final String LICENSE = "license";
         private static final String LICENSES = "licenses";
@@ -448,6 +467,9 @@ public class RepoXmlConverter {
         }
     }
 
+    /**
+     * Converts RepoOverrides to and from XML
+     */
     public static class RepoOverrideConverter extends ReflectionConverter {
         public RepoOverrideConverter(Class clazz) {
             super(clazz);

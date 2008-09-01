@@ -21,7 +21,8 @@ import ws.quokka.core.util.AnnotatedObject;
 
 
 /**
- *
+ * RepoType defines a type that the repository can support. Types can be added dynamically by plugins
+ * and are largely required to use the correct extensions when installing repository items.
  */
 public class RepoType extends AnnotatedObject {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -35,6 +36,11 @@ public class RepoType extends AnnotatedObject {
     public RepoType() {
     }
 
+    /**
+     * @param id the id (must match the id specified in artifacts)
+     * @param description a description of what the type represents
+     * @param extension the file extension (without a leading '.')
+     */
     public RepoType(String id, String description, String extension) {
         this.id = id;
         this.description = description;

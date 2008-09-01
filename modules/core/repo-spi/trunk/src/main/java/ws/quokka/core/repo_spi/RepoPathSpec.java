@@ -23,7 +23,26 @@ import ws.quokka.core.util.Strings;
 
 
 /**
- *
+ * RepoPathSpec defines a path specification, the mechanism quokka uses to assign a dependency to
+ * a path (which in turn is assigned to an artifact).
+ * The path specification tells quokka which path to take dependencies from and which path to
+ * assign them to. It also controls whether the dependency included is mandatory, whether to
+ * include transitive dependencies, and which optional transitive dependencies to include.
+ * <br>
+ * To ease the use of defining path specifications, there is also a shorthand notation
+ * of <toPathId>[?|!] [<|+|=] [fromPathId] [(<option1>, ...)] where:
+ * <ul>
+ * <li>? sets mandatory to true</li>
+ * <li>! sets mandatory to false</li>
+ * <li>< sets descend to true</li>
+ * <li>+ sets descend to false</li>
+ * </ul>
+ * e.g. <dependency group="testng" paths="runtime<jdk14(qdox,bsh)"/>
+ * would specify to add testng to the runtime path using testng's jdk14 path with mandatory dependencies and
+ * include the options of qdox and bsh.
+ * <br>
+ * If the path specification descend and mandatory values are null, the defaults from the from path are used.
+ *  See the quokka manual for more information.
  */
 public class RepoPathSpec extends AnnotatedObject {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -62,6 +81,10 @@ public class RepoPathSpec extends AnnotatedObject {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns a path specification from its shorthand form
+     * @param toRequired if true, the to path id is mandatory, otherwise it can be omitted
+     */
     public void parseShorthand(String shorthand, boolean toRequired) {
         if (toRequired) {
             parseShorthand(shorthand);
@@ -139,6 +162,9 @@ public class RepoPathSpec extends AnnotatedObject {
         return (string.length() == 1) && (delimiters.indexOf(string.charAt(0)) != -1);
     }
 
+    /**
+     * Returns the from path id
+     */
     public String getFrom() {
         return from;
     }
@@ -147,6 +173,9 @@ public class RepoPathSpec extends AnnotatedObject {
         this.from = from;
     }
 
+    /**
+     * Returns the to path id
+     */
     public String getTo() {
         return to;
     }
@@ -155,6 +184,9 @@ public class RepoPathSpec extends AnnotatedObject {
         this.to = to;
     }
 
+    /**
+     * Returns the options
+     */
     public String getOptions() {
         return options;
     }
@@ -163,6 +195,9 @@ public class RepoPathSpec extends AnnotatedObject {
         this.options = options;
     }
 
+    /**
+     * If true, transitive mandatory dependencies are included
+     */
     public Boolean isDescend() {
         return descend;
     }
@@ -171,6 +206,9 @@ public class RepoPathSpec extends AnnotatedObject {
         this.descend = descend;
     }
 
+    /**
+     * If true, this dependency is considered mandatory
+     */
     public Boolean isMandatory() {
         return mandatory;
     }
@@ -183,10 +221,16 @@ public class RepoPathSpec extends AnnotatedObject {
         this.dependency = dependency;
     }
 
+    /**
+     * Returns the dependency this path specification applies to
+     */
     public RepoDependency getDependency() {
         return dependency;
     }
 
+    /**
+     * If the descend or mandatory attributes are null they will be replaced with the defaults from the path given
+     */
     public void mergeDefaults(RepoPath path) {
         // Fill in defaults if not specified
         from = (from == null) ? RUNTIME : from;
@@ -273,6 +317,9 @@ public class RepoPathSpec extends AnnotatedObject {
         return result;
     }
 
+    /**
+     * Returns the shorthand version of the path specification which is isomorphic to the full form
+     */
     public String toShortHand() {
         StringBuffer sb = new StringBuffer();
         sb.append((to == null) ? "" : to);

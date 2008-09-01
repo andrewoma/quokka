@@ -29,7 +29,15 @@ import java.util.Set;
 
 
 /**
- *
+ * RepoOverride defines the overriding of a version or path specification that occurs when
+ * resolving a path.
+ * <br>
+ * Quokka uses overriding in lieu of automatic conflict resolution to cut down the number
+ * of dependencies a project has.
+ * <br>
+ * The override is applied to an artifact and can either override the version, or path specifications
+ * or both. The paths, group, name, type and version attributes are all used for matching purposes.
+ * If a match is found, then the withVersion and withPathSpecs attributes are applied.
  */
 public class RepoOverride extends AnnotatedObject {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -44,11 +52,25 @@ public class RepoOverride extends AnnotatedObject {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
+    /**
+     * @see #RepoOverride(java.util.Set, String, String, String, ws.quokka.core.version.VersionRangeUnion, ws.quokka.core.version.Version, java.util.Set)
+     */
     public RepoOverride(Set paths, String group, String name, String type, VersionRangeUnion version,
         Version withVersion) {
         this(paths, group, name, type, version, withVersion, new HashSet());
     }
 
+    /**
+     * @param paths the set of path ids that this override applies to. A singleton set with a value of "*"
+     * acts as a wildcard
+     * @param group if null, matches all groups, otherwise matches the exact group specified
+     * @param name if null, matches all names, otherwise matches the exact name specified
+     * @param type if null, matches all type, otherwise matches the exact type specified
+     * @param version if null, matches all versions, otherwise matches versions in range
+     * @param withVersion if not null, all matching dependencies will be set to this verions
+     * @param withPathSpecs if not null, will be matched against any dependencies with the same from
+     * id and override the options
+     */
     public RepoOverride(Set paths, String group, String name, String type, VersionRangeUnion version,
         Version withVersion, Set withPathSpecs) {
         this.paths = paths;
@@ -121,15 +143,26 @@ public class RepoOverride extends AnnotatedObject {
         this.withVersion = withVersion;
     }
 
+    /**
+     * Returns true id matches this override. If group, name, type or version are null, they act
+     * as wild cards, otherwise they must match exactly (or be within range in the case of version)
+     */
     public boolean matches(RepoArtifactId id) {
         return ((group == null) || group.equals(id.getGroup())) && ((name == null) || name.equals(id.getName()))
         && ((type == null) || type.equals(id.getType())) && ((version == null) || version.isInRange(id.getVersion()));
     }
 
+    /**
+     * Returns true if the path id given matches this override. It is considered a match if the id
+     * is contained within the paths attribute, or the paths attribute is a wildcard ("*")
+     */
     public boolean matches(String pathId) {
         return paths.contains(pathId) || paths.contains("*");
     }
 
+    /**
+     * Returns the overridden path spec from withPathSpecs if the path spec from ids match
+     */
     public RepoPathSpec getOverridden(RepoPathSpec spec) {
         for (Iterator i = withPathSpecs.iterator(); i.hasNext();) {
             RepoPathSpec override = (RepoPathSpec)i.next();
@@ -146,6 +179,9 @@ public class RepoOverride extends AnnotatedObject {
         return (lhs == null) ? (rhs == null) : lhs.equals(rhs);
     }
 
+    /**
+     * Returns true if all attributes are equal, ignoring paths
+     */
     public boolean equalsExcludingPaths(RepoOverride other) {
         return nsEquals(group, other.group) && nsEquals(name, other.name) && nsEquals(type, other.type)
         && nsEquals(version, other.version) && nsEquals(withVersion, other.withVersion)
@@ -181,6 +217,9 @@ public class RepoOverride extends AnnotatedObject {
         return result;
     }
 
+    /**
+     * Ensures that the override has valid attributes
+     */
     public void validate() {
         Assert.isTrue(!((withVersion == null) && (withPathSpecs.size() == 0)), getLocator(),
             "Either with or with-paths must be set");

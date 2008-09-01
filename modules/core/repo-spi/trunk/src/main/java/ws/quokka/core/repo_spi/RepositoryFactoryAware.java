@@ -19,7 +19,8 @@ package ws.quokka.core.repo_spi;
 
 
 /**
- *
+ * RepositoryFactoryAware is the interface that plugins should implement to be injected with the
+ * repository factory
  */
 public interface RepositoryFactoryAware {
     //~ Methods --------------------------------------------------------------------------------------------------------

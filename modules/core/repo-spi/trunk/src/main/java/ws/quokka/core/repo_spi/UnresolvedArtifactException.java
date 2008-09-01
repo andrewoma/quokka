@@ -26,7 +26,7 @@ import java.util.List;
 
 
 /**
- *
+ * UnresolvedArtifactException is thrown when a repository is unable to resolve an artifact
  */
 public class UnresolvedArtifactException extends RuntimeException {
     //~ Instance fields ------------------------------------------------------------------------------------------------

@@ -26,7 +26,13 @@ import ws.quokka.core.version.Version;
 
 
 /**
- *
+ * RepoArtifactId represents the unique identifier of an artifact in a quokka repository.
+ * There are certain conventions regarding ids, namely:
+ * <ol>
+ * <li>Groups may be divided into a hierarchy separated by '.'. e.g. apache.commons.el</li>
+ * <li>All artifacts within a group should be released at the same time with the same version</li>
+ * <li>Groups and names are limited to the following characters: A-Z, a-z, 0-9, '.' and '-'</li>
+ * </ol>
  */
 public class RepoArtifactId extends AnnotatedObject implements Cloneable, Comparable {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -59,6 +65,10 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
     private RepoArtifactId() {
     }
 
+    /**
+     * Convenience constructor that accepts a string representation of a version
+     * @see #RepoArtifactId(String, String, String, ws.quokka.core.version.Version)
+     */
     public RepoArtifactId(String group, String name, String type, String version) {
         this(group, name, type, new Version(version));
     }
@@ -68,7 +78,7 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         this.name = name;
         this.version = version;
         this.type = type;
-        validate();
+        validateStrings();
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -89,6 +99,10 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         return type;
     }
 
+    /**
+     * Returns a merged id with the defaults given. i.e. if any of group, name, type or version is null in this id, it will be replaced
+     * with the value from the defaults given
+     */
     public RepoArtifactId merge(RepoArtifactId defaults) {
         return _merge(defaults);
     }
@@ -98,10 +112,17 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
             applyDefault(this.type, defaults.type), applyDefault(this.version, defaults.version));
     }
 
+    /**
+     * Returns a new id with the type set to 'jar' if it is currently null and the name set to the last segment of the
+     * group if it is currently null
+     */
     public RepoArtifactId mergeDefaults() {
         return _merge(new RepoArtifactId(group, defaultName(group), "jar", version));
     }
 
+    /**
+     * Returns the default name for the given group. e.g. for a group of apache.commons.el, 'el' would be returned
+     */
     public static String defaultName(String group) {
         if (group == null) {
             return null;
@@ -120,7 +141,7 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         return (value != null) ? value : defaultValue;
     }
 
-    public void validate() {
+    private void validateStrings() {
         validate(group);
         validate(name);
         validate(type);
@@ -137,21 +158,35 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         }
     }
 
-    public void validateComplete() {
+    /**
+     * Validates that the id contains all element and has no invalid characters
+     * @throws org.apache.tools.ant.BuildException if there are errors
+     */
+    public void validate() {
+        validateStrings();
         Assert.isTrue(!Strings.isBlank(group) && !Strings.isBlank(name) && !Strings.isBlank(type) && (version != null),
             "Id is not valid: " + toShortString());
     }
 
+    /**
+     * Returns the id in format group:name:type:version
+     */
     public String toShortString() {
         return noNull(group) + ID_SEPARATOR + noNull(name) + ID_SEPARATOR + noNull(type) + ID_SEPARATOR
         + noNull(version);
     }
 
+    /**
+     * Returns the id in format group_name_type_version
+     */
     public String toPathString() {
         return noNull(group) + PATH_SEPARATOR + noNull(name) + PATH_SEPARATOR + noNull(type) + PATH_SEPARATOR
         + ((version == null) ? "" : version.toString());
     }
 
+    /**
+     * Parses and id in format group:name:type:version
+     */
     public static RepoArtifactId parse(String idString) {
         String[] tokens = Strings.trim(Strings.splitPreserveAllTokens(idString, ID_SEPARATOR));
         Assert.isTrue(tokens.length <= 4,
@@ -172,6 +207,10 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         return string.equals("") ? null : string;
     }
 
+    /**
+     * Returns true if this id matches the one given. It is considered a match any non-null components
+     * of the id supplied match
+     */
     public boolean matches(RepoArtifactId id) {
         return ((id.group == null) || id.group.equals(group)) && ((id.name == null) || id.name.equals(name))
         && ((id.type == null) || id.type.equals(type)) && ((id.version == null) || id.version.equals(version));
@@ -225,6 +264,9 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
         }
     }
 
+    /**
+     * Comparision based on order of group, version, name then type
+     */
     public int compareTo(Object o) {
         RepoArtifactId other = (RepoArtifactId)o;
         int result = nullSafeCompare(group, other.group);

@@ -18,11 +18,13 @@
 package ws.quokka.core.repo_spi;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 
 /**
- *
+ * AbstractRepository provides a convenient base class for Repository implementations
  */
 public abstract class AbstractRepository implements Repository {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -73,5 +75,24 @@ public abstract class AbstractRepository implements Repository {
         }
 
         return ids;
+    }
+
+    public Collection listArtifactIds(String group, String name, String type, boolean includeReferenced) {
+        Set matches = new HashSet();
+        Collection ids = listArtifactIds(includeReferenced);
+
+        for (Iterator i = ids.iterator(); i.hasNext();) {
+            RepoArtifactId id = (RepoArtifactId)i.next();
+
+            if (matches(group, id.getGroup()) && matches(name, id.getName()) && matches(type, id.getType())) {
+                matches.add(id);
+            }
+        }
+
+        return matches;
+    }
+
+    private boolean matches(String pattern, String value) {
+        return (pattern == null) || pattern.equals(value);
     }
 }

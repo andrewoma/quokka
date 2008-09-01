@@ -22,23 +22,50 @@ import org.apache.tools.ant.Project;
 import ws.quokka.core.util.AnnotatedProperties;
 
 import java.util.Map;
+import java.util.Set;
 
 
 /**
- *
+ * RepositoryFactory provides the mechanism to obtain instances of configured repositories
  */
 public interface RepositoryFactory {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Either gets or creates (and caches) a repository instance for the id specified
+     * @param throwIfUndefined if true, it will throw an exception if no repository is defined with the id
+     * given. Otherwise, it will return null
+     */
     Repository getOrCreate(String id, boolean throwIfUndefined);
 
+    /**
+     * Registers a new type with the repository.
+     * @param type the new type to register
+     */
     void registerType(RepoType type);
 
+    /**
+     * Returns the type for a given id
+     */
     RepoType getType(String id);
 
-    Map getRepositories();
+    /**
+     * Returns any repositories that have been created via {@link #getOrCreate(String, boolean)}
+     */
+    Set getRepositories();
 
+    /**
+     * Returns any types that have been been registered via {@link #registerType(RepoType)}
+     */
+    Set getTypes();
+
+    /**
+     * Returns the project associated with this factory
+     */
     Project getProject();
 
+    /**
+     * Returns the properties associated with this factory
+     */
     AnnotatedProperties getProperties();
 }

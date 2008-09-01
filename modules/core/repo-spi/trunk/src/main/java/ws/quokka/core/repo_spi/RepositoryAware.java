@@ -19,7 +19,7 @@ package ws.quokka.core.repo_spi;
 
 
 /**
- *
+ * RepositoryAware should be implemented by plugins to be automatically injected with the current repository
  */
 public interface RepositoryAware {
     //~ Methods --------------------------------------------------------------------------------------------------------

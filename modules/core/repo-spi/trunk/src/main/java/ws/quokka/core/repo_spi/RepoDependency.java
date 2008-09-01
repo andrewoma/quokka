@@ -26,7 +26,8 @@ import java.util.Set;
 
 
 /**
- *
+ * RepoDependency defines and dependency on another artifact.
+ * The dependency may be assigned to multiple paths via path specifications.
  */
 public class RepoDependency extends AnnotatedObject {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -36,14 +37,23 @@ public class RepoDependency extends AnnotatedObject {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the id of the dependency
+     */
     public RepoArtifactId getId() {
         return id;
     }
 
+    /**
+     * @see #getId()
+     */
     public void setId(RepoArtifactId id) {
         this.id = id;
     }
 
+    /**
+     * Returns the read-only set of path specifications
+     */
     public Set getPathSpecs() {
         return Collections.unmodifiableSet(pathSpecs);
     }
@@ -62,6 +72,9 @@ public class RepoDependency extends AnnotatedObject {
         return specs;
     }
 
+    /**
+     * Adds a path specification (automatically setting dependency attribute of the path spec in the process)
+     */
     public void addPathSpec(RepoPathSpec pathSpec) {
         pathSpec.setDependency(this);
         pathSpecs.add(pathSpec);
