@@ -30,15 +30,21 @@ import java.util.List;
 
 
 /**
- *
+ * Reflect is a helper class for using reflection
  */
 public class Reflect {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Clones an object by invoking the clone method
+     */
     public Object clone(Object object) {
         return invoke(object, "clone", new Object[] {  });
     }
 
+    /**
+     * Returns all fields for a class (including those defined in superclasses) and set them to accessible
+     */
     public List getFields(Class clazz) {
         List result = new ArrayList();
 
@@ -59,6 +65,9 @@ public class Reflect {
         return result;
     }
 
+    /**
+     * Invokes a method on an object with the parameters provided
+     */
     public Object invoke(Object object, String name, Object[] parameters) {
         Class[] parameterTypes = new Class[parameters.length];
 
@@ -72,6 +81,9 @@ public class Reflect {
         return invoke(method, object, parameters);
     }
 
+    /**
+     * Invokes a method on an a method object with the parameters provided
+     */
     public Object invoke(Method method, Object object, Object[] parameters) {
         try {
             return method.invoke(object, parameters);
@@ -86,6 +98,9 @@ public class Reflect {
         }
     }
 
+    /**
+     * Returns a method matching the class, name and parameter types provided (searches superclasses as well)
+     */
     public Method getMethod(Class clazz, String name, Class[] parameterTypes) {
         while (true) {
             try {
@@ -103,6 +118,9 @@ public class Reflect {
         }
     }
 
+    /**
+     * Returns the value of a field from the given object
+     */
     public Object get(Field field, Object object) {
         try {
             return field.get(object);
@@ -111,6 +129,9 @@ public class Reflect {
         }
     }
 
+    /**
+     * Sets the value of a field for given object
+     */
     public void set(Field field, Object object, Object value) {
         try {
             field.set(object, value);
@@ -119,6 +140,9 @@ public class Reflect {
         }
     }
 
+    /**
+     * Constructs an object using its no-args constructor, softening any exceptions
+     */
     public Object construct(Class clazz) {
         Constructor constructor;
 
@@ -137,6 +161,9 @@ public class Reflect {
         }
     }
 
+    /**
+     * Returns a field from a class matching the name given (searches super classes also)
+     */
     public Field getField(Class clazz, String name) {
         while (true) {
             try {

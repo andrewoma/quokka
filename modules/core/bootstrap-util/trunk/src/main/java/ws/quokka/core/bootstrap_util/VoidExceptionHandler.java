@@ -19,7 +19,8 @@ package ws.quokka.core.bootstrap_util;
 
 
 /**
- *
+ * VoidExceptionHandler provides a standard mechanism for softening exceptions on a block
+ * of code that does not return a result
  */
 public abstract class VoidExceptionHandler extends AbstractExceptionHandler {
     //~ Constructors ---------------------------------------------------------------------------------------------------

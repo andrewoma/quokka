@@ -21,7 +21,7 @@ import org.apache.tools.ant.BuildException;
 
 
 /**
- *
+ * AbstractExceptionHandler provides a standard way of handling unwanted checked exceptions
  */
 public abstract class AbstractExceptionHandler {
     //~ Methods --------------------------------------------------------------------------------------------------------

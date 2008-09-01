@@ -19,7 +19,7 @@ package ws.quokka.core.bootstrap_util;
 
 
 /**
- *
+ * Log provides a thread local store of loggers
  */
 public class Log {
     //~ Static fields/initializers -------------------------------------------------------------------------------------

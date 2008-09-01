@@ -29,7 +29,7 @@ import java.util.Iterator;
 
 
 /**
- * ProjectLogger logs messages using ant's project-based logging mechanism. If extends ant's default
+ * AbstractLogger logs messages using ant's project-based logging mechanism. It extends ant's default
  * mechanism with "isEnabled" methods to check the current level if the logging implementation is
  * an instance of DefaultLogger.
  */

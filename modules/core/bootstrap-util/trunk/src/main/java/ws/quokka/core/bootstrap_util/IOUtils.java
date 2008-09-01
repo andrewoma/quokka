@@ -20,7 +20,22 @@ package ws.quokka.core.bootstrap_util;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.util.FileUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import java.net.URL;
 
@@ -28,11 +43,14 @@ import java.util.Properties;
 
 
 /**
- *
+ * IOUtils provide some common IO routines
  */
 public class IOUtils {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Saves properties to a file, softening any exceptions that occurs
+     */
     public void saveProperties(final File file, final Properties properties) {
         new VoidExceptionHandler() {
                 public void run() throws IOException {
@@ -52,6 +70,9 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Loads properties from an input stream, softening any exceptions that occurs
+     */
     public Properties loadProperties(final InputStream in) {
         return (Properties)new ExceptionHandler() {
                 public Object run() throws Exception {
@@ -72,10 +93,16 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Loads properties from a file, softening any exceptions that occurs
+     */
     public Properties loadProperties(File file) {
         return loadProperties(createURL(FileUtils.getFileUtils().toURI(file.getAbsolutePath())));
     }
 
+    /**
+     * Loads properties from a url, softening any exceptions that occurs
+     */
     public Properties loadProperties(final URL url) {
         return (Properties)new ExceptionHandler() {
                 public Object run() throws Exception {
@@ -97,33 +124,59 @@ public class IOUtils {
         return loadProperties_(in);
     }
 
-    public void copyStream(InputStream in, OutputStream out)
-            throws IOException {
-        try {
-            byte[] buffer = new byte[4096];
+    /**
+     * Copies a stream to a file and closes the input stream when finished.
+     */
+    public void copyStream(final InputStream in, final File file) {
+        new VoidExceptionHandler() {
+                public void run() throws Exception {
+                    OutputStream out = null;
 
-            while (true) {
-                int bytes = in.read(buffer);
+                    try {
+                        out = new FileOutputStream(file);
 
-                if (bytes == -1) {
-                    break;
-                }
+                        byte[] buffer = new byte[4096];
 
-                out.write(buffer, 0, bytes);
-            }
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
+                        while (true) {
+                            int bytes = in.read(buffer);
+
+                            if (bytes == -1) {
+                                break;
+                            }
+
+                            out.write(buffer, 0, bytes);
+                        }
+                    } finally {
+                        try {
+                            if (in != null) {
+                                in.close();
+                            }
+                        } finally {
+                            if (out != null) {
+                                out.close();
+                            }
+                        }
+                    }
                 }
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-        }
+            };
     }
 
+    /**
+     * Copies the stream from an url to a file.
+     */
+    public void copyStream(final URL url, final File file) {
+        new VoidExceptionHandler() {
+                public void run() throws Exception {
+                    InputStream inputStream = url.openStream();
+                    Assert.isTrue(inputStream != null, "Cannot open stream from url: " + url);
+                    copyStream(inputStream, file);
+                }
+            };
+    }
+
+    /**
+     * Creates a URL from the spec, softening any exceptions
+     */
     public URL createURL(final String spec) {
         return (URL)new ExceptionHandler() {
                 public Object run() throws Exception {
@@ -132,10 +185,16 @@ public class IOUtils {
             }.soften();
     }
 
+    /**
+     * Writes a string to the file using the default encoding
+     */
     public void stringToFile(String string, File file) {
         stringToFile(string, file, System.getProperty("file.encoding"));
     }
 
+    /**
+     * Writes a string to the file using the specified encoding
+     */
     public void stringToFile(String string, File file, String encoding) {
         try {
             StringReader reader = new StringReader(string);
@@ -159,10 +218,16 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Reads a string from the file using the default encoding
+     */
     public String fileToString(File file) {
         return fileToString(file, System.getProperty("file.encoding"));
     }
 
+    /**
+     * Reads a string from the file using the specified encoding
+     */
     public String fileToString(File file, String encoding) {
         try {
             StringWriter writer = new StringWriter();
@@ -186,6 +251,9 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Equivalent to {@link File#createTempFile(String, String)}, but softens any exceptions that occurs
+     */
     public File createTempFile(String prefix, String suffix) {
         try {
             return File.createTempFile(prefix, suffix);
@@ -194,6 +262,9 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Equivalent to {@link File#createTempFile(String, String, File)}, but softens any exceptions that occurs
+     */
     public File createTempFile(String prefix, String suffix, File directory) {
         try {
             return File.createTempFile(prefix, suffix, directory);

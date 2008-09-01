@@ -28,7 +28,8 @@ import java.util.*;
 
 
 /**
- *
+ * QuokkaEntityResolver resolves quokka entities (namely dtds where the public id starts with "quokka.ws/dtd").
+ * It can also assert that the dtd loaded matches specific versions
  */
 public class QuokkaEntityResolver implements EntityResolver {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -37,6 +38,11 @@ public class QuokkaEntityResolver implements EntityResolver {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Add versions that are valid for a given dtd
+     * @param entity the public id without the prefix. e.g. "plugin" or "project"
+     * @param versions the versions that are valid for the particular dtd
+     */
     public void addVersion(String entity, String[] versions) {
         this.versions.put(entity, versions);
     }
@@ -64,6 +70,9 @@ public class QuokkaEntityResolver implements EntityResolver {
         return null;
     }
 
+    /**
+     * Returns the valid versions for a given entity
+     */
     public String[] getVersion(String entity) {
         return (String[])versions.get(entity);
     }

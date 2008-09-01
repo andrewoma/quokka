@@ -19,7 +19,7 @@ package ws.quokka.core.bootstrap_util;
 
 
 /**
- *
+ * MockLogger defines a mock implementation of logger for testing purposes
  */
 public class MockLogger implements Logger {
     //~ Instance fields ------------------------------------------------------------------------------------------------

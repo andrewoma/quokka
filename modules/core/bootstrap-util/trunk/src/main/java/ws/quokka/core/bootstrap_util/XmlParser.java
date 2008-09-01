@@ -33,7 +33,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 
 /**
- *
+ * XmlParser supports the parsing requirements for bootstrappings. You should use the core utils Document
+ * and Element classes outside of bootstrap util
  */
 public class XmlParser {
     //~ Methods --------------------------------------------------------------------------------------------------------

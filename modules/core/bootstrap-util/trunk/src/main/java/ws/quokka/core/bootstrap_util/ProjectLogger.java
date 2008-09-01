@@ -21,9 +21,7 @@ import org.apache.tools.ant.Project;
 
 
 /**
- * ProjectLogger logs messages using ant's project-based logging mechanism. If extends ant's default
- * mechanism with "isEnabled" methods to check the current level if the logging implementation is
- * an instance of DefaultLogger.
+ * ProjectLogger logs messages using an Ant project
  */
 public class ProjectLogger extends AbstractLogger {
     //~ Constructors ---------------------------------------------------------------------------------------------------

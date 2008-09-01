@@ -24,7 +24,7 @@ import org.xml.sax.Locator;
 
 
 /**
- *
+ * Assert provides support for simple assertions that result in BuildExceptions on failure
  */
 public class Assert {
     //~ Constructors ---------------------------------------------------------------------------------------------------

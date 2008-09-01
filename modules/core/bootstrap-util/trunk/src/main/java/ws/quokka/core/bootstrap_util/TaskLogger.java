@@ -22,9 +22,7 @@ import org.apache.tools.ant.Task;
 
 
 /**
- * ProjectLogger logs messages using ant's project-based logging mechanism. If extends ant's default
- * mechanism with "isEnabled" methods to check the current level if the logging implementation is
- * an instance of DefaultLogger.
+ * TaskLogger logs messages using an ant task
  */
 public class TaskLogger extends AbstractLogger {
     //~ Instance fields ------------------------------------------------------------------------------------------------

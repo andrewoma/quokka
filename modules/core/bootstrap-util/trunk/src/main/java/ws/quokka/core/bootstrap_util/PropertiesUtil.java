@@ -26,7 +26,7 @@ import java.util.Map;
 
 
 /**
- *
+ * PropertiesUtil uses reflection to obtain a reference to Ant's underlying properties store.
  */
 public class PropertiesUtil {
     //~ Methods --------------------------------------------------------------------------------------------------------

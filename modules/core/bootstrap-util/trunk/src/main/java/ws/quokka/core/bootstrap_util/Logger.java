@@ -19,7 +19,7 @@ package ws.quokka.core.bootstrap_util;
 
 
 /**
- *
+ * Logger defines a logging interface
  */
 public interface Logger {
     //~ Methods --------------------------------------------------------------------------------------------------------

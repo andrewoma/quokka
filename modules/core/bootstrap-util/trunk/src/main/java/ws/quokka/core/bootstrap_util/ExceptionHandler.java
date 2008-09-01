@@ -19,7 +19,8 @@ package ws.quokka.core.bootstrap_util;
 
 
 /**
- *
+ * ExceptionHandler provides a standard mechanism for handling checked exceptions for methods
+ * that have return types
  */
 public abstract class ExceptionHandler extends AbstractExceptionHandler {
     //~ Methods --------------------------------------------------------------------------------------------------------

@@ -24,11 +24,14 @@ import java.util.Set;
 
 
 /**
- *
+ * ProfilesMatcher determines if a profiles match
  */
 public class ProfilesMatcher {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns true if the profiles given are enabled given the currently active profiles
+     */
     public boolean matches(Set profiles, Set activeProfiles) {
         if (profiles.size() == 0) {
             return true;
