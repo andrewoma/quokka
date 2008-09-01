@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * Setter provides a mechanism to set fields on an object via reflection from property values.
- * In general, it is used to conveniently set a large set of optional attributes on an ANT task.
+ * In general, it is used to conveniently set a large set of optional attributes on an Ant task.
  */
 public class Setter {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -48,7 +48,9 @@ public class Setter {
      * This allows default values to remain set.
      *
      * @param target
-     * @param attributes must match the setter name without the "set" prefix
+     * @param attributes must match the setter name without the "set" prefix. The property value will be
+     * automatically converted to the required type using the same mechanism as Ant does with its own
+     * XML attributes.
      */
     public void set(Object target, String[] attributes) {
         IntrospectionHelper helper = IntrospectionHelper.getHelper(target.getClass());

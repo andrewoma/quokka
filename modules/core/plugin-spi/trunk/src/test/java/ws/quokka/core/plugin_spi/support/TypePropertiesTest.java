@@ -20,10 +20,12 @@ package ws.quokka.core.plugin_spi.support;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileList;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ResourceCollection;
 
 import ws.quokka.core.test.AbstractTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -89,10 +91,10 @@ public class TypePropertiesTest extends AbstractTest {
     public void testResourceCollectionFileSet() {
         p.put("rc.set.dir", "C:\\SomeDir");
 
-        ResourceCollection rc = tp.getResourceCollection("bogus", false);
+        ResourceCollection rc = tp.getResourceCollection("bogus", null);
         assertNull(rc);
 
-        rc = tp.getResourceCollection("rc", true);
+        rc = tp.getResourceCollection("rc");
         assertTrue(rc instanceof FileSet);
         assertTrue(((FileSet)rc).getDir().getPath().indexOf("SomeDir") != -1);
 
@@ -100,7 +102,7 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("rc.set.crud", "C:\\SomeDir");
 
         try {
-            tp.getResourceCollection("rc", true);
+            tp.getResourceCollection("rc");
             fail("Expected exception");
         } catch (Exception e) {
         }
@@ -110,7 +112,7 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("rc.other", "blah");
 
         try {
-            tp.getResourceCollection("rc", true);
+            tp.getResourceCollection("rc");
             fail("Expected exception");
         } catch (Exception e) {
         }
@@ -120,10 +122,10 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("rc.list.dir", "C:\\SomeDir");
         p.put("rc.list.files", "cat.txt, dog.txt");
 
-        ResourceCollection rc = tp.getResourceCollection("bogus", false);
+        ResourceCollection rc = tp.getResourceCollection("bogus", null);
         assertNull(rc);
 
-        rc = tp.getResourceCollection("rc", true);
+        rc = tp.getResourceCollection("rc");
         assertTrue(rc instanceof FileList);
 
         String[] files = ((FileList)rc).getFiles(project);
@@ -136,7 +138,7 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("rc.list.crud", "C:\\SomeDir");
 
         try {
-            tp.getResourceCollection("rc", true);
+            tp.getResourceCollection("rc");
             fail("Expected exception");
         } catch (Exception e) {
         }
@@ -146,7 +148,41 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("rc.other", "blah");
 
         try {
-            tp.getResourceCollection("rc", true);
+            tp.getResourceCollection("rc");
+            fail("Expected exception");
+        } catch (Exception e) {
+        }
+    }
+
+    public void testResourceCollectionPath() {
+        p.put("rc.path", "SomeDir");
+
+        ResourceCollection rc = tp.getResourceCollection("bogus", null);
+        assertNull(rc);
+
+        rc = tp.getResourceCollection("rc");
+        assertTrue(rc instanceof Path);
+
+        Path path = (Path)rc;
+
+        assertEquals(1, path.list().length);
+        assertTrue(path.list()[0].contains("SomeDir"));
+
+        // Try bogus property
+        p.put("rc.path.crud", "C:\\SomeDir");
+
+        try {
+            tp.getResourceCollection("rc");
+            fail("Expected exception");
+        } catch (Exception e) {
+        }
+
+        // Try bogus sibling
+        p.remove("rc.set.crud");
+        p.put("rc.other", "blah");
+
+        try {
+            tp.getResourceCollection("rc");
             fail("Expected exception");
         } catch (Exception e) {
         }
@@ -169,12 +205,50 @@ public class TypePropertiesTest extends AbstractTest {
         p.put("key2", "value2");
         p.put("key3[0]", "value3.0");
         p.put("key3[1]", "value3.1");
-        tp.verify(new Keys("key1").add("key2"), new Keys("key3"));
+        tp.verify(new Keys("key1").add("key2"), new Keys("key3["));
 
         try {
             tp.verify(new Keys("key1").add("key2"), new Keys("key4"));
             fail("Expected exception");
         } catch (Exception e) {
         }
+    }
+
+    public void testInt() {
+        p.put("key", "101");
+        assertEquals(101, tp.getInt("key"));
+        assertEquals(303, tp.getInt("key2", 303));
+
+        try {
+            tp.getInt("unknown");
+            fail("Exception expected");
+        } catch (Exception e) {
+        }
+    }
+
+    public void testLong() {
+        p.put("key", "101");
+        assertEquals(101, tp.getLong("key"));
+        assertEquals(303, tp.getLong("key2", 303));
+
+        try {
+            tp.getLong("unknown");
+            fail("Exception expected");
+        } catch (Exception e) {
+        }
+    }
+
+    public void testCommaSeparatedList() {
+        assertEquals(new String[] { "cat", "sat", "mat" }, TypedProperties.commaSepList("cat,sat,mat", true, true));
+        assertEquals(new String[] { "cat", "sat", "mat" }, TypedProperties.commaSepList(" cat , sat , mat ", true, true));
+        assertEquals(new String[] { " cat ", " sat ", " mat " },
+            TypedProperties.commaSepList(" cat , sat , mat ", false, true));
+        assertEquals(new String[] { "", "cat", "", "sat", "", "mat", "" },
+            TypedProperties.commaSepList(",cat,,sat,,mat,", true, true));
+        assertEquals(new String[] { "cat", "sat", "mat" }, TypedProperties.commaSepList(",cat,,sat,,mat,", true, false));
+    }
+
+    private void assertEquals(String[] values, List list) {
+        assertEquals(Arrays.asList(values), list);
     }
 }

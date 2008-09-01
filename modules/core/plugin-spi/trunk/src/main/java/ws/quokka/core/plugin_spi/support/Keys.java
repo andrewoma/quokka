@@ -21,7 +21,7 @@ import java.util.*;
 
 
 /**
- * Keys is a helper to aggregrate keys easily for verification via TypedProperties.verify
+ * Keys is a helper to aggregrate keys easily for verification via {@link TypedProperties#verify}
  */
 public class Keys {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -65,6 +65,10 @@ public class Keys {
         return this;
     }
 
+    /**
+     * Returns an unmodifiable set of keys consisting of all keys added via the constructor of the various
+     * add methods
+     */
     public Set toSet() {
         return Collections.unmodifiableSet(keys);
     }

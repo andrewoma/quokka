@@ -19,7 +19,8 @@ package ws.quokka.core.plugin_spi;
 
 
 /**
- *
+ * ResourcesAware should be implemented by plugins that want to access {@link Resources}.
+ * The resources implementation will then be automatically injected at runtime.
  */
 public interface ResourcesAware {
     //~ Methods --------------------------------------------------------------------------------------------------------

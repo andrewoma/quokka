@@ -28,7 +28,7 @@ import java.util.List;
 
 
 /**
- * ResourcesList that exposes the underlying list of resources
+ * ResourcesList extends Resources to provides access to the underlying resources
  */
 public class ResourcesList extends Resources {
     //~ Static fields/initializers -------------------------------------------------------------------------------------

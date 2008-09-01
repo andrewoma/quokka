@@ -24,6 +24,7 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Mkdir;
 import org.apache.tools.ant.types.DirSet;
+import org.apache.tools.ant.types.FileList;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -38,7 +39,7 @@ import java.util.List;
 
 
 /**
- * AntUtils provides some helper methods for ANT
+ * AntUtils provides some helper methods for common Ant-related tasks that are useful when implementing plugins
  */
 public class AntUtils {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -53,10 +54,9 @@ public class AntUtils {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public Task createTask(String type) {
-        return ComponentHelper.getComponentHelper(project).createTask(type);
-    }
-
+    /**
+     * Returns the files represented by the given fileset
+     */
     public List getFiles(FileSet fileSet) {
         List files = new ArrayList();
         String[] names = fileSet.getDirectoryScanner(project).getIncludedFiles();
@@ -69,13 +69,21 @@ public class AntUtils {
         return files;
     }
 
+    /**
+     * Creates the given directory if it doesn't already exist. It silently ignores the
+     * request if the directory already exists
+     */
     public void mkdir(File dir) {
         Mkdir mkdir = (Mkdir)project.createTask("mkdir");
         mkdir.setDir(dir);
         mkdir.perform();
     }
 
-    public void deleteFile(File file) {
+    /**
+     * Deletes the file or directory given. It silently ignores the request if the
+     * specified file does not exist
+     */
+    public void delete(File file) {
         if (file.exists()) {
             Delete delete = (Delete)project.createTask("delete");
 
@@ -89,6 +97,10 @@ public class AntUtils {
         }
     }
 
+    /**
+     * An alternative to {@link Project#createTask(String)} that initialises the given
+     * task object. Works for all tasks, not just built-in Ant tasks
+     */
     public Task init(Task task, String name) {
         task.setProject(project);
         task.setTaskName(name);
@@ -97,6 +109,9 @@ public class AntUtils {
         return task;
     }
 
+    /**
+     * Converts a file to a file set
+     */
     public FileSet toFileSet(File file) {
         FileSet fileSet = new FileSet();
         fileSet.setProject(project);
@@ -105,6 +120,12 @@ public class AntUtils {
         return fileSet;
     }
 
+    /**
+     * Filters a collection of resource collections to those that are valid and actually contain files.
+     * It will log any resource collections skipped at a log level of verbose.
+     * <br>
+     * Note: it will modify the collection passed to it as well as returning the same reference
+     */
     public Collection filterExisting(Collection rcs) {
         for (Iterator i = rcs.iterator(); i.hasNext();) {
             ResourceCollection rc = (ResourceCollection)i.next();
@@ -117,6 +138,10 @@ public class AntUtils {
         return rcs;
     }
 
+    /**
+     * Returns true if the resource collections given in rc is valid and contains file.
+     * @param log if true, it will log that resources given will be skipped at a log level or verbose
+     */
     public boolean containsFiles(ResourceCollection rc, boolean log) {
         try {
             if (!rc.iterator().hasNext()) {
@@ -137,22 +162,45 @@ public class AntUtils {
         return true;
     }
 
-    public File normalise(String file) {
-        return FileUtils.getFileUtils().normalize(file);
+    /**
+     * Normalises the absolute path given. You can use {@link Project#resolveFile(String)} if you wish to
+     * normalise a relative path
+     */
+    public File normalise(String path) {
+        return FileUtils.getFileUtils().normalize(path);
     }
 
+    /**
+     * Convenience method to create a FileSet task
+     */
     public FileSet createFileSet() {
         return (FileSet)project.createDataType("fileset");
     }
 
+    /**
+     * Convenience method to create a FileList task
+     */
+    public FileList createFileList() {
+        return (FileList)project.createDataType("filelist");
+    }
+
+    /**
+     * Convenience method to create a DirSet task
+     */
     public DirSet createDirSet() {
         return (DirSet)project.createDataType("dirset");
     }
 
+    /**
+     * Convenience method to create a ZipFileSet task
+     */
     public ZipFileSet createZipFileSet() {
         return (ZipFileSet)project.createDataType("zipfileset");
     }
 
+    /**
+     * Convenience method to create a Copy task
+     */
     public Copy createCopyTask() {
         return (Copy)init(new Copy(), "copy");
     }
