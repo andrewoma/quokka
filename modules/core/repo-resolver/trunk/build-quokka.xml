@@ -6,7 +6,7 @@
         <artifact paths="runtime"/>
     </artifacts>
 
-    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <dependency group="quokka.core.test" version="0.1.1-ss" paths="test-compile(junit)"/>

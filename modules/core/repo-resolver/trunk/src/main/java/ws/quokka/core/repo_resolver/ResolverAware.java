@@ -19,7 +19,7 @@ package ws.quokka.core.repo_resolver;
 
 
 /**
- *
+ * ResolverAware is an interface that plugins should implement to be injected with the current project resolver.
  */
 public interface ResolverAware {
     //~ Methods --------------------------------------------------------------------------------------------------------

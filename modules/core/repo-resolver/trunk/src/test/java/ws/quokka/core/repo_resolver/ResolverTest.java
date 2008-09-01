@@ -592,7 +592,7 @@ public class ResolverTest extends AbstractTest {
     private RepoArtifact artifact(String id) {
         RepoArtifact artifact = new RepoArtifact(id(id));
         artifact.addPath(path("runtime", true, true)); // Default path
-        repo.add(artifact);
+        repo.install(artifact);
 
         return artifact;
     }
@@ -600,7 +600,7 @@ public class ResolverTest extends AbstractTest {
     private RepoArtifact artifact(String id, RepoPath path) {
         RepoArtifact artifact = new RepoArtifact(id(id));
         artifact.addPath(path); // Default path
-        repo.add(artifact);
+        repo.install(artifact);
 
         return artifact;
     }
@@ -684,62 +684,6 @@ public class ResolverTest extends AbstractTest {
         } catch (BuildException e) {
             System.out.println(resolver.formatPath(path, true));
             assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
-        }
-    }
-
-    //~ Inner Classes --------------------------------------------------------------------------------------------------
-
-    public static class MockRepository extends AbstractRepository {
-        private Map artifacts = new HashMap();
-
-        public void add(RepoArtifact artifact) {
-            artifacts.put(artifact.getId(), artifact);
-        }
-
-        public RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact) {
-            RepoArtifact artifact = (RepoArtifact)artifacts.get(artifactId);
-
-            if (artifact == null) {
-                throw new UnresolvedArtifactException(artifactId);
-            }
-
-            return artifact;
-        }
-
-        public RepoArtifact resolve(RepoArtifactId id) {
-            return resolve(id, true);
-        }
-
-        public void initialise() {
-        }
-
-        public void install(RepoArtifact artifact) {
-        }
-
-        public void remove(RepoArtifactId artifactId) {
-        }
-
-        public Collection listArtifactIds(boolean includeReferenced) {
-            return null;
-        }
-
-        public boolean supportsReslove(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public boolean supportsInstall(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public RepoArtifact updateSnapshot(RepoArtifact artifact) {
-            return null;
-        }
-
-        public Collection availableVersions(String group, String name, String type) {
-            return null;
-        }
-
-        public void rebuildCaches() {
         }
     }
 }

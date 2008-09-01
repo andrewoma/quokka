@@ -30,7 +30,8 @@ import java.util.*;
 
 
 /**
- *
+ * Resolver resolves a path for a given artifact, retrieving all transitive dependencies as per
+ * the defined path specifications and overrides.
  */
 public class Resolver {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -47,6 +48,11 @@ public class Resolver {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
+    /**
+     * Constructor
+     * @param repository the repository for retrieving artifacts
+     * @param log the logger for outputing any messages
+     */
     public Resolver(Repository repository, Logger log) {
         this.repository = repository;
         this.log = log;
@@ -54,6 +60,17 @@ public class Resolver {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Resolves a path for a given artifact, retrieving all transitive dependencies as per
+     * the defined path specifications and overrides.
+     * @param pathId the path to resolve
+     * @param artifact the artifact that contains the path given above
+     * @param appliedOverrides any overrides applied during the resolution process will be added to this list
+     * @param permitStubs if true, encountering a stub will not result in an exception being thrown
+     * @param retrieveArtifacts if true, any dependent artifacts resolved will be retrieve, otherwise on the
+     * metadata will be retrieved
+     * @return the resolved path
+     */
     public ResolvedPath resolvePath(String pathId, RepoArtifact artifact, List appliedOverrides, boolean permitStubs,
         boolean retrieveArtifacts) {
         Assert.isTrue(artifact.getPath(pathId) != null, "Path '" + pathId + "' does not exist in artifact: " + artifact);
@@ -95,6 +112,10 @@ public class Resolver {
         }
     }
 
+    /**
+     * Convenience method - calls {@link #resolvePath(ResolvedPath, ws.quokka.core.repo_spi.RepoPathSpec, java.util.Set, boolean, ws.quokka.core.repo_spi.RepoArtifactId, java.util.List, java.util.List, boolean)}
+     * with permitStubs = false and retrieveArtifacts = true.
+     */
     public ResolvedPath resolvePath(String pathId, RepoArtifact artifact) {
         return resolvePath(pathId, artifact, new ArrayList(), false, true);
     }
@@ -384,6 +405,11 @@ public class Resolver {
         return nextLevel;
     }
 
+    /**
+     * Returns a merged path from the collection of paths given, removing duplicates and ensuring
+     * there are no conflicts. If a conflict occurs, a formatted tree showing the exacts paths of
+     * any conflicts is contained in the exception message.
+     */
     public ResolvedPath merge(Collection paths) {
         // Build a map of all artifacts based on unversioned ids
         StringBuffer id = new StringBuffer("Merged: [");
@@ -456,6 +482,12 @@ public class Resolver {
         }
     }
 
+    /**
+     * Overrides any conflicting versions between 2 paths
+     * @param path the path to override in the case of a conflict
+     * @param with the path containing the versions to override to
+     * @return the overridden path
+     */
     public ResolvedPath override(ResolvedPath path, ResolvedPath with) {
         // Make sure there are no conflicts within the paths given
         path = merge(Collections.singleton(path));
@@ -523,6 +555,11 @@ public class Resolver {
         return (RepoArtifactId)artifactId.getAnnotations().get(DECLARED_BY);
     }
 
+    /**
+     * Returns the paths formatted as a tree
+     * @param paths a collection of paths to dispaly
+     * @param onlyConflicted if true, only nodes that lead to a conflict will be shown
+     */
     public String formatPaths(Collection paths, boolean onlyConflicted) {
         StringBuffer sb = new StringBuffer();
 
@@ -534,6 +571,10 @@ public class Resolver {
         return sb.toString();
     }
 
+    /**
+     * Returns the path formatted as a tree
+     * @param onlyConflicted if true, only nodes that lead to a conflict will be shown
+     */
     public String formatPath(ResolvedPath path, boolean onlyConflicted) {
         StringBuffer sb = new StringBuffer();
 

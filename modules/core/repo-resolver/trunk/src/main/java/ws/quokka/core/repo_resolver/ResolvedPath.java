@@ -21,12 +21,14 @@ import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 
 /**
- *
+ * ResolvedPath contains a path resolved via {@link Resolver}. Its main purpose is to store the
+ * id along with the resolved path so that meaning diagnostic errors can be displayed in the case of conflicts
  */
 public class ResolvedPath {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -39,6 +41,11 @@ public class ResolvedPath {
     public ResolvedPath() {
     }
 
+    /**
+     * Constructor
+     * @param id a string displayed to the user in case of conflicts or other errors
+     * @param artifacts
+     */
     public ResolvedPath(String id, List artifacts) {
         this.id = id;
         this.artifacts = artifacts;
@@ -54,14 +61,23 @@ public class ResolvedPath {
         this.id = id;
     }
 
+    /**
+     * Add an artifact to the path
+     */
     public void add(RepoArtifact artifact) {
         artifacts.add(artifact);
     }
 
+    /**
+     * Returns a read-only list of the artifacts in the path
+     */
     public List getArtifacts() {
-        return artifacts;
+        return Collections.unmodifiableList(artifacts);
     }
 
+    /**
+     * Returns true if the path contains an artifact with the id given
+     */
     public boolean contains(RepoArtifactId id) {
         for (Iterator i = artifacts.iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();

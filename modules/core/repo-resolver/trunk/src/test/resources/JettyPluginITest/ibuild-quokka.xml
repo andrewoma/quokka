@@ -15,6 +15,6 @@
         <dependency group="mortbay.jetty" name="jetty-annotations" version="6.1.11" paths="plugin"/>
         <dependency group="mortbay.jetty" name="start" version="6.1.11" paths="plugin"/>
         <dependency group="mortbay.jetty" name="jsp-2.0" version="6.1.11" paths="plugin"/>
-        <!--<plugin group="quokka.plugin.jar" version="0.1.1-ss"/>-->
+        <!--<plugin group="quokka.plugin.jar" version="0.2-ss"/>-->
     </dependency-set>
 </project>
