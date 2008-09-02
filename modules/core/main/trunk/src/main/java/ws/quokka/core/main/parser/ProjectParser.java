@@ -246,12 +246,8 @@ public class ProjectParser {
             Assert.isTrue(parentFile.exists() || parentFile.mkdirs(),
                 "Cannot getOrCreate quokka defaults dir: " + parentFile.getAbsolutePath());
 
-            new VoidExceptionHandler() {
-                    public void run() throws Exception {
-                        new IOUtils().copyStream(ProjectParser.class.getClassLoader().getResourceAsStream("quokkadefaults.properties"),
-                            new FileOutputStream(file));
-                    }
-                };
+            new IOUtils().copyStream(ProjectParser.class.getClassLoader().getResourceAsStream("quokkadefaults.properties"),
+                file);
         }
 
         properties.putAll(getProperties(URLs.toURL(file)));
@@ -645,6 +641,10 @@ public class ProjectParser {
 
         public Object fromXml(Element dependencyEl) {
             PluginDependency dependency = (PluginDependency)super.fromXml(dependencyEl);
+
+            // Force id to be of type 'plugin'
+            RepoArtifactId id = dependency.getId();
+            dependency.setId(new RepoArtifactId(id.getGroup(), id.getName(), "plugin", id.getVersion()));
 
             // Add targets in short-hand form
             List targets = Strings.commaSepList(dependencyEl.getAttribute("targets"));

@@ -81,7 +81,7 @@ public class DefaultModelFactory implements ModelFactory {
         project.setName(model.getProject().getName());
 
         //        project.setBaseDir(projectFile.getParentFile());
-        project.addReference("quokka.pluginState", new PluginState(new HashMap()));
+        project.addReference("quokka.pluginState", new PluginState());
         project.setProperty("quokka.project.file", projectFile.getAbsolutePath());
 
         model.setPluginParser(new StandardPluginParser());

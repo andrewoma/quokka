@@ -207,7 +207,7 @@ public class DefaultBuildResources implements BuildResources {
         Assert.isTrue(!tempFile.exists() || tempFile.delete(), "Unable to delete file: " + tempFile.getPath());
 
         // Not a valid file URL, so retrieve data from URL and write to a file
-        new IOUtils().copyStream(url.openStream(), new FileOutputStream(tempFile));
+        new IOUtils().copyStream(url, tempFile);
 
         Assert.isTrue(tempFile.renameTo(file), "Unable to rename " + tempFile.getPath() + " to " + file.getPath());
     }

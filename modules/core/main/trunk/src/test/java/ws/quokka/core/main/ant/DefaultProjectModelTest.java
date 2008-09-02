@@ -41,7 +41,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private DefaultProjectModel model;
-    private DefaultProjectModelTest.MockRepository repo;
+    private MockRepository repo;
     private Map paths = new HashMap();
     private Map plugins = new HashMap();
     private Project project;
@@ -420,7 +420,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
     private RepoArtifact artifact(String id) {
         RepoArtifact artifact = new RepoArtifact(id(id));
         artifact.addPath(path("runtime", true, true)); // Default path
-        repo.add(artifact);
+        repo.install(artifact);
 
         return artifact;
     }
@@ -428,7 +428,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
     private RepoArtifact artifact(String id, RepoPath path) {
         RepoArtifact artifact = new RepoArtifact(id(id));
         artifact.addPath(path); // Default path
-        repo.add(artifact);
+        repo.install(artifact);
 
         return artifact;
     }
@@ -565,60 +565,6 @@ public class DefaultProjectModelTest extends AbstractMainTest {
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
-
-    public class MockRepository extends AbstractRepository {
-        private Map artifacts = new HashMap();
-
-        public void add(RepoArtifact artifact) {
-            artifacts.put(artifact.getId(), artifact);
-        }
-
-        public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
-            RepoArtifact artifact = (RepoArtifact)artifacts.get(id);
-
-            if (artifact == null) {
-                throw new UnresolvedArtifactException(id);
-            }
-
-            return artifact;
-        }
-
-        public RepoArtifact resolve(RepoArtifactId id) {
-            return resolve(id, true);
-        }
-
-        public void initialise() {
-        }
-
-        public void install(RepoArtifact artifact) {
-        }
-
-        public void remove(RepoArtifactId artifactId) {
-        }
-
-        public Collection listArtifactIds(boolean includeReferenced) {
-            return null;
-        }
-
-        public boolean supportsReslove(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public boolean supportsInstall(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public RepoArtifact updateSnapshot(RepoArtifact artifact) {
-            return null;
-        }
-
-        public Collection availableVersions(String group, String name, String type) {
-            return null;
-        }
-
-        public void rebuildCaches() {
-        }
-    }
 
     public class MockPluginParser implements PluginParser {
         public Plugin getPluginInstance(RepoArtifact artifact) {

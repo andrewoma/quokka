@@ -35,17 +35,14 @@ public class DefaultResources implements Resources {
 
     private Target target;
     private Project antProject;
-    private PluginState pluginState;
     private DefaultProjectModel projectModel;
     private Logger logger;
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
-    public DefaultResources(DefaultProjectModel runner, Target target, Project antProject, PluginState pluginState,
-        Logger logger) {
+    public DefaultResources(DefaultProjectModel runner, Target target, Project antProject, Logger logger) {
         this.target = target;
         this.antProject = antProject;
-        this.pluginState = pluginState;
         this.projectModel = runner;
         this.logger = logger;
     }
@@ -71,15 +68,23 @@ public class DefaultResources implements Resources {
     }
 
     public PluginState getPluginState() {
-        return pluginState;
+        return getPluginState(antProject);
+    }
+
+    public PluginState getPluginState(Project project) {
+        return (PluginState)project.getReference("quokka.pluginState");
     }
 
     public org.apache.tools.ant.Project getProject() {
         return antProject;
     }
 
-    public org.apache.tools.ant.Project getParentProject() {
-        return (org.apache.tools.ant.Project)antProject.getReference("quokka.parentProject");
+    public Project getParentProject() {
+        return getParentProject(antProject);
+    }
+
+    public Project getParentProject(Project project) {
+        return (Project)project.getReference("quokka.parentProject");
     }
 
     public String getTargetName() {

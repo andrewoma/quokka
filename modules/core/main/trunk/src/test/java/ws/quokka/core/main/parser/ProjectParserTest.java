@@ -65,7 +65,7 @@ public class ProjectParserTest extends AbstractMainTest {
         assertEquals(3, dependencies.size());
         assertContains(dependencies, defaultDependency("bsh", "2.1"));
         assertContains(dependencies, defaultDependency("qdox", "1.5"));
-        assertContains(dependencies, defaultDependency("plugin", "1.0"));
+        assertContains(dependencies, defaultPlugin("plugin", "1.0"));
     }
 
     private void assertContains(List dependencies, Dependency dependency) {
@@ -82,7 +82,7 @@ public class ProjectParserTest extends AbstractMainTest {
 
     private PluginDependency defaultPlugin(String name, String version) {
         PluginDependency pluginDependency = new PluginDependency();
-        pluginDependency.setId(new RepoArtifactId(null, name, "quokka-plugin", version).mergeDefaults());
+        pluginDependency.setId(new RepoArtifactId(name, null, "plugin", version).mergeDefaults());
 
         return pluginDependency;
     }
@@ -138,7 +138,7 @@ public class ProjectParserTest extends AbstractMainTest {
 
         RepoArtifact artifact = new RepoArtifact(id("nested:name:jar:1.2"));
         artifact.setLocalCopy(getTestCaseResource("nested"));
-        repository.add(artifact);
+        repository.install(artifact);
 
         parse("full2", new Profiles("-skip"));
         assertEquals("name", project.getName());
@@ -216,10 +216,10 @@ public class ProjectParserTest extends AbstractMainTest {
         dependencies.add(pdep("quokka.core.repo-resolver:somename:type1:0.1.1-ss", "path2+"));
         dependencies.add(pdep("some.dep1", "to?+from(opt1, opt2)"));
 
-        dependencies.add(pldep("quokka.plugin1", "", ""));
-        dependencies.add(pldep("quokka.plugin3", "path1(opt1)", "target1, target2"));
+        dependencies.add(pldep("quokka.plugin1:plugin1:plugin", "", ""));
+        dependencies.add(pldep("quokka.plugin3:plugin3:plugin", "path1(opt1)", "target1, target2"));
 
-        PluginDependency dependency = pldep("quokka.plugin4", "?+from(opt3, opt4)", "t1");
+        PluginDependency dependency = pldep("quokka.plugin4:plugin4:plugin", "?+from(opt3, opt4)", "t1");
         PluginDependencyTarget target = dependency.getTarget("t1");
         target.setAlias("t1alias");
         target.setPrefix("t1prefix");
@@ -335,61 +335,5 @@ public class ProjectParserTest extends AbstractMainTest {
         assertEquals("antvalue7", properties.get("prop7"));
 
 //        properties.dump(System.out);
-    }
-
-    //~ Inner Classes --------------------------------------------------------------------------------------------------
-
-    public static class MockRepository extends AbstractRepository {
-        private Map artifacts = new HashMap();
-
-        public void add(RepoArtifact artifact) {
-            artifacts.put(artifact.getId(), artifact);
-        }
-
-        public RepoArtifact resolve(RepoArtifactId id) {
-            return resolve(id, true);
-        }
-
-        public RepoArtifact resolve(RepoArtifactId id, boolean retrieveArtifact) {
-            RepoArtifact artifact = (RepoArtifact)artifacts.get(id);
-
-            if (artifact == null) {
-                throw new UnresolvedArtifactException(id);
-            }
-
-            return artifact;
-        }
-
-        public void initialise() {
-        }
-
-        public void install(RepoArtifact artifact) {
-        }
-
-        public void remove(RepoArtifactId artifactId) {
-        }
-
-        public Collection listArtifactIds(boolean includeReferenced) {
-            return null;
-        }
-
-        public boolean supportsReslove(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public boolean supportsInstall(RepoArtifactId artifactId) {
-            return false;
-        }
-
-        public RepoArtifact updateSnapshot(RepoArtifact artifact) {
-            return null;
-        }
-
-        public Collection availableVersions(String group, String name, String type) {
-            return null;
-        }
-
-        public void rebuildCaches() {
-        }
     }
 }

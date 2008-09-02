@@ -51,6 +51,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -88,13 +89,16 @@ public class ProjectMetadata implements Metadata {
     }
 
     public List getArtifactIds(String type) {
+        return getArtifactIds(Collections.singletonList(type));
+    }
+
+    public List getArtifactIds(List types) {
         List ids = new ArrayList();
 
         for (Iterator i = projectModel.getProject().getArtifacts().iterator(); i.hasNext();) {
             RepoArtifactId id = ((Artifact)i.next()).getId();
 
-            //                System.out.println("id=" + id);
-            if (id.getType().equals(type)) {
+            if (types.contains(id.getType())) {
                 ids.add(id);
             }
         }
@@ -522,7 +526,7 @@ public class ProjectMetadata implements Metadata {
         return CopyPathTask.translate(projectModel.getAntProject(), id, pattern);
     }
 
-    public void copyPath(List path, File destination, String pattern) {
+    public void copyPath(List path, File destination, String pattern, boolean includeLicenses) {
         CopyPathTask.copyPath(projectModel.getAntProject(), path, destination, pattern);
     }
 

@@ -290,7 +290,7 @@ public class DefaultProjectModel implements ProjectModel {
             // PluginDependency implements the target declared in another plugin
             String[] implementsPlugin = parseImplements(target);
             RepoArtifactId declaringPluginId = findMatchingDependency(targetPlugin,
-                    new RepoArtifactId(implementsPlugin[0], implementsPlugin[1], "jar", (Version)null));
+                    new RepoArtifactId(implementsPlugin[0], implementsPlugin[1], "plugin", (Version)null));
 
             Plugin declaringPlugin = getPluginInstance(declaringPluginId);
             String declaringTargetName = declaringPlugin.getNameSpace() + ":" + implementsPlugin[2];
@@ -719,7 +719,7 @@ public class DefaultProjectModel implements ProjectModel {
         ResolvedPath path = pathResolver.merge(paths);
 
         if (pathGroup.getMergeWithCore().booleanValue()) {
-            mergeWithCore(path);
+            path = mergeWithCore(path);
         }
 
 //        System.out.println(pathResolver.formatPath(path, false));
@@ -846,11 +846,13 @@ public class DefaultProjectModel implements ProjectModel {
         ResolvedPath path = pathResolver.resolvePath(id, artifact);
         path.setId("Plugin path '" + pathId + "' from " + pluginId.toShortString());
 
+        List artifacts = new ArrayList();
+
         for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
             artifact = (RepoArtifact)i.next();
 
-            if (artifact.getId().equals(pluginId)) {
-                i.remove();
+            if (!artifact.getId().equals(pluginId)) {
+                artifacts.add(artifact);
             }
 
             if (pluginId.equals(artifact.getId().getAnnotations().get("declaredBy"))) {
@@ -858,6 +860,7 @@ public class DefaultProjectModel implements ProjectModel {
             }
         }
 
+        path = new ResolvedPath(path.getId(), artifacts);
         path = handleMergeAndFlatten(mergeWithCore, flatten, path);
 
         return path;
@@ -939,7 +942,7 @@ public class DefaultProjectModel implements ProjectModel {
 
     private ResolvedPath handleMergeAndFlatten(boolean mergeWithCore, boolean flatten, ResolvedPath path) {
         if (mergeWithCore) {
-            mergeWithCore(path);
+            path = mergeWithCore(path);
         } else if (flatten) {
             path = pathResolver.merge(Collections.singleton(path));
         }
@@ -947,18 +950,22 @@ public class DefaultProjectModel implements ProjectModel {
         return path;
     }
 
-    private void mergeWithCore(ResolvedPath path) {
+    private ResolvedPath mergeWithCore(ResolvedPath path) {
         // Will throw a detailed exception on conflict
         pathResolver.merge(Arrays.asList(new ResolvedPath[] { corePath, path }));
 
         // Now strip any artifacts that are found in the core
+        List artifacts = new ArrayList();
+
         for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
             RepoArtifact artifact = (RepoArtifact)i.next();
 
-            if (corePath.contains(artifact.getId())) {
-                i.remove();
+            if (!corePath.contains(artifact.getId())) {
+                artifacts.add(artifact);
             }
         }
+
+        return new ResolvedPath(path.getId(), artifacts);
     }
 
     public Map getResolvedPaths() {
@@ -1043,8 +1050,7 @@ public class DefaultProjectModel implements ProjectModel {
             }
 
             if (actualPlugin instanceof ResourcesAware) {
-                resources = new DefaultResources(this, target, antProject,
-                        (PluginState)antProject.getReference("quokka.pluginState"), logger);
+                resources = new DefaultResources(this, target, antProject, logger);
                 ((ResourcesAware)actualPlugin).setResources(resources);
             }
 
@@ -1077,10 +1083,6 @@ public class DefaultProjectModel implements ProjectModel {
                 loader.cleanup();
             }
         }
-    }
-
-    public List mergePaths(List classPaths) {
-        return null;
     }
 
     protected ResolvedPath resolveCorePath() {

@@ -301,7 +301,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
                     File file = File.createTempFile("import", ".xml");
                     file.deleteOnExit();
-                    new IOUtils().copyStream(url.openStream(), new FileOutputStream(file));
+                    new IOUtils().copyStream(url, file);
 
                     return file;
                 }
@@ -756,6 +756,9 @@ public class ProjectHelper extends ProjectHelper2 {
         factory.registerType(new RepoType("jar", "Java Archive (.jar) file", "jar"));
         factory.registerType(new RepoType("license", "License file", "txt"));
         factory.registerType(new RepoType("paths", "Repository file", "xml"));
+        factory.registerType(new RepoType("plugin", "Quokka plugin", "jar"));
+        factory.registerType(new RepoType("archetype", "Quokka archetype", "jar"));
+        factory.registerType(new RepoType("depset", "Quokka dependency set", "jar"));
         antProject.addReference(REPOSITORY_FACTORY, factory);
 
         return factory;

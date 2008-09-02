@@ -16,7 +16,7 @@
     </artifacts>
     
     <!--<artifacts group="blah" version="blah" type="war"/>-->
-    <bootstrap core="[0.1.1,0.1.1]" spec-version="[1.4,1.6]" jvm-args="-Xmx1024m"/>
+    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]" jvm-args="-Xmx1024m"/>
     <bootstrap core="[0.2,0.2.1]" spec-version="[1.7,1.8]" java-jvm-vendor="sun" profiles="skip"/>
 
     <dependency-set>

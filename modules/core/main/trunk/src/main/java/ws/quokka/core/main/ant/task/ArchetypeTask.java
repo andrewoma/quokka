@@ -155,7 +155,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         copy.perform();
 
         if (toDelete != null) {
-            utils.deleteFile(toDelete);
+            utils.delete(toDelete);
         }
     }
 
