@@ -1,0 +1,7 @@
+<project>
+    <someelement/>
+
+    <bootstrap core='1.1' spec-version="[1.4,1.6]"/>
+
+    <someotherelement/>
+</project>

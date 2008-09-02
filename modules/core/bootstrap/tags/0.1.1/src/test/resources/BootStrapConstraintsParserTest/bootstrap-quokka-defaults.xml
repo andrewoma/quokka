@@ -1,0 +1,44 @@
+<project>
+    <someelement/>
+
+    <bootstrap>
+        <core version="pre"/>
+        <cores version="defaultVersion">
+            <core version="overriddenVersion"/>
+            <core/>
+        </cores>
+        <core version="post"/>
+
+        <jdk java-version="prejdk"/>
+        <jdks java-vendor="default-java-vendor1"
+              java-version="default-java-version1"
+              spec-version="default-spec-version1"
+              jvm-version="default-jvm-version1"
+              jvm-vendor="default-jvm-vendor1"
+              jvm-args="default-jvm-args1">
+            <sysproperty name="default-sysproperty1" value="default-sysproperty1-value1" required="true"/>
+
+            <jdk java-vendor="overridden-java-vendor1"
+                 java-version="overridden-java-version1"
+                 spec-version="overridden-spec-version1"
+                 jvm-version="overridden-jvm-version1"
+                 jvm-vendor="overridden-jvm-vendor1"
+                 jvm-args="overridden-jvm-args1">
+                <sysproperty name="overridden-sysproperty1" value="overridden-sysproperty1-value1" required="true"/>
+            </jdk>
+            <jdk/>
+        </jdks>
+        <jdk java-version="postjdk"/>
+        <jdk java-vendor="java-vendor1" java-version="java-version1" spec-version="spec-version1"
+             jvm-version="jvm-version1" jvm-vendor="jvm-vendor1" jvm-args="jvm-args1">
+            <sysproperty name="name1" value="value1" required="true"/>
+            <sysproperty name="opt1" value="value2" required="false"/>
+            <sysproperty name="def1" value="value3"/>
+        </jdk>
+
+        <boot-dependency group="group1" name="name1" version="version1" type="type1" extension="extension1"/>
+        <boot-dependency group="group2" name="name2" version="version2" type="type2" extension="extension2"/>
+    </bootstrap>
+
+    <someotherelement/>
+</project>
