@@ -40,6 +40,7 @@ import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.repo_spi.RepoXmlConverter;
 import ws.quokka.core.repo_spi.Repository;
+import ws.quokka.core.repo_spi.UnresolvedArtifactException;
 import ws.quokka.core.util.AnnotatedObject;
 import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Annotations;
@@ -510,11 +511,17 @@ public class ProjectParser {
                 // Get the dependency set from the repository
                 converter = getConverter(RepoArtifactId.class);
 
-                RepoArtifactId artifactId = ((RepoArtifactId)converter.fromXml(nestedSetEl)).mergeDefaults();
-                artifactId = new RepoArtifactId(artifactId.getGroup(), artifactId.getName(), "jar",
-                        artifactId.getVersion());
+                RepoArtifactId id = ((RepoArtifactId)converter.fromXml(nestedSetEl)).mergeDefaults();
+                id = new RepoArtifactId(id.getGroup(), id.getName(), "depset", id.getVersion());
 
-                RepoArtifact artifact = ProjectParser.this.repository.resolve(artifactId);
+                RepoArtifact artifact;
+                try {
+                    artifact = ProjectParser.this.repository.resolve(id);
+                } catch (UnresolvedArtifactException e) {
+                    // Support types of jar during the migration window
+                    id = new RepoArtifactId(id.getGroup(), id.getName(), "jar", id.getVersion());
+                    artifact = ProjectParser.this.repository.resolve(id);
+                }
 
                 // Create a new dependency set
                 getXmlConverter().addContext("dependencySetParent", dependencySet);
