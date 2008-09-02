@@ -19,7 +19,7 @@ package ws.quokka.core.metadata;
 
 
 /**
- *
+ * MetadataAware is the interface that plugins must implement to be injected with a Metadata object
  */
 public interface MetadataAware {
     //~ Methods --------------------------------------------------------------------------------------------------------
