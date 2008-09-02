@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+
+<project>
+    <artifacts group="quokka.internal.module-depset" version="0.1.3">
+        <artifact/>
+    </artifacts>
+
+    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
+
+    <dependency-set>
+        <dependency-set group="quokka.depset.resourcebundle" version="0.1"/>
+        <plugin group="quokka.plugin.devreport" version="0.1"/>
+        <!--<plugin group="quokka.plugin.help" version="0.1.1" targets="generate-help"/>-->
+        <plugin group="quokka.plugin.release" version="0.1"/>
+        <plugin group="quokka.plugin.subversion" version="0.1"/>
+    </dependency-set>
+</project>
