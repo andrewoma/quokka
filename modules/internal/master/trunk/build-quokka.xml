@@ -2,6 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="internal.master">
+    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
     <!--<bootstrap>-->
     <!--<cores version="1.0">-->
     <!--<core options="xerces, xercesimpl" profiles="jdk1.2, jdk1.3"/>-->

@@ -16,7 +16,9 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties />
+      <properties>
+        <property name="quokka.bootstrap.initialise" value="true" />
+      </properties>
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/../../plugin/cobertura/build.xml">
       <additionalClassPath />
@@ -531,10 +533,10 @@
   <component name="libraryTable">
     <library name="ant-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/ant-launcher_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/jsch_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/launcher_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/ant_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/ant-launcher_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/jsch_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/launcher_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -544,14 +546,14 @@
     </library>
     <library name="junit-3.8.1">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/junit/3.8.1/junit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/junit/3.8.1/junit_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="ant-junit-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/ant/1.7/junit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/junit_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -560,15 +562,15 @@
     </library>
     <library name="cobertura-1.8">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/cobertura/1.8/cobertura_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/sf/cobertura/1.8/cobertura_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="svnkit-1.1.4">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/svnkit/1.1.4/svnkit_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/svnkit/1.1.4/svnkit-cli_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/svnkit/1.1.4/svnkit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/svnkit/1.1.4/svnkit-cli_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -584,9 +586,9 @@
     </library>
     <library name="jalopy-0.6.2">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/jalopy/jalopy/1.0-b11/jalopy_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/sf/jalopy/ant/0.6.2/ant_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/apache/oro/2.0.8/oro_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/sf/jalopy/jalopy/1.0-b11/jalopy_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/sf/jalopy/ant/0.6.2/ant_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/oro/2.0.8/oro_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

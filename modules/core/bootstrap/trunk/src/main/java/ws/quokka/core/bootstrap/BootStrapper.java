@@ -153,9 +153,7 @@ public class BootStrapper {
                     IOUtils utils = new IOUtils();
                     File temp = utils.createTempFile(md5, ".jar", cacheDir);
                     URL url = utils.createURL(resource.getUrl());
-                    InputStream in = url.openStream();
-                    Assert.isTrue(in != null, "Cannot access boot dependency URL: " + resource.getUrl());
-                    utils.copyStream(in, new BufferedOutputStream(new FileOutputStream(temp)));
+                    utils.copyStream(url, temp);
                     Assert.isTrue(temp.renameTo(cachedFile),
                         "Could not rename " + temp.getPath() + " to " + cachedFile.getPath());
                 }

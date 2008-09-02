@@ -20,5 +20,5 @@
     <dependency group="quokka.core.itest" version="0.2-ss" paths="itest,quokka-itest+"/>
 
     <!--<plugin group="quokka.plugin.plugin" version="0.1"/>-->
-    <dependency-set group="quokka.internal.module-depset" version="0.1.2"/>
+    <dependency-set group="quokka.internal.module-depset" version="0.2-ss"/>
 </dependency-set>

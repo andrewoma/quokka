@@ -39,9 +39,10 @@
         </plugin>
         <plugin group="quokka.plugin.devreport" version="0.1"/>
         <plugin group="quokka.plugin.help" version="0.1.1"/>
-        <plugin group="quokka.plugin.resources" version="0.1">
-            <target name="extract-resources" template="extract" prefix="extract-resources"/>
-        </plugin>
+        <!-- Problem with this ... fixed in trunk? -->
+        <!--<plugin group="quokka.plugin.resources" version="0.1">-->
+            <!--<target name="extract-resources" template="extract" prefix="extract-resources"/>-->
+        <!--</plugin>-->
         <plugin group="quokka.plugin.subversion" version="0.1"/>
 
     </dependency-set>

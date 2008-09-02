@@ -1,8 +1,8 @@
 <project name="core.bundle.ext">
     <import file="../../internal/master/ide-parent.xml"/>
 
-    <!--<target name="dist" depends="quokka.lifecycle:package, docbook-pdf">-->
-    <target name="dist" depends="quokka.lifecycle:package">
+    <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
+    <!--<target name="dist" depends="quokka.lifecycle:package">-->
         <property name="distdir" location="${quokka.project.targetDir}/dist/quokka-${quokka.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}">

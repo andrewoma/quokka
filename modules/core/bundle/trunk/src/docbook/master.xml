@@ -1581,7 +1581,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   minus sign. e.g. use
                   <literal>options="testng(-qdox)"</literal> to exclude the
                   <literal>qdox</literal> dependency when using
-                  <literal>testng</literal>. </para>
+                  <literal>testng</literal>.</para>
 
                   <para>Note: the options will be added regardless of the
                   value of the <literal>descend</literal> attribute.</para>
@@ -1688,7 +1688,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   <term>to</term>
 
                   <listitem>
-                    <para>Is the <literal>to</literal> path id. </para>
+                    <para>Is the <literal>to</literal> path id.</para>
                   </listitem>
                 </varlistentry>
 
@@ -2187,8 +2187,8 @@ quokka.project.java.target=1.5                    </programlisting>
                   matching all plugin paths. If not present, the override will
                   not apply to project paths. The format is
                   <literal>pluginGroup[:pluginName]=path1[:pathn]</literal>.
-                  Multiple plugins may defined in a comma separated list.
-                  </para>
+                  Multiple plugins may defined in a comma separated
+                  list.</para>
                 </listitem>
               </varlistentry>
 
@@ -2197,7 +2197,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
                 <listitem>
                   <para>Mandatory if with-paths not supplied. The overriding
-                  version to set all matches to. </para>
+                  version to set all matches to.</para>
                 </listitem>
               </varlistentry>
 
@@ -3032,7 +3032,7 @@ quokka.repo.quokka.url=url:http://quokka.ws/repository/
       <literal>release</literal> repositories. Furthermore, the
       <literal>release</literal> repository will attempt to retrieve artifacts
       from it's parent (the <literal>quokka</literal> global repository) if an
-      artifact cannot be found. </para>
+      artifact cannot be found.</para>
 
       <para>While this is a reasonable configuration to get you up and running
       it is strongly recommended that you change it to store your releases
@@ -3041,7 +3041,7 @@ quokka.repo.quokka.url=url:http://quokka.ws/repository/
 
       <para>The syntax used above is a short hand URL notation, that is
       automatically converted into properties. The format is
-      <literal>&lt;class&gt;[:root][;property1=value1]*</literal>. </para>
+      <literal>&lt;class&gt;[:root][;property1=value1]*</literal>.</para>
 
       <para>So
       <literal>quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false</literal>
@@ -3413,7 +3413,7 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
         <para>Quokka does not implement expiry for this very reason. Instead
         repository plugin has a <literal>update-snapshots</literal> target
         that will traverse all repositories to find the latest version
-        available on demand. </para>
+        available on demand.</para>
 
         <para>It is recommended that you leave the default snapshots
         configuration where it is, but add a parent repository that points to
@@ -3431,61 +3431,64 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
         install yourself), the chances are it won't be in the global
         repository. Therefore, you'll need to add it to one of your local
         release repositories. If the artifact exists in the maven repository,
-        you can use the quokka maven plugin to import the artifact. This will
-        import the artifact along with any dependencies it has automatically.
-        See Importing from Maven below. </para>
+        you can use the quokka maven plugin to import the artifact. This is
+        the best option as it will import the artifact along with any
+        dependencies it has automatically. See Importing from Maven below. If
+        you intend to upload the libraries to the quokka global repository,
+        see Uploading to the Global Repository below.</para>
 
-        <para>Alternatively, you can add it manually:</para>
+        <para>Otherwise, you can install it using the install target from
+        repository plugin as follows. Firstly, add the repository plugin to
+        your project (within the dependency-set element):</para>
 
-        <itemizedlist>
-          <listitem>
-            <para>Decide on a group, name and version for the artifact you
-            require, taking into account the <link
-            linkend="naming-standards">naming standards</link> below.</para>
-          </listitem>
+        <programlisting>&lt;plugin group="quokka.plugin.repository" version="&lt;version&gt;"&gt;
+</programlisting>
 
-          <listitem>
-            <para>Find the root directory of the local repository you wish to
-            install it to. For default installations this would be
-            <literal>${user.home}/.quokka/releases</literal>.</para>
-          </listitem>
+        <para>Note: you can see what versions are available by browsing the
+        quokka <ulink
+        url="http://quokka.ws/repository/0.2/quokka/plugin/repository">repository</ulink>.
+        If you are using the latest version of quokka, you can probably pick
+        the latest available version. Decide on a group, name and version for
+        the artifact you require, taking into account the <link
+        linkend="naming-standards">naming standards</link> below. Then install
+        the artifact using the following command:</para>
 
-          <listitem>
-            <para>Create subdirectories under the root for the group, creating
-            a directory for each segment (separated by '.').</para>
-          </listitem>
+        <programlisting>$ quokka quokka.repository:install -Did=&lt;group&gt;:[name]:[type]:&lt;version&gt; \
+     -Dfile=&lt;path of file to install&gt;</programlisting>
 
-          <listitem>
-            <para>Create a subdirectory for the version</para>
-          </listitem>
+        <para>For example, to install the hibernate annotations 3.3 jar file,
+        you would use:</para>
 
-          <listitem>
-            <para>Copy the .jar file into the directory, naming it
-            &lt;name&gt;_jar.jar</para>
-          </listitem>
-        </itemizedlist>
+        <programlisting>$ quokka quokka.repository:install -Did=hibernate.annotations:::3.3 \
+    -Dfile=~/Downloads/hibernate-annotaions.jar</programlisting>
 
-        <para>If your library has no dependencies, then that's it. e.g. for
-        <literal>log4j</literal>, group=<literal>apache.log4j</literal>,
-        name=<literal>log4j</literal>, version=<literal>1.2.15</literal>, the
-        .jar file in the repository would be:
-        <literal>${user.home}/.quokka/releases/apache/log4j/1.2.15/log4j_jar.jar</literal>.</para>
+        <para>Note: in this case the name will default to
+        <literal>annotations</literal>, and the type to
+        <literal>jar</literal>, so there's no need to specifiy them.</para>
+
+        <para>If your library has no dependencies, then that's it.</para>
 
         <para>If your library has dependencies then you need to add metadata
-        to the repository declaring the dependencies. This is essentially a
-        subset of the <link lang=""
+        to the repository declaring the dependencies (and add then as well if
+        necessary). Note: the location of the repository file was displayed on
+        the console when the artifact was installed.</para>
+
+        <para>The repository file is essentially a subset of the <link lang=""
         linkend="dependency-sets"><literal>dependency-set</literal></link>
         element described in the project reference chapter, limited to
-        <literal>path</literal>, <literal>path-specification</literal> and
-        <literal>dependency</literal> elements. It should be stored alongside
-        the artifact in the repository with an extension of _repository.xml.
-        Below is an example for the Cobertura plugin:</para>
+        <literal>path</literal>, <literal>path-specification</literal>,
+        <literal>dependency</literal> and <literal>override</literal>
+        elements, plus <literal>description</literal> and
+        <literal>license</literal> elements. Below is an example for the
+        Cobertura plugin:</para>
 
         <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.2"
                    "http://quokka.ws/dtd/repository-0.2.dtd"&gt;
 
 &lt;artifact group="quokka.plugin.cobertura" name="cobertura" type="jar" version="0.1"&gt;
+    &lt;description&gt;Cobertura plugin for quokka&lt;/description&gt;
+    
     &lt;paths&gt;
         &lt;path id="instrument" description="Path required for instrumenting classes"/&gt;
         &lt;path id="coverage" description="Path required collecting coverage data"/&gt;
@@ -3505,17 +3508,23 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
         &lt;dependency group="quokka.core.plugin-spi" version="0.1" paths="runtime"/&gt;
         &lt;dependency group="objectweb.asm" version="2.2.1" paths="instrument"/&gt;
     &lt;/dependencies&gt;
+
+    &lt;licenses&gt;
+        &lt;license group="license.apache" version="2.0"/&gt;
+    &lt;/licenses&gt;
 &lt;/artifact&gt;</programlisting>
 
         <para>From the example, you can see that a dependency can have
         multiple paths (that correspond to different uses). In this case
         different Cobertura tasks require different libraries.</para>
 
-        <para>Note: The above example actually shows a deficiency with the
-        repository setup for Cobertura. Cobertura itself should really have
-        multiple paths defined for instrument, coverage and report. These
-        paths should then be included transitively into the plugin paths of
-        the same names.</para>
+        <para>Most libraries usually have a single path and by convention this
+        is called <literal>runtime</literal>. It is highly recommended that
+        you follow this convention as it means users that depend on your
+        library don't need to specify the path as <literal>runtime</literal>
+        is assumed. Also, if you just as a single <literal>runtime</literal>
+        path, you can omit the <literal>paths</literal> declaration
+        completely.</para>
 
         <sect2 id="naming-standards">
           <title lang="">Naming Standards</title>
@@ -3576,15 +3585,27 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
           </itemizedlist>
         </sect2>
 
-        <sect2 id="naming-standards">
+        <sect2 id="importing">
           <title lang="">Importing from Maven</title>
 
           <para>If the dependency you need exists in the Maven2 repository,
           then importing it can be a be the easiest option. Importing has the
           advantage that any runtime dependencies can be imported
           automatically. Unfortunately, to perform the import it is necessary
-          to have maven installed (versions greater than 2.0.8 are
-          recommended). </para>
+          to have maven installed (versions greater than 2.0.8 are recommended
+          as prior versions may generate incorrect paths).</para>
+
+          <para></para>
+
+          <para></para>
+        </sect2>
+
+        <sect2 id="uploading">
+          <title lang="">Uploading to the Global Repository</title>
+
+          <para>If your product is a library that will be incorporated into
+          other products, it is highly recommended that you upload it and its
+          dependencies to the global repository. This</para>
 
           <para></para>
 
@@ -3636,7 +3657,7 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
 
             <listitem>
               <para>Optional. The id of the repository to retrieve the
-              archetype from </para>
+              archetype from</para>
             </listitem>
           </varlistentry>
 
