@@ -19,7 +19,7 @@ package ws.quokka.core.util.xml;
 
 
 /**
- *
+ * AbstractConverter provides a minimal base class for implementing a converter
  */
 public abstract class AbstractConverter implements Converter {
     //~ Instance fields ------------------------------------------------------------------------------------------------

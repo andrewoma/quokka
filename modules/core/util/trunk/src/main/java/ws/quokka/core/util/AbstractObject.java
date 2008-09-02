@@ -19,7 +19,7 @@ package ws.quokka.core.util;
 
 
 /**
- * AbstractObject provides default implementations of toString().
+ * AbstractObject provides default implementations of toString() via reflection.
  */
 public class AbstractObject implements StringGenerator.ShortString {
     //~ Static fields/initializers -------------------------------------------------------------------------------------

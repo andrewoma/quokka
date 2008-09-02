@@ -19,7 +19,7 @@ package ws.quokka.core.util;
 
 
 /**
- *
+ * Annotated should be implemented by objects that support Annotations
  */
 public interface Annotated {
     //~ Methods --------------------------------------------------------------------------------------------------------

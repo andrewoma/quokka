@@ -19,16 +19,28 @@ package ws.quokka.core.util.xml;
 
 
 /**
- *
+ * Converter
  */
 public interface Converter {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * This method will be called when the converter is added to an {@link ws.quokka.core.util.xml.XmlConverter}
+     */
     void setXmlConverter(XmlConverter converter);
 
+    /**
+     * Returns true if this converter supports the class given
+     */
     boolean supports(Class clazz);
 
+    /**
+     * Converts the element to an object
+     */
     Object fromXml(Element element);
 
+    /**
+     * Converts the object to an element
+     */
     void toXml(Object object, Element parent);
 }

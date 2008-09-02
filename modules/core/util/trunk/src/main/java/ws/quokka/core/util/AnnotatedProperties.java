@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
 import java.net.URL;
 
@@ -50,11 +51,21 @@ import java.util.Vector;
 
 
 /**
- * Properties implementation that remembers the location of each property.  When
- * loaded, a custom properties file parser is used to remember both the line number
- * and preceeding comments for each property entry.
+ * AnnotatedProperties extends Properties with the following functionality:
+ * <ul>
+ * <li>A custom properties file parser is used to remember both the line number
+ * and preceeding comments for each property entry.</li>
+ * <li>Aliases can be defined with a special comment of #{&lt;aliasId&gt;=&lt;value&gt;}
+ * and subsequently used in property definitions using a key of &lt;aliasId&gt;!subkey=value.</li>
+ * <li>Properties can reference one another using ${reference} syntax</li>
+ * <li>Supports wildcard properties for copying a set of properties from
+ * one prefix to another. e.g. "copy.*=source" will copy any properties that start with "source." to
+ * "copy.".</li>
+ * <li>Supports expressions such as ${@ifdef(quokka.global.javac.source?'hello':'goodbye')}.
+ * See {@link ws.quokka.core.util.PropertyExpressionParser} for more information on expressions</li>
  * <p/>
- * Loosely based on xwork 2 implementation of the same name
+ * Custom properties parser is based on the xwork 2 implementation of LocationProperties
+ * and subject to its copyright
  */
 public class AnnotatedProperties extends Properties {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -63,6 +74,9 @@ public class AnnotatedProperties extends Properties {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Loads the properties from the given URL, keeping track of line numbers
+     */
     public AnnotatedProperties load(final URL url) {
         return (AnnotatedProperties)new ExceptionHandler() {
                 public Object run() throws Exception {
@@ -85,6 +99,10 @@ public class AnnotatedProperties extends Properties {
             }.soften();
     }
 
+    /**
+     * Loads the properties from the given reader
+     * @param url is only used to mark the location
+     */
     public AnnotatedProperties load(URL url, Reader reader)
             throws IOException {
         Map aliases = new HashMap();
@@ -128,6 +146,9 @@ public class AnnotatedProperties extends Properties {
         return new LocatorImpl(null, systemId, line, 0);
     }
 
+    /**
+     * Sets the property along with annotations
+     */
     public Object setProperty(String key, String value, Annotations annotations) {
         Object object = super.setProperty(key, value);
 
@@ -138,10 +159,16 @@ public class AnnotatedProperties extends Properties {
         return object;
     }
 
+    /**
+     * Returns the annotations for a given key
+     */
     public Annotations getAnnotation(String key) {
         return (Annotations)annotations.get(key.toLowerCase());
     }
 
+    /**
+     * The equivalent of the standard putAll, but copies across annotations as well
+     */
     public void putAll(AnnotatedProperties properties) {
         for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
@@ -150,21 +177,17 @@ public class AnnotatedProperties extends Properties {
         }
     }
 
-//    public synchronized Object get(Object key) {
-//        return super.get(((String)key).toLowerCase());
-//    }
-//    public String getProperty(String key) {
-//        return super.getProperty(key.toLowerCase());
-//    }
-//    public synchronized Object remove(Object key) {
-//        return super.remove(key.toString().toLowerCase());
-    //    }
     public synchronized Object put(Object key, Object value) {
         Assert.isTrue(value != null, "Value is null for key=" + key);
 
         return super.put(key, value);
     }
 
+    /**
+     * Supports renaming of references
+     * @param provider the provider will be called with the value of a reference and should return
+     * the value to rename the reference to
+     */
     public AnnotatedProperties replaceReferences(PropertyProvider provider) {
         AnnotatedProperties properties = new AnnotatedProperties();
 
@@ -177,7 +200,7 @@ public class AnnotatedProperties extends Properties {
         return properties;
     }
 
-    public static String replaceReferences(PropertyProvider provider, String value) {
+    protected static String replaceReferences(PropertyProvider provider, String value) {
         Vector fragments = new Vector();
         Vector propertyRefs = new Vector();
         ProjectHelper.parsePropertyString(value, fragments, propertyRefs);
@@ -209,6 +232,11 @@ public class AnnotatedProperties extends Properties {
         return replaced.toString();
     }
 
+    /**
+     * Returns a new properties object will all references expanded into their full form
+     * @param failIfUnreferenced if true, a reference to an undefined property will result in an exception,
+     * otherwise the value is expanded to a warning message
+     */
     public AnnotatedProperties evaluateReferences(boolean failIfUnreferenced) {
         return evaluateReferences(new PropertyEvaluator() {
                 public boolean canEvaluate(String key) {
@@ -221,6 +249,13 @@ public class AnnotatedProperties extends Properties {
             }, failIfUnreferenced);
     }
 
+    /**
+     * Returns a new properties object will all references expanded into their full form
+     * @param evaluator all the values of references to be supplied from an external source, not just
+     * from other property values
+     * @param failIfUnreferenced if true, a reference to an undefined property will result in an exception,
+     * otherwise the value is expanded to a warning message
+     */
     public AnnotatedProperties evaluateReferences(PropertyEvaluator evaluator, boolean failIfUnreferenced) {
         expandWildcards(evaluator, failIfUnreferenced);
 
@@ -378,17 +413,30 @@ public class AnnotatedProperties extends Properties {
         return value;
     }
 
-    public void dump(PrintStream out) {
+    /**
+     * Writes out the sorted list of properties contained in this object to the print stream provided
+     */
+    public void dump(Writer writer) {
         Map properties = new TreeMap(this);
+        String ls = System.getProperty("line.separator");
 
         for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
-            out.println(entry.getKey() + " -> " + entry.getValue());
+
+            try {
+                writer.write(entry.getKey() + " -> " + entry.getValue() + ls);
+            } catch (IOException e) {
+                throw new BuildException(e);
+            }
         }
     }
 
     //~ Inner Interfaces -----------------------------------------------------------------------------------------------
 
+    /**
+     * PropertyEvaluator allows references in properties to be expanded using a source external to the
+     * properties file itself.
+     */
     public static interface PropertyEvaluator {
         boolean canEvaluate(String key);
 
@@ -397,7 +445,10 @@ public class AnnotatedProperties extends Properties {
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
-    public static class AliasExpander implements PropertyProvider {
+    /**
+     * AliasExpander is a property provider that automatically expands aliases
+     */
+    static class AliasExpander implements PropertyProvider {
         private Map aliases;
 
         public AliasExpander(Map aliases) {
@@ -418,7 +469,10 @@ public class AnnotatedProperties extends Properties {
         }
     }
 
-    public class Provider implements PropertyProvider {
+    /**
+     * Provider is for internal use and aids the evaluation of properties
+     */
+    class Provider implements PropertyProvider {
         private AnnotatedProperties evaluated;
         private boolean failIfUnreferenced;
         private List stack;

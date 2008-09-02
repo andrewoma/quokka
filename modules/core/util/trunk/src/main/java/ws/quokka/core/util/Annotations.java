@@ -26,7 +26,9 @@ import java.util.Set;
 
 
 /**
- *
+ * Annotations essentially wraps a map, allowing objects to store information that is not related
+ * to their core functionality. e.g. Quokka uses annotations to store the location (line number) that
+ * the object was defined in within a configuration file
  */
 public class Annotations implements Cloneable {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -35,22 +37,37 @@ public class Annotations implements Cloneable {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Stores an annotation
+     */
     public void put(String key, Object value) {
         annotations.put(key, value);
     }
 
+    /**
+     * Returns the annotation, or null if it doesn't exist
+     */
     public Object get(String key) {
         return annotations.get(key);
     }
 
+    /**
+     * Removes an annotation
+     */
     public Object remove(String key) {
         return annotations.remove(key);
     }
 
+    /**
+     * Returns the keys of all annotations
+     */
     public Set entrySet() {
         return Collections.unmodifiableMap(annotations).entrySet();
     }
 
+    /**
+     * Clones the underlying map, but not the values contained within it. i.e. a shallow copy
+     */
     public Object clone() {
         return new ExceptionHandler() {
                 public Object run() throws CloneNotSupportedException {

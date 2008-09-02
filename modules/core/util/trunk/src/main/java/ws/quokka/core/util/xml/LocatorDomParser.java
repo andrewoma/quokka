@@ -60,10 +60,16 @@ public class LocatorDomParser {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Adds the location of a particular element
+     */
     public static Locator getLocator(Element element) {
         return (Locator)locations.get(element);
     }
 
+    /**
+     * Returns the location of the particular element
+     */
     private static void addLocation(Element element, Locator locator) {
         locations.put(element, locator);
     }
@@ -106,7 +112,7 @@ public class LocatorDomParser {
      * SaxToLocatorDom converts from SAX to DOM, saving the location of each node during parsing.
      * This is necessary as DOM parsing does not store the
      */
-    public static class SaxToLocatorDom extends DefaultHandler {
+    static class SaxToLocatorDom extends DefaultHandler {
         private Document document;
         private Stack elements = new Stack();
         private Text currentTextNode;

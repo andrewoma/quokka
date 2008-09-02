@@ -37,7 +37,8 @@ import java.util.Map;
 
 
 /**
- *
+ * StringGenerator provides a reflection-based mechanism for automatically generating meaningful toString() implementations
+ * for objects.
  */
 public class StringGenerator {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -56,6 +57,11 @@ public class StringGenerator {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
+    /**
+     * Constructors a generator instance with default generators defined for privitives, classes,
+     * simple types like Files and Date as well as Collections and Maps.
+     * Static and transient fields are excluded by default
+     */
     public StringGenerator() {
         exclusions.add(new Exclusion() {
                 public boolean isExcluded(Field field) {
@@ -109,22 +115,34 @@ public class StringGenerator {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Removes all generators and exclusions
+     */
     public synchronized void clear() {
         generators.clear();
         exclusions.clear();
         generatorCache.clear();
     }
 
+    /**
+     * Adds a generator
+     */
     public synchronized void add(Generator generator) {
         generators.add(generator);
         generatorCache.clear();
     }
 
+    /**
+     * Adds an exclusion
+     */
     public void add(Exclusion exclusion) {
         exclusions.add(exclusion);
         generatorCache.clear();
     }
 
+    /**
+     * Returns a generated string representation for an object
+     */
     public String toString(Object object) {
         if (object == null) {
             return "null";
@@ -150,6 +168,9 @@ public class StringGenerator {
         return sb.toString();
     }
 
+    /**
+     * Returns a shortened string representation for an object
+     */
     public String toShortString(Object object) {
         if (object == null) {
             return "null";
@@ -235,22 +256,39 @@ public class StringGenerator {
 
     //~ Inner Interfaces -----------------------------------------------------------------------------------------------
 
+    /**
+     * Each exclusion added to a StringGenerator is called back for each field on a object. If any of the exclusions
+     * returns true, the field will not be added to the generated string
+     */
     public static interface Exclusion {
         boolean isExcluded(Field field);
     }
 
+    /**
+     * Each generator added to the StringGenerator will be called for a given class with the best match
+     * being used as the generator for a given class. The best match is defined as the generator that
+     * returns the lowest match value. The idea is that you can have a default generator for something
+     * like Map and then provide a more specific generator for something like HashMap by setting the match lower.
+     */
     public static interface Generator {
         int match(Class type);
 
         void toString(StringBuffer sb, Object obj, StringGenerator generator);
     }
 
+    /**
+     * Objects that support short string representations of themselves should implement this interface
+     */
     public static interface ShortString {
         String toShortString();
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
+    /**
+     * AssignableGenerator returns a match is the class evaluated is assignable from the one given
+     * in the constructor.
+     */
     public abstract static class AssignableGenerator implements Generator {
         private List types;
 
@@ -283,6 +321,10 @@ public class StringGenerator {
         }
     }
 
+    /**
+     * SimpleTypesGenerator supports the following types: Boolean, String, Number,
+     * File, URL and Date
+     */
     public static class SimpleTypesGenerator extends AssignableGenerator {
         public static final Class[] TYPES = new Class[] {
                 Boolean.class, String.class, Number.class, File.class, URL.class, Date.class
@@ -297,6 +339,9 @@ public class StringGenerator {
         }
     }
 
+    /**
+     * DefaultGenerator is a catch all that returns the system identity hashcode for any object
+     */
     public static class DefaultGenerator implements Generator {
         public int match(Class type) {
             return DEFAULT_MATCH;

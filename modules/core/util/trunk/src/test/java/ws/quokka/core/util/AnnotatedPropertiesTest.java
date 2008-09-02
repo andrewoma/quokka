@@ -22,6 +22,8 @@ import org.apache.tools.ant.BuildException;
 import ws.quokka.core.test.AbstractTest;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 
 import java.util.HashMap;
@@ -204,11 +206,14 @@ public class AnnotatedPropertiesTest extends AbstractTest {
             }, value);
     }
 
-    public void testDump() {
+    public void testDump() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         properties.put("hello", "there");
         properties.put("from", "me");
-        properties.dump(new PrintStream(out));
+
+        OutputStreamWriter os = new OutputStreamWriter(out);
+        properties.dump(os);
+        os.close();
 
         String nl = System.getProperty("line.separator");
         assertEquals("from -> me" + nl + "hello -> there" + nl, out.toString());

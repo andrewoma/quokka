@@ -23,7 +23,8 @@ import org.xml.sax.Locator;
 
 
 /**
- *
+ * LocatorImpl provides a neutral implementation of Locator that is not tied to a specific
+ * XML implementation
  */
 public class LocatorImpl implements Locator {
     //~ Instance fields ------------------------------------------------------------------------------------------------

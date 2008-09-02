@@ -43,8 +43,10 @@ import java.util.StringTokenizer;
  * @author Phil Steitz
  * @author Al Chou
  * @author Michael Davey
+ * @author Andrew O'Malley
  * @see String
  * @since 1.0
+ * Based on Apache Commons Lang StringUtils. Removed a lot of methods and added in a few additional ones
  */
 public class Strings {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -767,18 +769,31 @@ public class Strings {
         return strings;
     }
 
+    /**
+     * Converts an array to a list, returning an empty array if the argument is null
+     */
     public static List asList(Object[] array) {
         return (array == null) ? new ArrayList() : Arrays.asList(array);
     }
 
+    /**
+     * Convenience method to return a comma separated list. All tokens will be preserved and tokens
+     * will be trimmed.
+     */
     public static List commaSepList(String string) {
-        return asList(trim(split(string, ",")));
+        return asList(trim(splitPreserveAllTokens(string, ",")));
     }
 
+    /**
+     * Converts a the given list into a comma separated string
+     */
     public static String commaSepList(List list) {
         return join(list.iterator(), ", ");
     }
 
+    /**
+     * Splits the given string, returning the delimeters
+     */
     public static String[] splitIncludeDelimiters(String string, String delimiters) {
         List tokens = new ArrayList();
         StringTokenizer tokenizer = new StringTokenizer(string, delimiters, true);

@@ -41,7 +41,9 @@ import java.util.jar.JarFile;
 
 
 /**
- *
+ * URLs is a helper class for dealing with URLs. Most methods that accept file arguments will either expect
+ * the file to be a .jar file or a directory and will transparently work the same way with either.
+ * This allows exploded jar files to be accessed in the same manner and .jar files.
  */
 public class URLs {
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -70,6 +72,11 @@ public class URLs {
             }.soften();
     }
 
+    /**
+     * Returns a map of URLs contained at the location specified by the file with at the path specified
+     * @param file either an existing directory or .jar file. An exception is thrown otherwise
+     * @param path relative path to restrict the listing to
+     */
     public static Map toURLEntries(final File file, String path) {
         validateFile(file);
 
@@ -190,7 +197,7 @@ public class URLs {
     }
 
     /**
-     * Returns a properly escaped URL, unlike File.toURL().
+     * Returns a properly escaped URL (unlike File.toURL()) that is compatible with JDKs 1.2+
      */
     public static URL toURL(final File file) {
         return (URL)new ExceptionHandler() {
@@ -201,11 +208,11 @@ public class URLs {
     }
 
     /**
-     * Opens the url in a browser. If exectuable is null, it attempts to find the native browser automatically
+     * Opens the url in a browser. If browser is null, it attempts to find the native browser automatically
      * Based on public domain code from Bare Bones Browser Launch for Java (http://www.centerkey.com/java/browser/)
      *
-     * @param url
-     * @param browser
+     * @param url the url to open
+     * @param browser may be null in which case the default platform browser is selected where possible
      */
     public static void openBrowser(final URL url, final String browser) {
         new VoidExceptionHandler() {

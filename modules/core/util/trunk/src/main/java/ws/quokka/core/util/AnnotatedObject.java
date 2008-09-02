@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
 
 
 /**
- * AnnotatedObject allows annotations to be stored for object instance. Annotations include information
+ * AnnotatedObject provides a base class for objects that support annotations. Annotations include information
  * such as the location of the declaration of the object in an xml file.
  */
 public class AnnotatedObject extends AbstractObject implements Annotated {
@@ -54,6 +54,9 @@ public class AnnotatedObject extends AbstractObject implements Annotated {
         this.annotations = annotations;
     }
 
+    /**
+     * Returns the locator defined where this object was declared in an external file
+     */
     public Locator getLocator() {
         return (Locator)annotations.get(LOCATOR);
     }

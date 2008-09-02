@@ -47,7 +47,7 @@ import javax.xml.transform.OutputKeys;
 
 
 /**
- *
+ * Document is a thin wrapper over {@link org.w3c.dom.Document} and associated factories.
  */
 public class Document {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -62,17 +62,23 @@ public class Document {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the document root element
+     */
     public Element getRoot() {
         return new Element(document.getDocumentElement());
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file
      */
     public static Document parse(final File file) {
         return parse(file, null);
     }
 
+    /**
+     * Parses an XML file using the entity resolver provided
+     */
     public static Document parse(final File file, EntityResolver entityResolver) {
         return parse(new Source() {
                 public InputSource getSource() throws Exception {
@@ -85,12 +91,15 @@ public class Document {
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file from the url provided
      */
     public static Document parse(final URL url) {
         return parse(url, null);
     }
 
+    /**
+     * Parses an XML file from the url provided with the entity resolver provided
+     */
     public static Document parse(final URL url, final EntityResolver entityResolver) {
         return parse(new Source() {
                 public InputSource getSource() throws Exception {
@@ -103,14 +112,14 @@ public class Document {
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file from an input stream
      */
     public static Document parse(final InputStream inputStream) {
         return parse(inputStream, null);
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file from an input stream with the entity resolver provided
      */
     public static Document parse(final InputStream inputStream, final EntityResolver entityResolver) {
         return parse(new Source() {
@@ -121,7 +130,7 @@ public class Document {
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file from a reader with the entity resolver provided
      */
     public static Document parse(final Reader reader, final EntityResolver entityResolver) {
         return parse(new Source() {
@@ -132,7 +141,7 @@ public class Document {
     }
 
     /**
-     * Parses an XML file. It softens any exceptions to RuntimeExceptions.
+     * Parses an XML file from a string
      */
     public static Document parse(final String xml) {
         return parse(new Source() {
@@ -160,6 +169,9 @@ public class Document {
             }.soften();
     }
 
+    /**
+     * Creates a new XML document and returns it
+     */
     public static Document create() {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
@@ -172,10 +184,16 @@ public class Document {
             }.soften();
     }
 
+    /**
+     * Adds the root element to a document with the name provided
+     */
     public Element addRootElement(String name) {
         return new Element((org.w3c.dom.Element)document.appendChild(document.createElement(name)));
     }
 
+    /**
+     * Serialises the xml document to the file given
+     */
     public void toXML(final File file) {
         new VoidExceptionHandler() {
                 public void run() throws IOException {
@@ -184,10 +202,19 @@ public class Document {
             };
     }
 
+    /**
+     * Serialises the xml document to the file given writer
+     * @param close if true, the writer will be closed on completion
+     */
     public Writer toXML(final Writer writer, final boolean close) {
         return toXML(writer, close, new Properties());
     }
 
+    /**
+     * Serialises the xml document to the file given writer
+     * @param close if true, the writer will be closed on completion
+     * @param properties transform properties
+     */
     public Writer toXML(final Writer writer, final boolean close, final Properties properties) {
         return (Writer)new ExceptionHandler() {
                 public Object run() throws IOException {
@@ -205,6 +232,10 @@ public class Document {
             }.soften();
     }
 
+    /**
+     * Convenience method to serialise the xml document to a writer with a dtd declaration
+     * @param close if true, the writer will be closed on completion
+     */
     public Writer toXML(final Writer writer, final boolean close, String publicId, String systemId) {
         Properties properites = new Properties();
         properites.put(OutputKeys.DOCTYPE_PUBLIC, publicId);
@@ -213,6 +244,9 @@ public class Document {
         return toXML(writer, close, properites);
     }
 
+    /**
+     * Returns the underlying DOM document
+     */
     public org.w3c.dom.Document getDocument() {
         return document;
     }
@@ -226,7 +260,7 @@ public class Document {
     //~ Inner Classes --------------------------------------------------------------------------------------------------
 
     /**
-     * NullEntityResolver can be used to prevent parsing from retrieving entities from external sources
+     * NullEntityResolver can be used to prevent the parser from retrieving entities from external sources
      */
     public static class NullEntityResolver implements EntityResolver {
         public InputSource resolveEntity(String publicId, String systemId)

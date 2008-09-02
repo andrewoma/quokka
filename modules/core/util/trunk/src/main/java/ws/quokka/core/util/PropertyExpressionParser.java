@@ -25,7 +25,16 @@ import java.util.Map;
 
 
 /**
- *
+ * PropertyExpressionParser adds support for some basic expressions for use within properties files.
+ * Currenlty, the following expressions are supported:
+ * <ul>
+ * <li>ifdef: A ternary operator based on whether a given property is defined.
+ * e.g. @ifdef(javac.source?'wasTrue':'wasFalse')</li>
+ * <li>setifdef: Sets on value to the value of another if it is defined</li>
+ * <li>undef: Removes a reference if it is defined</li>
+ * <li>ref: Converts a string literal to a reference</li>
+ * <li>+: Concatentates two strings</li>
+ * </ul>
  */
 public class PropertyExpressionParser {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -41,12 +50,20 @@ public class PropertyExpressionParser {
 
     //~ Constructors ---------------------------------------------------------------------------------------------------
 
+    /**
+     * Construct
+     * @param expression the expression to evaluate
+     */
     public PropertyExpressionParser(String expression) {
         this.expression = expression;
     }
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns any references defined in the expression. e.g. for expression @ifdef(javac.source?'wasTrue':'wasFalse'),
+     * a list containing a single entry of "javac.source" would be returned
+     */
     public List getPropertyReferences() {
         List propertyReferences = new ArrayList();
 
@@ -77,12 +94,20 @@ public class PropertyExpressionParser {
         return (token.length() == 1) && (CHAR_TOKENS.indexOf(token) != -1);
     }
 
+    /**
+     * Returns the evaluated expression
+     * @param provider is the source of reference values
+     */
     public String evaluate(PropertyProvider provider) {
         String result = evaluate(getTokens(), provider);
 
         return (result == null) ? null : literalValue(result);
     }
 
+    /**
+     * Replaces property references with new reference names if the value
+     * returned from the provider is not null
+     */
     public String replace(PropertyProvider provider) {
         StringBuffer newExpression = new StringBuffer("@");
 
@@ -100,6 +125,9 @@ public class PropertyExpressionParser {
         return newExpression.toString();
     }
 
+    /**
+     * Replaces property references matching the keys provided with the corresponding values provided
+     */
     public String replace(final Map refs) {
         return replace(new PropertyProvider() {
                 public String getProperty(String key) {

@@ -19,7 +19,8 @@ package ws.quokka.core.util;
 
 
 /**
- *
+ * PropertyProvider provides a call back interface to mapping either a property reference to
+ * it's value or another property reference depending on the context.
  */
 public interface PropertyProvider {
     //~ Methods --------------------------------------------------------------------------------------------------------

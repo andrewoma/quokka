@@ -37,7 +37,7 @@ import java.util.List;
  * backslash sign a the end of the line.  This is used to
  * concatenate multiple lines for readability.
  * <p/>
- * Take from xwork2 source which in turn:
+ * Taken from xwork2 source which in turn:
  * <p/>
  * This class was pulled out of Jakarta Commons Configuration and
  * Jakarta Commons Lang trunk revision 476093

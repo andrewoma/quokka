@@ -36,11 +36,17 @@ import javax.xml.transform.stream.StreamResult;
 
 
 /**
- *
+ * TransformingXmlWriter writes out XML pretty printing it in a manner that is compatible with
+ * JDKs 1.4 to 1.6 (which is annoyingly inconsistent)
  */
 public class TransformingXmlWriter {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Writes the XML node to the writer given
+     * @param outputProperties will be set on the internal transformer instance. By default it sets
+     * standalone=no, method=xml, indent=yes and {http://xml.apache.org/xslt}indent-amount=4
+     */
     public void write(Writer writer, Node node, Properties outputProperties) {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

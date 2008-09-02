@@ -28,6 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * A thin wrapper over {@link org.w3c.dom.Element} that provides helper methods for working with
+ * elements, attributes and text nodes. It also implements certain methods in a manner to ensure
+ * compatibility for JDKs 1.4 to 1.6
+ */
 public class Element {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
@@ -41,12 +46,15 @@ public class Element {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the underlying element
+     */
     public org.w3c.dom.Element getElement() {
         return element;
     }
 
     /**
-     * Returns a child element of the given name that has a attribute with a certain value
+     * Returns a descendant element of the given name that has a attribute with a certain value
      *
      * @param name the name of the child node.
      */
@@ -54,6 +62,11 @@ public class Element {
         return getChild(name, attribute, value, true);
     }
 
+    /**
+     * Returns a child element of the given name that has a attribute with a certain value
+     *
+     * @param name the name of the child node.
+     */
     public Element getChild(String name, String attribute, String value) {
         return getChild(name, attribute, value, false);
     }
@@ -99,6 +112,10 @@ public class Element {
         return getChild(name, null, null);
     }
 
+    /**
+     * Returns child elements matching the name given
+     * @param name the name of the child nodes.
+     */
     public List getChildren(String name) {
         List elements = new ArrayList();
         NodeList nodes = element.getChildNodes();
@@ -114,6 +131,9 @@ public class Element {
         return elements;
     }
 
+    /**
+     * Returns the attribute value, or null if the attribute is not defined
+     */
     public String getAttribute(String name) {
         return _getAttribute(name);
     }
@@ -124,14 +144,23 @@ public class Element {
         return (attribute == null) ? null : attribute.getValue();
     }
 
+    /**
+     * Returns the name of the element node
+     */
     public String getName() {
         return element.getNodeName();
     }
 
+    /**
+     * Adds a child element with the name provided
+     */
     public Element addChild(String name) {
         return new Element((org.w3c.dom.Element)element.appendChild(element.getOwnerDocument().createElement(name)));
     }
 
+    /**
+     * Adds a text node
+     */
     public Element addText(String text) {
         Assert.isTrue(text != null, "Text is null");
         element.appendChild(element.getOwnerDocument().createTextNode(text));
@@ -148,11 +177,17 @@ public class Element {
         return (childEl == null) ? null : childEl.getText();
     }
 
+    /**
+     * Returns the text content of this element
+     */
     public String getText() {
         // element.getTextContent() breaks in jdk 1.4, so is implemented manually
         return getTextContent(element, new StringBuffer()).toString();
     }
 
+    /**
+     * Adds a child element with given name setting the value as its text content
+     */
     public Element addChild(String name, String value) {
         org.w3c.dom.Element child = (org.w3c.dom.Element)element.appendChild(element.getOwnerDocument().createElement(name));
         child.appendChild(element.getOwnerDocument().createTextNode(value));
@@ -160,19 +195,15 @@ public class Element {
         return new Element(child);
     }
 
+    /**
+     * Sets the named attribute the value given
+     */
     public Element setAttribute(String name, String value) {
         element.setAttribute(name, value);
 
         return this;
     }
 
-    //    public Element clone(boolean deep) {
-    //        return new Element((org.w3c.dom.Element) element.cloneNode(deep));
-    //    }
-    //
-    //    public void addChild(Element element) {
-    //        this.element.appendChild(element.getElement());
-    //    }
     private static StringBuffer getTextContent(Node node, StringBuffer sb)
             throws DOMException {
         Node child = node.getFirstChild();
