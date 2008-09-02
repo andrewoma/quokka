@@ -235,7 +235,7 @@ public class BootStrapResourcesParser extends XmlParser {
                 try {
                     System.getProperties().store(out, "Generated at " + new Date());
 
-                    if (temp.renameTo(propertiesFile)) {
+                    if (!temp.renameTo(propertiesFile)) {
                         throw new RuntimeException("Could not rename " + temp.getPath() + " to "
                             + propertiesFile.getPath());
                     }
