@@ -21,6 +21,7 @@ import org.apache.tools.ant.BuildException;
 
 
 /**
+ * VersionRange defines a range of versions.
  * Source taken from Apache Felix 1.0 release, variable names changed to match conventions
  */
 public class VersionRange {
@@ -47,22 +48,37 @@ public class VersionRange {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the lower bound of the range
+     */
     public Version getLow() {
         return low;
     }
 
+    /**
+     * If true, the lower bound is included in the range
+     */
     public boolean isLowInclusive() {
         return isLowInclusive;
     }
 
+    /**
+     * Returns the upper bound of the range
+     */
     public Version getHigh() {
         return high;
     }
 
+    /**
+     * If true, the upper bound is included in the range
+     */
     public boolean isHighInclusive() {
         return isHighInclusive;
     }
 
+    /**
+     * Returns true if the version given is included in this range
+     */
     public boolean isInRange(Version version) {
         // The only non-standard version that can be in range is an exact match
         if (!low.isStandard()) {
@@ -83,6 +99,10 @@ public class VersionRange {
         return (version.compareTo(low) > 0) && (version.compareTo(high) < 0);
     }
 
+    /**
+     * Parses a string repesentation of a range. The format is [lower,higher]. If the
+     * bracker is square it means inclusive, otherwise a round bracket means exclusive.
+     */
     public static VersionRange parse(String range) {
         VersionRange versionRange = parse_(range);
 

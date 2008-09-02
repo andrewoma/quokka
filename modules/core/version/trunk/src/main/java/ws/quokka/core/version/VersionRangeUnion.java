@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
 
 
 /**
- *
+ * VersionRangeUnion is a collection of version ranges that are logically ORed together
  */
 public class VersionRangeUnion {
     //~ Instance fields ------------------------------------------------------------------------------------------------
@@ -34,6 +34,9 @@ public class VersionRangeUnion {
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns true if the version is within any of the ranges in the union
+     */
     public boolean isInRange(Version version) {
         for (Iterator i = ranges.iterator(); i.hasNext();) {
             VersionRange range = (VersionRange)i.next();
@@ -46,10 +49,16 @@ public class VersionRangeUnion {
         return false;
     }
 
+    /**
+     * Adds another version range to the union
+     */
     public void add(VersionRange range) {
         ranges.add(range);
     }
 
+    /**
+     * Parses a string representation of the union. Each union is separated by a semi-colon
+     */
     public static VersionRangeUnion parse(String rangeUnion) {
         VersionRangeUnion versionRangeUnion = new VersionRangeUnion();
 
@@ -81,6 +90,9 @@ public class VersionRangeUnion {
         return sb.toString();
     }
 
+    /**
+     * Returns a read-only collection of ranges in the union
+     */
     public List getRanges() {
         return Collections.unmodifiableList(ranges);
     }
