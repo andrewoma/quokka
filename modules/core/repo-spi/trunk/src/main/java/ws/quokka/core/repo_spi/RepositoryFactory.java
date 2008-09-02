@@ -21,7 +21,6 @@ import org.apache.tools.ant.Project;
 
 import ws.quokka.core.util.AnnotatedProperties;
 
-import java.util.Map;
 import java.util.Set;
 
 
