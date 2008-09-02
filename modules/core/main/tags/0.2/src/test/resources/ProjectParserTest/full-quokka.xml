@@ -1,0 +1,169 @@
+<!-- Voodoo:
+     default type='jar'
+     default paths with adding a dependency are: 'compile, test, test-compile, runtime'
+     default dependencies it adds are:
+         compile += artifact
+         test-compile += artifact
+         test += runtime
+         runtime += runtime
+     plugins can declare a special dependency called "plugin-caller" to gain access to the caller's paths
+
+     Dependency sets can include dependency sets. However, when you include a nested dependency
+     set structure in your project it will be resolved to a flat structure containing just
+     the plugins and dependencies. Why? So the complexity of the structure is not forced onto
+     the end user.
+-->
+
+        <!-- Only thing exported is the runtime dependencies & targets -->
+
+        <!-- TestNG jdk14 -->
+<project name="itest">
+    <artifacts group="testng" version="4.6.1">
+        <artifact name="testng-jdk14"/>
+    </artifacts>
+
+    <dependency-set>
+        <dependency name="qdox" version="1.5"/>
+        <!-- default path of compile, test, test-compile, runtime -->
+        <dependency name="bsh" version="2.1" paths="compile,test-compile,test,runtime?"/>
+        <dependency name="junit" version="3.8.1" paths="compile,test-compile,test,runtime?"/>
+    </dependency-set>
+</project>
+
+        <!-- TestNG plugin build -->
+<project name="itest">
+    <artifacts group="nim.plugin" version="1.0.1">
+        <artifact name="testng-jdk14"/>
+    </artifacts>
+    <dependency-set>
+        <dependency group="testng" name="testng-jdk14" version="4.6.1"
+                    paths="compile, test-compile(junit), test(bsh, junit), runtime"/>
+    </dependency-set>
+</project>
+
+        <!-- TestNG plugin.xml -->
+<plugin class="ws.quokka.plugin.testng.TestNgPlugin"
+        prefix="testng">
+    <target-implementation name="test" paths="runtime"/>
+</plugin>
+
+        <!-- Javac plugin.xml -->
+<plugin class="ws.quokka.plugin.javac.JavacPlugin"
+        prefix="javac">
+    <target-implementation name="compile"/>
+    <target-implementation name="test-compile"/>
+</plugin>
+
+        <!-- Jar plugin.xml -->
+<plugin class="ws.quokka.plugin.jar.Jar"
+        prefix="jar">
+    <type name="jar" extenstion="jar"/>
+    <target name="package" type="jar" implementation="true"/>
+</plugin>
+
+        <!-- Lifecycle plugin.xml -->
+<plugin class="ws.quokka.plugin.lifecycle.LifecyclePlugin"
+        prefix="lifecycle">
+
+    <target name="compile" description="Compiles" paths="compile"/>
+    <target name="test-compile" description="Compiles" paths="test-compile,compile"/>
+    <target name="test" description="Runs unit tests" depends="compile" paths="test,test-compile,compile"/>
+    <target name="package" description="Packages the module for installation" depends="test"/>
+    <target name="install" description="Installs package into the local repository" depends="install"/>
+
+    <default-path-spec id="compile" descend="false" mandatory="true"/>
+    <default-path-spec id="test-compile" descend="false" mandatory="true"/>
+    <default-path-spec id="test" descend="true" mandatory="true"/>
+    <default-path-spec id="runtime" descend="true" mandatory="true"/>
+</plugin>
+
+        <!-- Application using TestNG plugin -->
+<project name="itest">
+    <artifacts group="mygroup" version="1.0-m01-ss">
+        <artifact name="myapp"/>
+    </artifacts>
+
+    <dependency-set>
+        <dependency group="apache.commons" name="commons-lang" version="2.0"/>
+        <dependency group="testng" name="testng-jdk14" version="4.6.1"
+                    paths="test-compile, test(bsh)"/>
+        <dependency group="nim.plugin" name="testng-jdk14" version="1.0.1" type="plugin"
+                    paths="test-target(testng-jdk14(bsh))">
+            <override path="dev-reports-target(testng-jdk14(bsh))" toVersion="2.01b"/>
+            <override path="*(testng-jdk14(bsh))" toVersion="2.01b"/>
+        </dependency>
+        <global-override group="bsh" name="bsh" versions="*" toVersion="2.01b" policy="conflicts"/>
+    </dependency-set>
+</project>
+
+        <!-- Dependency set -->
+<project name="itest">
+    <artifacts group="mygroup" version="1.0">
+        <artifact name="myset-jdk14" type="dset-jar" profiles="jdk14"/>
+        <artifact name="myset-jdk15" type="dset-jar" profiles="jkd15"/>
+    </artifacts>
+
+    <paths>
+        <path id="compile" description="Compilation class path"/>
+        <path id="test-compile" description="Test compilation class path"/>
+        <path id="jkd14-path" description="Test compilation class path" profiles="jdk14"/>
+    </paths>
+
+    <dependency-set>
+        <dependency group="apache.commons" name="commons-lang" version="2.0" include="true"/>
+        <dependency group="testng" name="testng-jdk14" version="4.6.1" pathSpecs="test-compile, test(bsh)"/>
+
+        <plugin group="nim.plugin" name="testng-jdk14" targets="test,dev-reports"
+                paths="dev-reports-target(testng-jdk14(bsh))"
+                include="true">
+            <path-spec path="test" from-path="runtime" spec="bsh@1.0:1(bash, crap(shit, crap))" profiles=""/>
+        </plugin>
+    </dependency-set>
+</project>
+
+        <!-- Project using a dependency set -->
+<project name="itest">
+    <artifact id="mygroup:mydepsetproj:1.0"/>
+    <dependency-set>
+        <dependency-set group="mygroup" name="myset" version="1.0"
+                        inheritProperties="true" inheritResources="true">
+            <dependency group="apache.commons" name="commons-lang" include="true" paths="..."/>
+        </dependency-set>
+    </dependency-set>
+</project>
+
+        <!-- Repository -->
+<repository>
+    <artifact group="quokka.plugins" name="lifecycle" version="1.0" type="jar">
+        <paths>
+            <path id="compile" description="Compilation class path"/>
+            <path id="test-compile" description="Test compilation class path"/>
+        </paths>
+    </artifact>
+    <artifact group="quokka.plugins" name="javac" version="1.0" type="jar">
+        <dependency-set>
+            <dependency group="quokka.plugins" name="lifecycle" version="1.0"/>
+        </dependency-set>
+    </artifact>
+
+</repository>
+
+<project name="itest">
+    <artifact name="myset-jdk14" type="dset-jar" profiles="jdk14"/>
+
+    <paths>
+        <path id="compile" description="Compilation class path"/>
+        <path id="test-compile" description="Test compilation class path"/>
+        <path id="jkd14-path" description="Test compilation class path" profiles="jdk14"/>
+    </paths>
+
+    <dependency-set>
+        <dependency group="apache.commons" name="commons-lang" version="2.0" include="true"/>
+        <dependency group="testng" name="testng-jdk14" version="4.6.1" pathSpecs="test-compile, test(bsh)"/>
+        <plugin group="nim.plugin" name="testng-jdk14" targets="test,dev-reports"
+                paths="dev-reports-target(testng-jdk14(bsh))"
+                include="true">
+            <path-spec path="test" spec="" profiles=""/>
+        </plugin>
+    </dependency-set>
+</project>

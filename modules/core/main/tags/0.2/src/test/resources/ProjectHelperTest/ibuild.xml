@@ -1,0 +1,8 @@
+<project name="test">
+    <target name="validate">
+        <fail/>
+        <!-- Shouldn't be reached as target renamed to test.validate -->
+    </target>
+
+    <target name="post-compile" depends="compile"/>
+</project>
