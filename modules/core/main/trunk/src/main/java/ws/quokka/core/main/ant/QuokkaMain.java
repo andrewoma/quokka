@@ -58,10 +58,7 @@ public class QuokkaMain extends Main {
 
         for (int i = 0; (i < argsArray.length) && !buildFileSpecified; i++) {
             String arg = argsArray[i];
-            buildFileSpecified = (
-                    (arg.equals("-f") || arg.equals("-file") || arg.equals("-buildfile"))
-                    && ((i == 0) || !argsArray[i - 1].startsWith("-D"))
-                );
+            buildFileSpecified = arg.equals("-f") || arg.equals("-file") || arg.equals("-buildfile");
         }
 
         // See if the archetype target is active

@@ -46,7 +46,6 @@ import ws.quokka.core.model.Project;
 import ws.quokka.core.model.ProjectModel;
 import ws.quokka.core.model.Target;
 import ws.quokka.core.plugin_spi.BuildResources;
-import ws.quokka.core.plugin_spi.PluginState;
 import ws.quokka.core.plugin_spi.ResourcesAware;
 import ws.quokka.core.repo_resolver.ResolvedPath;
 import ws.quokka.core.repo_resolver.Resolver;
@@ -109,6 +108,9 @@ public class DefaultProjectModel implements ProjectModel {
     private Map resolvedTargets = new HashMap();
     private DefaultBuildResources buildResources = new DefaultBuildResources();
     private List resolvedImports = new ArrayList();
+
+    private Map pathCache = Collections.synchronizedMap(new HashMap());
+    private List overrides = new ArrayList();
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -281,15 +283,13 @@ public class DefaultProjectModel implements ProjectModel {
         registerProjectPaths(target);
         buildResources.putAll(target.getPlugin().getBuildResources());
 
-        RepoArtifact targetPlugin = target.getPlugin().getArtifact();
-
         // PluginDependency declares the target
         addDependentTargets(resolved, target);
 
         if (target.getImplementsPlugin() != null) {
             // PluginDependency implements the target declared in another plugin
             String[] implementsPlugin = parseImplements(target);
-            RepoArtifactId declaringPluginId = findMatchingDependency(targetPlugin,
+            RepoArtifactId declaringPluginId = fastFindMatchingDependency(target,
                     new RepoArtifactId(implementsPlugin[0], implementsPlugin[1], "plugin", (Version)null));
 
             Plugin declaringPlugin = getPluginInstance(declaringPluginId);
@@ -371,17 +371,63 @@ public class DefaultProjectModel implements ProjectModel {
         }
     }
 
-    // TODO: make it search only paths that are valid for this target
-    private RepoArtifactId findMatchingDependency(RepoArtifact targetArtifact, RepoArtifactId id) {
-        for (Iterator i = targetArtifact.getDependencies().iterator(); i.hasNext();) {
-            RepoDependency dependency = (RepoDependency)i.next();
-
+    /**
+     * This method attempts to find a matching dependency quickly, by bypassing full resolution of the
+     * classpath path group for a plugin. It assumes the following:
+     * 1. The dependendency is directly defined by the plugin artifact (this should always be
+     * true when a plugin implements an abstract method of another)
+     * 2. The plugin artifact defines no overrides that effect the dependency (this should be true
+     * as the plugin should just define the version it wants directly).
+     * If the performance of resolvePathGroup is improved this method could be replaced by the version
+     * below.
+     */
+    private RepoArtifactId fastFindMatchingDependency(Target target, RepoArtifactId id) {
+        // Find the matching id that belongs to the classpath
+        PathGroup pathGroup = target.getPathGroup("classpath");
+        RepoArtifactId match = null;
+        String matchingPath = null;
+        for (Iterator i = target.getPlugin().getArtifact().getDependencies().iterator(); i.hasNext();) {
+            RepoDependency dependency = (RepoDependency) i.next();
             if (dependency.getId().matches(id)) {
-                return dependency.getId();
+                for (Iterator j = dependency.getPathSpecs().iterator(); j.hasNext();) {
+                    RepoPathSpec pathSpec = (RepoPathSpec) j.next();
+                    if (pathGroup.getPaths().contains("plugin." + pathSpec.getTo())) {
+                        match = dependency.getId();
+                        matchingPath = pathSpec.getTo();
+                        break;
+                    }
+                }
             }
         }
 
-        throw new BuildException(targetArtifact.getId() + " does not declare a dependency that matches " + id);
+        Assert.isTrue(match != null, target.getPlugin().getArtifact().getId().toShortString()
+                + " does not declare a dependency that matches " + id);
+
+        // Apply any project overrides
+        for (Iterator i = overrides.iterator(); i.hasNext();) {
+            ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)i.next();
+            if (override.getWithVersion() != null && override.matches(match)) {
+                Set paths = override.matchingPluginPaths(target.getPlugin().getArtifact().getId());
+                if (paths.contains(matchingPath) || ((paths.size() == 1) && paths.contains("*"))) {
+                    log.verbose("Overriding " + match.toShortString() + " to " + override.getWithVersion());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                    }
+                    return new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), override.getWithVersion());
+                }
+            }
+        }
+
+        return match;
+
+        // Slow code
+//        List artifacts = resolvePathGroup(target, "classpath");
+//        for (Iterator i = artifacts.iterator(); i.hasNext();) {
+//            RepoArtifact artifact = (RepoArtifact) i.next();
+//            if (artifact.getId().matches(id)) {
+//                return artifact.getId();
+//            }
+//        }
     }
 
     private Plugin getPluginInstance(RepoArtifactId id) {
@@ -404,11 +450,16 @@ public class DefaultProjectModel implements ProjectModel {
 
         // Add ant-types path
         project.getDependencySet().addPath(new Path("ant-types",
-                "Any entires added to this path are automatically added to the ant type definition class loader. "
-                + "e.g. Add commons.net and ant's optional commons.net library for using the ftp task"));
+                "Dependencies added to this path are available to ant optional tasks."));
 
         // Get dependency sets, applying profiles and overrides
         List sets = depthFirst(project.getDependencySet());
+
+        // O pass: aggregate overrides
+        for (Iterator i = sets.iterator(); i.hasNext();) {
+            DependencySet set = (DependencySet) i.next();
+            overrides.addAll(set.getOverrides());
+        }
 
         // 1st pass: Define targets, paths, imported URLs
         Map targets = new HashMap();
@@ -683,6 +734,19 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     public List resolvePathGroup(Target target, String pathGroupId) {
+        // This code path now gets hit frequently when resolving plugin interdependencies, so cache
+        String key = "pathGroup#" + target.getPlugin().toShortString() + "#" + target.getName() + "#" + pathGroupId;
+        List path = (List) pathCache.get(key);
+        if (path == null) {
+            path = _resolvePathGroup(target, pathGroupId);
+            pathCache.put(key, path);
+        } else {
+            log.debug("Cache hit for: " + key);
+        }
+        return path;
+    }
+
+    public List _resolvePathGroup(Target target, String pathGroupId) {
         Plugin plugin = target.getPlugin();
         PathGroup pathGroup = target.getPathGroup(pathGroupId);
 
@@ -704,18 +768,20 @@ public class DefaultProjectModel implements ProjectModel {
                 + ", pathGroupElements=" + pathGroup.getPaths());
         }
 
-//        System.out.println("Resolving path: target=" + target.getName() + ", pathGroup=" + pathGroupId
-//            + ", pathGroupElements=" + pathGroup.getPaths());
         List paths = new ArrayList();
 
         // Note: merging with core is turned off here so that the proper path tree is maintained
         // However, core overrides are still applied by separating that into a different flag
         resolvePath(pathGroup.getPaths(), paths, false, pathGroup.getMergeWithCore().booleanValue(), target, false);
 
-//        for (Iterator i = paths.iterator(); i.hasNext();) {
-//            ResolvedPath path = (ResolvedPath) i.next();
-//            System.out.println(pathResolver.formatPath(path, false));
-//        }
+        if (log.isDebugEnabled()) {
+            log.debug("Resolved the following paths for path group '" + pathGroup + "'");
+            for (Iterator i = paths.iterator(); i.hasNext();) {
+                ResolvedPath path = (ResolvedPath) i.next();
+                log.debug(pathResolver.formatPath(path, false));
+            }
+        }
+
         ResolvedPath path = pathResolver.merge(paths);
 
         if (pathGroup.getMergeWithCore().booleanValue()) {
@@ -783,6 +849,20 @@ public class DefaultProjectModel implements ProjectModel {
 
     public ResolvedPath getResolvedPluginPath(Plugin plugin, String pathId, boolean mergeWithCore,
         boolean overrideCore, boolean flatten) {
+        String key = "pluginPath#" + plugin.toShortString() + "#" + pathId + "#" + mergeWithCore
+                + "#" + overrideCore + "#" + flatten;
+        ResolvedPath path = (ResolvedPath) pathCache.get(key);
+        if (path == null) {
+            path = _getResolvedPluginPath(plugin,  pathId, mergeWithCore, overrideCore, flatten);
+            pathCache.put(key, path);
+        } else {
+            log.debug("Cache hit for: " + key);
+        }
+        return path;
+    }
+
+    public ResolvedPath _getResolvedPluginPath(Plugin plugin, String pathId, boolean mergeWithCore,
+        boolean overrideCore, boolean flatten) {
         // Create a mock artifact for the resolver as a way to add user specified path specs and overrides
         RepoArtifact artifact = new RepoArtifact();
         RepoDependency dependency = new RepoDependency();
@@ -823,20 +903,16 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         // Add overrides
-        for (Iterator i = depthFirst(project.getDependencySet()).iterator(); i.hasNext();) {
-            DependencySet set = (DependencySet)i.next();
+        for (Iterator i = overrides.iterator(); i.hasNext();) {
+            ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)i.next();
+            Set paths = override.matchingPluginPaths(plugin.getArtifact().getId());
 
-            for (Iterator j = set.getOverrides().iterator(); j.hasNext();) {
-                ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)j.next();
-                Set paths = override.matchingPluginPaths(plugin.getArtifact().getId());
-
-                if (paths.contains(pathId) || ((paths.size() == 1) && paths.contains("*"))) {
-                    // Create a copy of the override, moving matching plugin paths to be standard paths
-                    RepoOverride copy = new RepoOverride(Collections.singleton("*"), override.getGroup(),
-                            override.getName(), override.getType(), override.getVersion(), override.getWithVersion(),
-                            override.getWithPathSpecs());
-                    artifact.addOverride(copy);
-                }
+            if (paths.contains(pathId) || ((paths.size() == 1) && paths.contains("*"))) {
+                // Create a copy of the override, moving matching plugin paths to be standard paths
+                RepoOverride copy = new RepoOverride(Collections.singleton("*"), override.getGroup(),
+                        override.getName(), override.getType(), override.getVersion(), override.getWithVersion(),
+                        override.getWithPathSpecs());
+                artifact.addOverride(copy);
             }
         }
 
@@ -875,7 +951,15 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten) {
-        return getReslovedProjectPath(id, mergeWithCore, overrideCore, flatten, new ArrayList());
+        String key = "projectPath#" + id;
+        ResolvedPath path = (ResolvedPath) pathCache.get(key);
+        if (path == null) {
+            path = getReslovedProjectPath(id, mergeWithCore, overrideCore, flatten, new ArrayList());
+            pathCache.put(key, path);
+        } else {
+            log.debug("Cache hit for: " + key);
+        }
+        return path;
     }
 
     public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten,
@@ -1156,5 +1240,57 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         return licenses;
+    }
+
+    public static class Timer {
+        private static List timers = new ArrayList();
+        static {
+//            Runtime.getRuntime().addShutdownHook(new Thread() {
+//                public void run() {
+//                    for (Iterator i = timers.iterator(); i.hasNext();) {
+//                        Timer timer = (Timer) i.next();
+//                        System.out.println(timer + "\n");
+//                    }
+//                }
+//            });
+        }
+
+        private String name;
+        private List times = new ArrayList();
+        long start;
+        long total = 0;
+
+        public Timer(String name) {
+            this.name = name;
+            timers.add(this);
+        }
+
+        public void start() {
+//            start = System.nanoTime();
+        }
+
+        public void stop() {
+//            long duration = System.nanoTime() - start;
+//            total += duration;
+//            times.add(new Long(duration));
+        }
+
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(name).append(": total=").append(toMilliseconds(total));
+            sb.append(", times=");
+            for (Iterator i = times.iterator(); i.hasNext();) {
+                Long time = (Long) i.next();
+                sb.append(toMilliseconds(time.longValue()));
+                if (i.hasNext()) {
+                    sb.append(", ");
+                }
+            }
+            return sb.toString();
+        }
+
+        private double toMilliseconds(long nano) {
+            return nano * 1.0 / 1000000;
+        }
     }
 }
