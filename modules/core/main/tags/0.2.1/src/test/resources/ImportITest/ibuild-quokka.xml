@@ -1,0 +1,6 @@
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<project name="itest">
+    <dependency-set>
+        <dependency-set group="nested" version="1.0"/>
+    </dependency-set>
+</project>

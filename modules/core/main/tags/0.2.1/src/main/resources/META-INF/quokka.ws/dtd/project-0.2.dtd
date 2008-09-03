@@ -1,0 +1,156 @@
+<!--
+   DTD for quokka project files. See http://quokka.ws/project-reference.html for more information.
+
+   PUBLIC "quokka.ws/dtd/project-0.2"
+   SYSTEM "http://quokka.ws/dtd/project-0.2"
+-->
+
+<!ELEMENT name EMPTY>
+<!ATTLIST name value CDATA #REQUIRED >
+<!ATTLIST name profiles CDATA #IMPLIED >
+
+<!ELEMENT artifact ( description?, name* ) >
+<!ATTLIST artifact description CDATA #IMPLIED >
+<!ATTLIST artifact name NMTOKEN #IMPLIED >
+<!ATTLIST artifact type NMTOKEN #IMPLIED >
+<!ATTLIST artifact paths CDATA #IMPLIED >
+<!ATTLIST artifact profiles CDATA #IMPLIED >
+
+<!ELEMENT artifacts ( artifact* ) >
+<!ATTLIST artifacts group NMTOKEN #REQUIRED >
+<!ATTLIST artifacts version CDATA #REQUIRED >
+<!ATTLIST artifacts type NMTOKEN #IMPLIED >
+
+<!ELEMENT boot-dependency EMPTY >
+<!ATTLIST boot-dependency group NMTOKEN #REQUIRED >
+<!ATTLIST boot-dependency name NMTOKEN #IMPLIED >
+<!ATTLIST boot-dependency version CDATA #REQUIRED >
+<!ATTLIST boot-dependency profiles CDATA #IMPLIED >
+
+<!ELEMENT bootstrap ( jdk | core | cores | jdks | boot-dependency )* >
+<!ATTLIST bootstrap profiles CDATA #IMPLIED >
+<!ATTLIST bootstrap core CDATA #IMPLIED >
+<!ATTLIST bootstrap file CDATA #IMPLIED >
+<!ATTLIST bootstrap java-jvm-vendor CDATA #IMPLIED >
+<!ATTLIST bootstrap java-vendor CDATA #IMPLIED >
+<!ATTLIST bootstrap java-version CDATA #IMPLIED >
+<!ATTLIST bootstrap jvm-version CDATA #IMPLIED >
+<!ATTLIST bootstrap jvm-vendor CDATA #IMPLIED >
+<!ATTLIST bootstrap jvm-args CDATA #IMPLIED >
+<!ATTLIST bootstrap profiles CDATA #IMPLIED >
+<!ATTLIST bootstrap spec-version CDATA #IMPLIED >
+<!ATTLIST bootstrap file CDATA #IMPLIED >
+
+<!ELEMENT core EMPTY >
+<!ATTLIST core profiles CDATA #IMPLIED >
+<!ATTLIST core version CDATA #IMPLIED >
+
+<!ELEMENT cores ( core+ ) >
+<!ATTLIST cores profiles CDATA #IMPLIED >
+<!ATTLIST cores version CDATA #IMPLIED >
+
+<!ELEMENT dependency ( path-spec* ) >
+<!ATTLIST dependency group NMTOKEN #REQUIRED >
+<!ATTLIST dependency name NMTOKEN #IMPLIED >
+<!ATTLIST dependency paths CDATA #IMPLIED >
+<!ATTLIST dependency profiles CDATA #IMPLIED >
+<!ATTLIST dependency type NMTOKEN #IMPLIED >
+<!ATTLIST dependency version CDATA #REQUIRED >
+
+<!ELEMENT profile EMPTY>
+<!ATTLIST profile id NMTOKEN #REQUIRED >
+<!ATTLIST profile description CDATA #IMPLIED >
+
+<!ELEMENT property ( #PCDATA ) >
+<!ATTLIST property name CDATA #REQUIRED >
+<!ATTLIST property value CDATA #IMPLIED >
+<!ATTLIST property profiles CDATA #IMPLIED >
+
+<!ELEMENT dependency-set ( profile | dependency | dependency-set | override | path | plugin | property | license )* >
+<!ATTLIST dependency-set group NMTOKEN #IMPLIED >
+<!ATTLIST dependency-set name NMTOKEN #IMPLIED >
+<!ATTLIST dependency-set version CDATA #IMPLIED >
+<!ATTLIST dependency-set profiles CDATA #IMPLIED >
+
+<!ELEMENT description ( #PCDATA ) >
+
+<!ELEMENT jdk ( sysproperty* ) >
+<!ATTLIST jdk java-jvm-vendor CDATA #IMPLIED >
+<!ATTLIST jdk java-vendor CDATA #IMPLIED >
+<!ATTLIST jdk java-version CDATA #IMPLIED >
+<!ATTLIST jdk jvm-version CDATA #IMPLIED >
+<!ATTLIST jdk jvm-vendor CDATA #IMPLIED >
+<!ATTLIST jdk jvm-args CDATA #IMPLIED >
+<!ATTLIST jdk profiles CDATA #IMPLIED >
+<!ATTLIST jdk spec-version CDATA #IMPLIED >
+
+<!ELEMENT jdks ( jdk | sysproperty )* >
+<!ATTLIST jdks java-jvm-vendor CDATA #IMPLIED >
+<!ATTLIST jdks java-vendor CDATA #IMPLIED >
+<!ATTLIST jdks java-version CDATA #IMPLIED >
+<!ATTLIST jdks jvm-version CDATA #IMPLIED >
+<!ATTLIST jdks jvm-args CDATA #IMPLIED >
+<!ATTLIST jdks jvm-vendor CDATA #IMPLIED >
+<!ATTLIST jdks profiles CDATA #IMPLIED >
+<!ATTLIST jdks spec-version CDATA #IMPLIED >
+
+<!ELEMENT override ( path-spec* ) >
+<!ATTLIST override group NMTOKEN #IMPLIED >
+<!ATTLIST override name NMTOKEN #IMPLIED >
+<!ATTLIST override profiles CDATA #IMPLIED >
+<!ATTLIST override paths CDATA #IMPLIED >
+<!ATTLIST override plugin-paths CDATA #IMPLIED >
+<!ATTLIST override with-paths CDATA #IMPLIED >
+<!ATTLIST override type NMTOKEN #IMPLIED >
+<!ATTLIST override version CDATA #IMPLIED >
+<!ATTLIST override with CDATA #IMPLIED >
+
+<!ELEMENT path ( description? ) >
+<!ATTLIST path descend-default ( true | false ) #IMPLIED >
+<!ATTLIST path description CDATA #IMPLIED >
+<!ATTLIST path id NMTOKEN #REQUIRED >
+<!ATTLIST path mandatory-default ( true | false ) #IMPLIED >
+<!ATTLIST path profiles CDATA #IMPLIED >
+
+<!ELEMENT path-spec EMPTY >
+<!ATTLIST path-spec descend ( true | false ) #IMPLIED >
+<!ATTLIST path-spec from NMTOKEN #IMPLIED >
+<!ATTLIST path-spec mandatory ( true | false ) #IMPLIED >
+<!ATTLIST path-spec options CDATA #IMPLIED >
+<!ATTLIST path-spec to NMTOKEN #IMPLIED >
+<!ATTLIST path-spec profiles CDATA #IMPLIED >
+
+<!ELEMENT plugin ( path-spec | target )* >
+<!ATTLIST plugin group NMTOKEN #REQUIRED >
+<!ATTLIST plugin name NMTOKEN #IMPLIED >
+<!ATTLIST plugin profiles CDATA #IMPLIED >
+<!ATTLIST plugin targets CDATA #IMPLIED >
+<!ATTLIST plugin paths CDATA #IMPLIED >
+<!ATTLIST plugin version CDATA #REQUIRED >
+<!ATTLIST plugin use-defaults ( true | false ) #IMPLIED >
+
+<!ELEMENT license EMPTY >
+<!ATTLIST license group NMTOKEN #IMPLIED >
+<!ATTLIST license name NMTOKEN #IMPLIED >
+<!ATTLIST license version CDATA #IMPLIED >
+<!ATTLIST license file CDATA #IMPLIED >
+
+<!ELEMENT project ( description?, artifacts?, bootstrap*, dependency-set* ) >
+<!ATTLIST project name CDATA #IMPLIED >
+<!ATTLIST project default-target CDATA #IMPLIED >
+
+<!ELEMENT sysproperty EMPTY >
+<!ATTLIST sysproperty name CDATA #REQUIRED >
+<!ATTLIST sysproperty profiles CDATA #IMPLIED >
+<!ATTLIST sysproperty required ( true | false ) #IMPLIED >
+<!ATTLIST sysproperty value CDATA #REQUIRED >
+
+<!ELEMENT target ( property )* >
+<!ATTLIST target alias CDATA #IMPLIED >
+<!ATTLIST target depends CDATA #IMPLIED >
+<!ATTLIST target dependency-of CDATA #IMPLIED >
+<!ATTLIST target name CDATA #IMPLIED >
+<!ATTLIST target prefix CDATA #IMPLIED >
+<!ATTLIST target template CDATA #IMPLIED >
+<!ATTLIST target profiles CDATA #IMPLIED >
+

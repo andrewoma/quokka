@@ -1,0 +1,9 @@
+<project name="sample" default="hello">
+    <target name="hello" depends="validate">
+        <echo>Hello</echo>
+        <fail message="stuffed"/>
+    </target>
+
+    <target name="validate" description="validate desc">
+    </target>
+</project>

@@ -1,0 +1,9 @@
+<dependency-set>
+    <profile id="nestedprofile" description="Nested profile"/>
+    <property name="nestedprop1" value="value1"/>
+
+    <path id="nestedpath1" description="path1 description" descend-default="true" mandatory-default="true"/>
+
+    <dependency group="nested.dep1" version="1.0" paths="path1"/>
+    <plugin group="nested.plugin1" version="1.0"/>
+</dependency-set>
