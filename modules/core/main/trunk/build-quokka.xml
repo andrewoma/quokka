@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.core.main" version="0.2.1-ss">
+    <artifacts group="quokka.core.main" version="0.2.1">
         <artifact paths="runtime"/>
     </artifacts>
 
