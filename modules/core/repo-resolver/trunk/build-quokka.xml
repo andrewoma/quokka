@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.core.repo-resolver" version="0.1.1">
+    <artifacts group="quokka.core.repo-resolver" version="0.1.2-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
