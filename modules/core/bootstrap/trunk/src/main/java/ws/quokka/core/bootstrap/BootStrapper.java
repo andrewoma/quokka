@@ -112,7 +112,7 @@ public class BootStrapper {
         classPath.add(coreFile);
 
         // Add core dependencies
-        Properties properties = new ArtifactPropertiesParser().parse(coreFile, "quokka.core.main", "main", "jar");
+        Properties properties = new ArtifactPropertiesParser().parse(coreFile, "quokka.bundle", "core", "jar");
         List dependencies = getDependencies(properties, "dist");
 
         // Add constraint dependencies
