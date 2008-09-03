@@ -153,6 +153,7 @@ public class Resolver {
                 // Override version if specified
                 if (override.getWithVersion() != null) {
                     overridden.setId(override(dependency.getId(), override.getWithVersion()));
+                    log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
                 }
 
                 // Copy and possibly override path specifications
@@ -174,6 +175,7 @@ public class Resolver {
 
                         log.verbose("Overriding path spec for dependency=" + dependency.toShortString() + " from '"
                             + pathSpec.toShortString() + "' to '" + overiddenPathSpec.toShortString() + "'");
+                        log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
 
                         pathSpec = overiddenPathSpec;
                     }
@@ -382,7 +384,7 @@ public class Resolver {
     }
 
     private RepoArtifactId override(RepoArtifactId id, Version version) {
-        log.debug("Overriding " + id.toShortString() + " to " + version);
+        log.verbose("Overriding " + id.toShortString() + " to " + version);
 
         RepoArtifactId overridden = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), version);
         overridden.setAnnotations((Annotations)id.getAnnotations().clone());
