@@ -266,6 +266,7 @@ public class RepoXmlConverter {
             addExclusion("localCopy");
             addExclusion("description");
             addExclusion("hash");
+            addExclusion("importedFrom");
             addDefault("stub", Boolean.FALSE);
         }
 
@@ -388,6 +389,12 @@ public class RepoXmlConverter {
                 artifact.setDescription(descriptionEl.getText());
             }
 
+            Element importedFromEl = artifactEl.getChild("imported-from");
+
+            if (importedFromEl != null) {
+                artifact.setImportedFrom(importedFromEl.getText());
+            }
+
             return artifact;
         }
 
@@ -463,6 +470,10 @@ public class RepoXmlConverter {
                         licenseEl.setAttribute("version", license.getVersion().toString());
                     }
                 }
+            }
+
+            if (artifact.getImportedFrom() != null) {
+                artifactEl.addChild("imported-from").addText(artifact.getImportedFrom());
             }
         }
     }

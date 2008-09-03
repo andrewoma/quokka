@@ -4,13 +4,12 @@
    PUBLIC "quokka.ws/dtd/repository-0.2"
    SYSTEM "http://quokka.ws/dtd/repository-0.2.dtd"
 -->
-<!ELEMENT artifact ( original-id?, description?, paths?, dependencies?, overrides?, licenses? ) >
+<!ELEMENT artifact ( original-id?, description?, paths?, dependencies?, overrides?, licenses?, imported-from? ) >
 <!ATTLIST artifact group NMTOKEN #REQUIRED >
 <!ATTLIST artifact name NMTOKEN #IMPLIED >
 <!ATTLIST artifact type NMTOKEN #IMPLIED >
 <!ATTLIST artifact version CDATA #REQUIRED >
 <!ATTLIST artifact timestamp CDATA #IMPLIED >
-<!ATTLIST artifact imported-from CDATA #IMPLIED >
 <!ATTLIST artifact stub ( true | false ) #IMPLIED >
 
 <!ELEMENT original-id EMPTY >
@@ -20,6 +19,7 @@
 <!ATTLIST original-id version CDATA #IMPLIED >
 
 <!ELEMENT description ( #PCDATA ) >
+<!ELEMENT imported-from ( #PCDATA ) >
 
 <!ELEMENT dependencies ( dependency+ ) >
 
