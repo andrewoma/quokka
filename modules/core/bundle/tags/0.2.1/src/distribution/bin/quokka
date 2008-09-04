@@ -1,0 +1,79 @@
+#!/bin/sh
+# This script is designed to launch multiple versions of quokka via
+# quokka's bootstrapping mechanism. Set the following to match your most commonly used
+# configuration to prevent bootstrapping from forking another JVM:
+
+defaultQuokka="0.2.1"
+defaultAnt="1.7"
+defaultOpts="-Xmx512m"
+#JAVACMD=</path/to your most commonly used jdk/java>
+
+# =========================================================================
+
+# Resolve home, allowing for symbolic links
+home="$0"
+while [ -h "$home" ] ; do
+  ls=`ls -ld "$home"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    home="$link"
+  else
+    home=`dirname "$home"`"/$link"
+  fi
+done
+home="`dirname "$home"`/.."
+home=`cd "$home" && pwd`
+
+# Cygwin users: do not leave trailing slashes on any paths
+if [ -z "$QUOKKA_OPTS" ] ; then
+    QUOKKA_OPTS=$defaultOpts
+fi
+launcherCp=$home/lib/apache.ant_ant-launcher_jar_$defaultAnt.jar
+quokkaCp=$home/lib/apache.ant_ant_jar_$defaultAnt.jar
+#quokkaCp=$quokkaCp:$home/lib/quokka.core.ant-optional_ant-optional_jar_$defaultAnt.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_$defaultQuokka.jar
+
+# Get the java command
+if [ -z "$JAVACMD" ] ; then
+  if [ -n "$JAVA_HOME"  ] ; then
+    # IBM's JDK on AIX uses strange locations for the executables
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+      JAVACMD="$JAVA_HOME/jre/sh/java"
+    elif [ -x "$JAVA_HOME/jre/bin/java" ] ; then
+      JAVACMD="$JAVA_HOME/jre/bin/java"
+    else
+      JAVACMD="$JAVA_HOME/bin/java"
+    fi
+  else
+    JAVACMD=`which java 2> /dev/null `
+    if [ -z "$JAVACMD" ] ; then
+        JAVACMD=java
+    fi
+  fi
+fi
+
+if [ ! -x "$JAVACMD" ] ; then
+  echo "Error: JAVA_HOME is not defined correctly."
+  echo "  We cannot execute $JAVACMD"
+  exit 1
+fi
+
+# Allow for cygwin, convert paths back to windows convention
+antLibDir=$home/antlib
+case "`uname`" in
+  CYGWIN*) cygwin=true
+    home=`cygpath -w "$home"`
+    JAVACMD=`cygpath -w "$JAVACMD"`
+    antLibDir=`cygpath -w "$antLibDir"`
+    launcherCp=`cygpath --path -w "$launcherCp"`
+    quokkaCp=`cygpath --path -w "$quokkaCp"`
+  ;;
+esac
+
+standardOpts="-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.library.dir=$antLibDir\""
+standardArgs="-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib -Dquokka.bootstrap.script=true"
+# Work-around bug in Ant exec when executing bootstrapped command lines containing nested quotes
+escOpts=`echo $QUOKKA_OPTS | sed "s/\'/@apos@/g"`
+
+cmd="\"$JAVACMD\" $standardOpts $QUOKKA_OPTS '-Dquokka.bootstrap.jvmArgs=$escOpts' -classpath \"$launcherCp\" \"-Dant.home=$home\" org.apache.tools.ant.launch.Launcher $standardArgs $QUOKKA_ARGS -cp \"$quokkaCp\" $@"
+eval $cmd
