@@ -3,7 +3,7 @@
 
 <project>
     <artifacts group="quokka.bundle" version="0.2.1-ss">
-        <artifact name="core"/>
+        <artifact name="core" paths="dist"/>
     </artifacts>
 
     <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
@@ -15,14 +15,15 @@
 
         <!-- Libraries for the core bundle -->
         <plugin group="quokka.plugin.jarbundle" version="0.1" targets="package"/>
-        <dependency group="quokka.core.main" version="0.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.metadata" version="0.1.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.model" version="0.2" paths="jarbundle+"/>
+        <dependency group="quokka.core.main" version="0.2.1" paths="jarbundle+"/>
+        <dependency group="quokka.core.metadata" version="0.1.2" paths="jarbundle+"/>
+        <dependency group="quokka.core.model" version="0.2.1" paths="jarbundle+"/>
         <dependency group="quokka.core.plugin-spi" version="0.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.repo-spi" version="0.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.repo-standard" version="0.2" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-spi" version="0.2.1" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-standard" version="0.2.1" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-resolver" version="0.1.1" paths="jarbundle+"/>
         <dependency group="quokka.core.util" version="0.1.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.bootstrap" version="0.1.1" paths="jarbundle+"/>
+        <dependency group="quokka.core.bootstrap" version="0.1.2" paths="jarbundle+"/>
         <dependency group="quokka.core.bootstrap-util" version="0.1.1" paths="jarbundle+"/>
         <dependency group="quokka.core.version" version="0.1.1" paths="jarbundle+"/>
 
