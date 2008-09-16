@@ -18,6 +18,6 @@
         <dependency group="apache.ant" version="1.7.1" paths="compile, runtime+"/>
         <dependency group="quokka.core.test" version="0.3-ss" paths="test-compile(junit)"/>
 
-        <dependency-set group="quokka.internal.java-depset" version="0.1-ss"/>
+        <dependency-set group="quokka.internal.java-depset" version="0.1"/>
     </dependency-set>
 </project>
