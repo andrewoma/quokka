@@ -11,6 +11,6 @@
     <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
-        <dependency-set group="quokka.internal.depset-depset" version="0.1-ss"/>
+        <dependency-set group="quokka.internal.depset-depset" version="0.1"/>
     </dependency-set>
 </project>
