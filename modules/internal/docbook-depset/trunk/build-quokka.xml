@@ -4,7 +4,7 @@
 <project>
     <description>Quokka dependency set for transforming docbook XML files - for internal use only</description>
 
-    <artifacts group="quokka.internal.docbook-depset" type="depset" version="0.1.1-ss">
+    <artifacts group="quokka.internal.docbook-depset" type="depset" version="0.1.1">
         <artifact/>
     </artifacts>
 
