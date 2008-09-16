@@ -313,7 +313,7 @@ public class ProjectMetadata implements Metadata {
         // Project paths
         for (Iterator i = projectModel.getProjectPaths().keySet().iterator(); i.hasNext();) {
             String id = (String)i.next();
-            List path = projectModel.getProjectPath(id, false, true);
+            List path = projectModel.getProjectPath(id, false, false);
             addDependencies(dependencies, path);
         }
 
@@ -323,27 +323,8 @@ public class ProjectMetadata implements Metadata {
 
             for (Iterator j = target.getPathGroups().iterator(); j.hasNext();) {
                 PathGroup group = (PathGroup)j.next();
-
-                for (Iterator k = group.getPaths().iterator(); k.hasNext();) {
-                    String id = (String)k.next();
-                    String propertyPrefix = "property.";
-
-                    if (id.startsWith(propertyPrefix)) {
-                        String property = id.substring(propertyPrefix.length());
-                        id = ((DefaultProjectModel)projectModel).getAntProject().getProperty(property);
-                        Assert.isTrue(id != null,
-                            "plugin path refers to a property that does not exist: " + property + ", target="
-                            + target.getName() + ", pathGroup=" + group.toString());
-                    }
-
-                    String pluginPrefix = "plugin.";
-
-                    if (id.startsWith(pluginPrefix)) {
-                        List path = projectModel.getPluginPath(target.getPlugin(), id.substring(pluginPrefix.length()),
-                                true, true);
-                        addDependencies(dependencies, path);
-                    }
-                }
+                List path = projectModel.getPathGroup(target, group.getId());
+                addDependencies(dependencies, path);
             }
         }
 

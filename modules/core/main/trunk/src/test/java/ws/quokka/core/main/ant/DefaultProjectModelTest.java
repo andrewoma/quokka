@@ -244,9 +244,9 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         Target target = target(plugin, "target1", "", "group1=plugin.ppath1;group2=plugin.ppath1");
         target.getPathGroup("group2").setMergeWithCore(Boolean.FALSE); // Don't merge
         artifact("plugin1", path("ppath1", true, true));
-        artifact("apache.ant:ant:jar:1.7", path("ppath1", true, true));
+        artifact("apache.ant:ant:jar:1.7.1", path("ppath1", true, true));
         dep(get("plugin1"), get("dep1"), "ppath1");
-        dep(get("plugin1"), get("apache.ant:ant:jar:1.7"), "ppath1");
+        dep(get("plugin1"), get("apache.ant:ant:jar:1.7.1"), "ppath1");
         model.initialise();
 
         ResolvedPath path = new ResolvedPath("id", model.resolvePathGroup(target, "group1"));
@@ -256,7 +256,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         // Test access via the path group including plugin
         path = new ResolvedPath("id", model.resolvePathGroup(target, "group2"));
         printPath(path);
-        assertPath(path, "dep1, dep11, dep111, dep12, dep121, apache.ant:ant:jar:1.7");
+        assertPath(path, "dep1, dep11, dep111, dep12, dep121, apache.ant:ant:jar:1.7.1");
     }
 
     public void testResolvePluginPathWithConflict() {

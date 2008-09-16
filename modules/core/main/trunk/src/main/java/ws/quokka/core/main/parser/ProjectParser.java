@@ -23,7 +23,6 @@ import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
 import ws.quokka.core.bootstrap_util.QuokkaEntityResolver;
-import ws.quokka.core.bootstrap_util.VoidExceptionHandler;
 import ws.quokka.core.model.Artifact;
 import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
@@ -55,7 +54,6 @@ import ws.quokka.core.util.xml.XmlConverter;
 import ws.quokka.core.version.Version;
 
 import java.io.File;
-import java.io.FileOutputStream;
 
 import java.net.URL;
 
@@ -208,7 +206,7 @@ public class ProjectParser {
      * TODO: Define DTDs and add validation
      */
     public Project parse() {
-        log.debug("Parsing " + projectFile.getAbsolutePath());
+        log.verbose("Parsing " + projectFile.getAbsolutePath());
 
         QuokkaEntityResolver resolver = new QuokkaEntityResolver();
 
@@ -371,10 +369,11 @@ public class ProjectParser {
             // Dependency set
             // Important: parse first as dependency sets must be recursed first to discover profiles, overrides and paths
             Element dependencySetEl = applyProfilesChild(projectEl, "dependency-set");
-            Assert.isTrue(dependencySetEl.getElement().getAttributes().getLength() == 0, getLocator(dependencySetEl),
-                "The root dependency set should not have any attributes");
 
             if (dependencySetEl != null) {
+                Assert.isTrue(dependencySetEl.getElement().getAttributes().getLength() == 0,
+                    getLocator(dependencySetEl), "The root dependency set should not have any attributes");
+
                 converter = getConverter(DependencySet.class);
                 project.setDependencySet((DependencySet)converter.fromXml(dependencySetEl));
             }
@@ -515,6 +514,7 @@ public class ProjectParser {
                 id = new RepoArtifactId(id.getGroup(), id.getName(), "depset", id.getVersion());
 
                 RepoArtifact artifact;
+
                 try {
                     artifact = ProjectParser.this.repository.resolve(id);
                 } catch (UnresolvedArtifactException e) {

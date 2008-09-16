@@ -26,6 +26,8 @@
 <!ATTLIST boot-dependency name NMTOKEN #IMPLIED >
 <!ATTLIST boot-dependency version CDATA #REQUIRED >
 <!ATTLIST boot-dependency profiles CDATA #IMPLIED >
+<!ATTLIST boot-dependency file CDATA #IMPLIED >
+<!ATTLIST boot-dependency url CDATA #IMPLIED >
 
 <!ELEMENT bootstrap ( jdk | core | cores | jdks | boot-dependency )* >
 <!ATTLIST bootstrap profiles CDATA #IMPLIED >

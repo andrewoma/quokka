@@ -108,7 +108,6 @@ public class DefaultProjectModel implements ProjectModel {
     private Map resolvedTargets = new HashMap();
     private DefaultBuildResources buildResources = new DefaultBuildResources();
     private List resolvedImports = new ArrayList();
-
     private Map pathCache = Collections.synchronizedMap(new HashMap());
     private List overrides = new ArrayList();
 
@@ -160,6 +159,10 @@ public class DefaultProjectModel implements ProjectModel {
 
     public void setPluginParser(PluginParser pluginParser) {
         this.pluginParser = pluginParser;
+    }
+
+    public ResolvedPath getCorePath() {
+        return corePath;
     }
 
     private void resolveTargets(Map resolved, PluginDependency pluginDependency) {
@@ -386,33 +389,43 @@ public class DefaultProjectModel implements ProjectModel {
         PathGroup pathGroup = target.getPathGroup("classpath");
         RepoArtifactId match = null;
         String matchingPath = null;
+
         for (Iterator i = target.getPlugin().getArtifact().getDependencies().iterator(); i.hasNext();) {
-            RepoDependency dependency = (RepoDependency) i.next();
+            RepoDependency dependency = (RepoDependency)i.next();
+
             if (dependency.getId().matches(id)) {
                 for (Iterator j = dependency.getPathSpecs().iterator(); j.hasNext();) {
-                    RepoPathSpec pathSpec = (RepoPathSpec) j.next();
+                    RepoPathSpec pathSpec = (RepoPathSpec)j.next();
+
                     if (pathGroup.getPaths().contains("plugin." + pathSpec.getTo())) {
                         match = dependency.getId();
                         matchingPath = pathSpec.getTo();
+
                         break;
                     }
                 }
             }
         }
 
-        Assert.isTrue(match != null, target.getPlugin().getArtifact().getId().toShortString()
-                + " does not declare a dependency that matches " + id);
+        Assert.isTrue(match != null,
+            target.getPlugin().getArtifact().getId().toShortString() + " does not declare a dependency that matches "
+            + id);
 
         // Apply any project overrides
         for (Iterator i = overrides.iterator(); i.hasNext();) {
             ws.quokka.core.model.Override override = (ws.quokka.core.model.Override)i.next();
-            if (override.getWithVersion() != null && override.matches(match)) {
+
+            if ((override.getWithVersion() != null) && override.matches(match)) {
                 Set paths = override.matchingPluginPaths(target.getPlugin().getArtifact().getId());
+
                 if (paths.contains(matchingPath) || ((paths.size() == 1) && paths.contains("*"))) {
                     log.verbose("Overriding " + match.toShortString() + " to " + override.getWithVersion());
+
                     if (log.isDebugEnabled()) {
-                        log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                        log.debug("Applied " + override
+                            + ((override.getLocator() == null) ? "" : (" from " + override.getLocator())));
                     }
+
                     return new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), override.getWithVersion());
                 }
             }
@@ -457,7 +470,7 @@ public class DefaultProjectModel implements ProjectModel {
 
         // O pass: aggregate overrides
         for (Iterator i = sets.iterator(); i.hasNext();) {
-            DependencySet set = (DependencySet) i.next();
+            DependencySet set = (DependencySet)i.next();
             overrides.addAll(set.getOverrides());
         }
 
@@ -605,6 +618,10 @@ public class DefaultProjectModel implements ProjectModel {
         }
     }
 
+    public List getOverrides() {
+        return overrides;
+    }
+
     public Plugin getPlugin(RepoArtifactId id) {
         for (Iterator i = resolvedTargets.values().iterator(); i.hasNext();) {
             List pluginTargets = (List)i.next();
@@ -653,6 +670,9 @@ public class DefaultProjectModel implements ProjectModel {
         resolvedProperties.put("quokka.project.sourceDir", "${basedir}/src");
         resolvedProperties.put("quokka.project.resourcesDir", "${basedir}/resources");
 
+        // Define the exported paths ... these are effectively the runtime dependencies
+        StringBuffer exportedPaths = new StringBuffer();
+
         // Add artifact related properties
         if (project.getArtifacts().size() > 0) {
             // Add properties common to all (group & version)
@@ -675,6 +695,17 @@ public class DefaultProjectModel implements ProjectModel {
                 }
 
                 names.add(artifactId.getName());
+
+                // Collect the exported paths
+                for (Iterator j = artifact.getExportedPaths().iterator(); j.hasNext();) {
+                    Artifact.PathMapping mapping = (Artifact.PathMapping)j.next();
+
+                    if (exportedPaths.length() != 0) {
+                        exportedPaths.append(", ");
+                    }
+
+                    exportedPaths.append("project.").append(mapping.getFrom());
+                }
             }
 
             // Output the names
@@ -685,6 +716,8 @@ public class DefaultProjectModel implements ProjectModel {
                     Strings.join(names.iterator(), ","));
             }
         }
+
+        resolvedProperties.put("quokka.project.exportedPaths", exportedPaths.toString()); // May be empty
 
         // Put the plugin properties in first. Order is not important as plugin properties should be
         // unique to their plugin
@@ -736,13 +769,17 @@ public class DefaultProjectModel implements ProjectModel {
     public List resolvePathGroup(Target target, String pathGroupId) {
         // This code path now gets hit frequently when resolving plugin interdependencies, so cache
         String key = "pathGroup#" + target.getPlugin().toShortString() + "#" + target.getName() + "#" + pathGroupId;
-        List path = (List) pathCache.get(key);
+        List path = (List)pathCache.get(key);
+
         if (path == null) {
             path = _resolvePathGroup(target, pathGroupId);
             pathCache.put(key, path);
         } else {
-            log.debug("Cache hit for: " + key);
+            if (log.isDebugEnabled()) {
+                log.debug("Cache hit for: " + key);
+            }
         }
+
         return path;
     }
 
@@ -776,8 +813,9 @@ public class DefaultProjectModel implements ProjectModel {
 
         if (log.isDebugEnabled()) {
             log.debug("Resolved the following paths for path group '" + pathGroup + "'");
+
             for (Iterator i = paths.iterator(); i.hasNext();) {
-                ResolvedPath path = (ResolvedPath) i.next();
+                ResolvedPath path = (ResolvedPath)i.next();
                 log.debug(pathResolver.formatPath(path, false));
             }
         }
@@ -827,7 +865,7 @@ public class DefaultProjectModel implements ProjectModel {
 
                 String value = project.getProperties().getProperty(property);
 
-                if (value != null) {
+                if ((value != null) && !value.trim().equals("")) {
                     resolvePath(Strings.commaSepList(value), paths, mergeWithCore, overrideCore, target, flatten);
                 }
             } else if (id.equals("plugin")) {
@@ -847,17 +885,25 @@ public class DefaultProjectModel implements ProjectModel {
         return getResolvedPluginPath(plugin, pathId, mergeWithCore, mergeWithCore, flatten).getArtifacts();
     }
 
+    public List getPathGroup(Target target, String id) {
+        return resolvePathGroup(target, id);
+    }
+
     public ResolvedPath getResolvedPluginPath(Plugin plugin, String pathId, boolean mergeWithCore,
         boolean overrideCore, boolean flatten) {
-        String key = "pluginPath#" + plugin.toShortString() + "#" + pathId + "#" + mergeWithCore
-                + "#" + overrideCore + "#" + flatten;
-        ResolvedPath path = (ResolvedPath) pathCache.get(key);
+        String key = "pluginPath#" + plugin.toShortString() + "#" + pathId + "#" + mergeWithCore + "#" + overrideCore
+            + "#" + flatten;
+        ResolvedPath path = (ResolvedPath)pathCache.get(key);
+
         if (path == null) {
-            path = _getResolvedPluginPath(plugin,  pathId, mergeWithCore, overrideCore, flatten);
+            path = _getResolvedPluginPath(plugin, pathId, mergeWithCore, overrideCore, flatten);
             pathCache.put(key, path);
         } else {
-            log.debug("Cache hit for: " + key);
+            if (log.isDebugEnabled()) {
+                log.debug("Cache hit for: " + key);
+            }
         }
+
         return path;
     }
 
@@ -951,21 +997,27 @@ public class DefaultProjectModel implements ProjectModel {
     }
 
     public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten) {
-        String key = "projectPath#" + id;
-        ResolvedPath path = (ResolvedPath) pathCache.get(key);
+        String key = "projectPath#" + id + "#" + mergeWithCore + "#" + overrideCore + "#" + flatten;
+        ResolvedPath path = (ResolvedPath)pathCache.get(key);
+
         if (path == null) {
             path = getReslovedProjectPath(id, mergeWithCore, overrideCore, flatten, new ArrayList());
             pathCache.put(key, path);
         } else {
-            log.debug("Cache hit for: " + key);
+            if (log.isDebugEnabled()) {
+                log.debug("Cache hit for: " + key);
+            }
         }
+
         return path;
     }
 
     public ResolvedPath getReslovedProjectPath(String id, boolean mergeWithCore, boolean overrideCore, boolean flatten,
         List appliedOverrides) {
-        log.debug("Getting project path: id=" + id + ", mergeWithCore=" + mergeWithCore + ", overrideCore="
-            + overrideCore + ", flatten=" + flatten);
+        if (log.isDebugEnabled()) {
+            log.debug("Getting project path: id=" + id + ", mergeWithCore=" + mergeWithCore + ", overrideCore="
+                + overrideCore + ", flatten=" + flatten);
+        }
 
         RepoArtifact artifact = new RepoArtifact();
 
@@ -1242,8 +1294,11 @@ public class DefaultProjectModel implements ProjectModel {
         return licenses;
     }
 
+    //~ Inner Classes --------------------------------------------------------------------------------------------------
+
     public static class Timer {
         private static List timers = new ArrayList();
+
         static {
 //            Runtime.getRuntime().addShutdownHook(new Thread() {
 //                public void run() {
@@ -1279,18 +1334,21 @@ public class DefaultProjectModel implements ProjectModel {
             StringBuffer sb = new StringBuffer();
             sb.append(name).append(": total=").append(toMilliseconds(total));
             sb.append(", times=");
+
             for (Iterator i = times.iterator(); i.hasNext();) {
-                Long time = (Long) i.next();
+                Long time = (Long)i.next();
                 sb.append(toMilliseconds(time.longValue()));
+
                 if (i.hasNext()) {
                     sb.append(", ");
                 }
             }
+
             return sb.toString();
         }
 
         private double toMilliseconds(long nano) {
-            return nano * 1.0 / 1000000;
+            return (nano * 1.0) / 1000000;
         }
     }
 }

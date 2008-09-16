@@ -24,6 +24,7 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterSet;
 
+import ws.quokka.core.bootstrap_util.ArtifactPropertiesParser;
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
@@ -33,17 +34,22 @@ import ws.quokka.core.main.ant.ProjectHelper;
 import ws.quokka.core.plugin_spi.support.AntUtils;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
+import ws.quokka.core.repo_spi.RepoDependency;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryAware;
 import ws.quokka.core.repo_spi.RepositoryFactory;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.util.URLs;
+import ws.quokka.core.version.Version;
+import ws.quokka.core.version.VersionRange;
 
 import java.io.File;
 
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -53,6 +59,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -82,10 +89,35 @@ public class ArchetypeTask extends Task implements RepositoryAware {
     }
 
     public void execute() throws BuildException {
-        RepoArtifactId id = getArtifactId();
-        logger.info("Creating project based on artifact: " + id.toShortString());
-
         selectRepository();
+
+        RepoArtifactId id = getArtifactId();
+
+        // If no id, list the available archetypes
+        if (id == null) {
+            listArchetypes(!"true".equals(getProject().getProperty("all")));
+
+            return;
+        }
+
+        // If the version is null, look for a compatible id
+        if (id.getVersion() == null) {
+            Collection ids = repository.listArtifactIds(id.getGroup(), id.getName(), "archetype", true);
+            Assert.isTrue(ids.size() != 0,
+                "There are no archetypes in the repository with an id of '" + id.toShortString() + "'");
+
+            ArchetypeGroup group = (ArchetypeGroup)getArchetypes(ids).iterator().next();
+            Assert.isTrue(group.compatible.size() != 0,
+                "There appear to be no compatible versions. Specify the version explicitly if you wish to force it.\n"
+                + "Available versions are: " + group.incompatible);
+
+            // Choose the most current compatible
+            List list = new ArrayList(group.compatible);
+            Collections.reverse(list);
+            id = new RepoArtifactId(null, null, null, (Version)list.get(0)).merge(id);
+        }
+
+        logger.info("Creating project based on artifact: " + id.toShortString());
 
         RepoArtifact artifact = repository.resolve(id);
         logger.info("Extracting the following archetype to " + getProject().getBaseDir().getAbsolutePath() + ":");
@@ -98,6 +130,115 @@ public class ArchetypeTask extends Task implements RepositoryAware {
 
         displayEntries(localCopy, root);
         copyEntries(localCopy, root);
+    }
+
+    private void listArchetypes(boolean onlyCompatible) {
+        Collection ids = repository.listArtifactIds(null, null, "archetype", true);
+        StringBuffer sb = new StringBuffer("\nAvailable Archetypes");
+        sb.append("\n====================\n");
+
+        for (Iterator i = getArchetypes(ids).iterator(); i.hasNext();) {
+            ArchetypeGroup group = (ArchetypeGroup)i.next();
+
+            if (onlyCompatible && (group.compatible.size() == 0)) {
+                continue;
+            }
+
+            RepoArtifactId id = group.mostRecent.getId();
+            String groupName = id.getGroup() + ":" + (id.isDefaultName() ? "" : (id.getName() + ":"));
+            sb.append(Strings.pad(groupName, 34, ' ')).append(" ").append(Strings.join(group.compatible.iterator(), " "));
+            sb.append((group.compatible.size() == 0) ? "" : "* ");
+
+            if (!onlyCompatible) {
+                sb.append(Strings.join(group.incompatible.iterator(), " "));
+            }
+
+            sb.append("\n    ").append(group.mostRecent.getShortDescription()).append("\n");
+        }
+
+        if (onlyCompatible) {
+            sb.append("\nThe archetypes listed above are probably compatible with your quokka version.");
+            sb.append("\nVersions marked with '*' are recommended and will be selected automatically if you");
+            sb.append("\nrequest an archetype without the version. Use -Dall=true to show all versions.");
+        }
+
+        sb.append("\nTo use an archtype type: $ quokka archetype -Darchetype=group[:name][:version] [-Dprop1=value1]");
+        sb.append("\n    e.g. $ quokka archetype -Darchetype=quokka.archetype.jar -Dgroup=mycompany.myproject");
+
+        getProject().log(sb.toString());
+    }
+
+    /**
+     * Returns a list of Archetypes sorted by group then name.
+     */
+    protected Collection getArchetypes(Collection ids) {
+        Version coreVersion = getCoreVersion();
+
+        // Sorted by group, then name
+        Map archetypes = new TreeMap(new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        RepoArtifactId lhs = (RepoArtifactId)o1;
+                        RepoArtifactId rhs = (RepoArtifactId)o2;
+                        int result = lhs.getGroup().compareTo(rhs.getGroup());
+                        result = (result != 0) ? result : lhs.getName().compareTo(rhs.getName());
+
+                        return result;
+                    }
+                });
+
+        // Split the ids into groups
+        for (Iterator i = ids.iterator(); i.hasNext();) {
+            RepoArtifactId id = (RepoArtifactId)i.next();
+            RepoArtifact artifact = repository.resolve(id, false);
+
+            RepoArtifactId unversioned = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), (Version)null);
+            ArchetypeGroup group = (ArchetypeGroup)archetypes.get(unversioned);
+
+            if (group == null) {
+                group = new ArchetypeGroup();
+                group.mostRecent = artifact;
+                archetypes.put(unversioned, group);
+            }
+
+            // Treat anything >= the archetype min version that has the same major and minor version as compatible
+            Version archetypeMinVersion = getArchetypeMinVersion(artifact);
+            VersionRange compatible = VersionRange.parse("[" + archetypeMinVersion + ","
+                    + archetypeMinVersion.getMajor() + "." + (archetypeMinVersion.getMinor() + 1) + ")");
+
+            // Split compatible from incompatible
+            if (compatible.isInRange(coreVersion)) {
+                group.compatible.add(id.getVersion());
+            } else {
+                group.incompatible.add(id.getVersion());
+            }
+
+            // Keep track of the most recent as the description is probably the best to use
+            if (group.mostRecent.getId().getVersion().compareTo(artifact.getId().getVersion()) < 0) {
+                group.mostRecent = artifact;
+            }
+        }
+
+        return archetypes.values();
+    }
+
+    private Version getArchetypeMinVersion(RepoArtifact artifact) {
+        for (Iterator i = artifact.getDependencies().iterator(); i.hasNext();) {
+            RepoDependency dependency = (RepoDependency)i.next();
+
+            if (dependency.getId().getGroup().equals("quokka.core.main")) {
+                return dependency.getId().getVersion();
+            }
+        }
+
+        return new Version(0, 0, 0, 0); // Make it incompatible with everything
+    }
+
+    private Version getCoreVersion() {
+        Properties properites = new ArtifactPropertiesParser().parse("quokka.core.main", "main", "jar");
+        String version = properites.getProperty("artifact.id.version");
+        Assert.isTrue(version != null, "Could not find quokka.core.main version in the core class path");
+
+        return Version.parse(version);
     }
 
     private void selectRepository() {
@@ -194,7 +335,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
             String group = getProject().getProperty("group");
 
             if (group != null) {
-                getProject().setProperty("name", group.substring(group.lastIndexOf(".") + 1));
+                getProject().setProperty("name", RepoArtifactId.defaultName(group));
             }
         }
     }
@@ -264,14 +405,27 @@ public class ArchetypeTask extends Task implements RepositoryAware {
 
     private RepoArtifactId getArtifactId() {
         String id = getProject().getProperty("archetype");
-        Assert.isTrue(id != null, "'archetype' property is required");
 
-        String[] tokens = Strings.split(id, ":");
-        Assert.isTrue((tokens.length == 2) || (tokens.length == 3), "archetype format is 'group:[name]:version': " + id);
+        if (id == null) {
+            return null;
+        }
 
-        String name = (tokens.length == 3) ? tokens[1] : tokens[0].substring(tokens[0].lastIndexOf('.') + 1);
-        String version = tokens[tokens.length - 1];
+        String[] tokens = Strings.splitPreserveAllTokens(id, ":");
+        Assert.isTrue((tokens.length >= 1) && (tokens.length <= 3),
+            "archetype format is 'group[:name][:version]': " + id);
 
-        return new RepoArtifactId(tokens[0], name, "jar", version);
+        String group = tokens[0];
+        String name = (tokens.length >= 2) ? tokens[1] : RepoArtifactId.defaultName(group);
+        String version = (tokens.length == 3) ? tokens[2] : null;
+
+        return new RepoArtifactId(group, name, "archetype", (version == null) ? null : Version.parse(version));
+    }
+
+    //~ Inner Classes --------------------------------------------------------------------------------------------------
+
+    private static class ArchetypeGroup {
+        RepoArtifact mostRecent;
+        SortedSet compatible = new TreeSet();
+        SortedSet incompatible = new TreeSet();
     }
 }

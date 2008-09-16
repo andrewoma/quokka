@@ -54,6 +54,7 @@ import ws.quokka.core.main.ant.task.DependencyOfTask;
 import ws.quokka.core.main.ant.task.ForTask;
 import ws.quokka.core.main.ant.task.IfTask;
 import ws.quokka.core.main.ant.task.InputUnlessSetTask;
+import ws.quokka.core.main.ant.task.ListPluginsTask;
 import ws.quokka.core.main.ant.task.PluginTargetTask;
 import ws.quokka.core.main.ant.task.RunTargetTask;
 import ws.quokka.core.main.ant.task.SwitchTask;
@@ -68,7 +69,6 @@ import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Strings;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.lang.reflect.Field;
@@ -238,6 +238,7 @@ public class ProjectHelper extends ProjectHelper2 {
     private DefaultProjectModel initialise_(Project antProject, File quokkaFile, boolean topLevel) {
         clearInheritedProperties(antProject);
         antProject.setProperty("quokka.project.file", quokkaFile.getAbsolutePath());
+        antProject.setBaseDir(quokkaFile.getParentFile());
 
         Profiles profiles = new Profiles(antProject.getProperty("profiles"));
         Map antProperties = PropertiesUtil.getProperties(antProject);
@@ -245,7 +246,6 @@ public class ProjectHelper extends ProjectHelper2 {
 
         registerBuiltIns(antProject);
         antProject.log("Quokka project detected: parsing '" + quokkaFile.getPath() + "'", Project.MSG_VERBOSE);
-        antProject.setBaseDir(quokkaFile.getParentFile());
 
         AnnotatedProperties projectProperties = ProjectParser.getProjectProperties(quokkaFile, antProperties);
         projectProperties.put("basedir", quokkaFile.getParent());
@@ -698,26 +698,32 @@ public class ProjectHelper extends ProjectHelper2 {
             antProject.addTarget(aliasTarget);
         }
 
-        addConsoleTarget(antProject);
+        addBuiltinTargets(antProject);
 
         return antTargets;
     }
 
-    private void addConsoleTarget(Project antProject) {
+    private void addBuiltinTargets(Project antProject) {
+        addBuiltinTarget(antProject, "console", new ConsoleTask(),
+            "Allows targets to be entered interactively, eliminating startup overheads");
+        addBuiltinTarget(antProject, "list-plugins", new ListPluginsTask(),
+            "Lists available plugins including analysis of compatibility with the core and other plugins");
+    }
+
+    private void addBuiltinTarget(Project antProject, String name, Task task, String description) {
         Target target = new Target();
         target.setProject(antProject);
-        target.setName("console");
+        target.setName(name);
         target.setDepends("");
         target.setLocation(Location.UNKNOWN_LOCATION);
-        target.setDescription("Allows targets to be entered interactively, eliminating startup overheads");
+        target.setDescription(description);
         antProject.addTarget(target);
 
-        ConsoleTask task = new ConsoleTask();
         task.setProject(antProject);
         task.setOwningTarget(target);
         task.setLocation(Location.UNKNOWN_LOCATION);
-        task.setTaskName("console");
-        task.setTaskType("console");
+        task.setTaskName(name);
+        task.setTaskType(name);
         target.addTask(task);
     }
 

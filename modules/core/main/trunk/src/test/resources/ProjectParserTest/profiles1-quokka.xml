@@ -14,9 +14,9 @@
         <path id="test" profiles="p1"/>
         <path id="compile" profiles="p2"/>
 
-        <dependency group="apache.ant" version="1.7.0" paths="compile, runtime"/>
-        <dependency group="apache.ant" name="trax" version="1.7.0" paths="compile, runtime" profiles="p1"/>
-        <dependency group="apache.ant" name="junit" version="1.7.0" paths="compile, runtime" profiles="p2"/>
+        <dependency group="apache.ant" version="1.7.1" paths="compile, runtime"/>
+        <dependency group="apache.ant" name="trax" version="1.7.1" paths="compile, runtime" profiles="p1"/>
+        <dependency group="apache.ant" name="junit" version="1.7.1" paths="compile, runtime" profiles="p2"/>
         <plugin group="quokka.plugin.junitplugin" version="1.0-m01-ss">
             <target name="test1" profiles="p1"/>
             <target name="test2" profiles="p2"/>

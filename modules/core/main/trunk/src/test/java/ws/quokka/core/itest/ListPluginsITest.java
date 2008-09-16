@@ -19,16 +19,24 @@ package ws.quokka.core.itest;
 
 import org.apache.tools.ant.Project;
 
+import ws.quokka.core.bootstrap_util.IOUtils;
+
+import java.io.File;
+
 
 /**
  *
  */
-public class ImportITest extends IntegrationTest {
+public class ListPluginsITest extends IntegrationTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void testImport() {
-        setLogLevel(Project.MSG_VERBOSE);
-        properties.put("itest.override.nested:nested:depset:1.0", getTestCaseResource("depset").getAbsolutePath());
-        ant(new String[] { "toplevel-import", "depset-import" });
+    public void testArchetype() {
+        setLogLevel(Project.MSG_INFO);
+
+//        properties.put("all", "true");
+//        properties.put("verbose", "true");
+        properties.put("quokka.project.overrideCore", "true");
+        properties.put("plugin", "quokka.plugin.help");
+        ant(new String[] { "list-plugins" });
     }
 }
