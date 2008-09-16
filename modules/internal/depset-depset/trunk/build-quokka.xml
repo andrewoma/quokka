@@ -4,7 +4,7 @@
 <project>
     <description>Quokka dependency set for creating dependency sets - for internal use only</description>
 
-    <artifacts group="quokka.internal.depset-depset" type="depset" version="0.1">
+    <artifacts group="quokka.internal.depset-depset" type="depset" version="0.2-ss">
         <artifact/>
     </artifacts>
 
