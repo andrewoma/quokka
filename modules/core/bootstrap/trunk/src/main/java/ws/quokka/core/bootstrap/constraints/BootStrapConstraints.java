@@ -83,7 +83,9 @@ public class BootStrapConstraints {
             for (Iterator j = resources.getJdks().iterator(); j.hasNext();) {
                 Jdk available = (Jdk)j.next();
 
-                Log.get().debug("Matching against jdk: " + available.getLocation().getAbsolutePath());
+                if (Log.get().isDebugEnabled()) {
+                    Log.get().debug("Matching against jdk: " + available.getLocation().getAbsolutePath());
+                }
 
                 if (required.matches(available, matchOptional)) {
                     available.setMatchedConstraint(required);
@@ -119,7 +121,9 @@ public class BootStrapConstraints {
 
     private DependencyResource findMatch(BootStrapResources resources, DependencyConstraint dependency,
         boolean mandatory) {
-        Log.get().debug("Matching " + dependency);
+        if (Log.get().isDebugEnabled()) {
+            Log.get().debug("Matching " + dependency);
+        }
 
         for (Iterator j = resources.getAvailableLibraries().iterator(); j.hasNext();) {
             DependencyResource available = (DependencyResource)j.next();
@@ -143,7 +147,9 @@ public class BootStrapConstraints {
             Assert.isTrue(union.getRanges().size() == 1, message);
 
             VersionRange range = (VersionRange)union.getRanges().get(0);
+            Assert.isTrue(range.getHigh() != null && range.getLow() != null, message);
             Assert.isTrue(range.getHigh().equals(range.getLow()), message);
+            Assert.isTrue(range.isHighInclusive() && range.isLowInclusive(), message);
 
             return new SuppliedDependencyResource(dependency.getGroup(), dependency.getName(), range.getHigh(),
                 dependency.getFile(), dependency.getUrl());

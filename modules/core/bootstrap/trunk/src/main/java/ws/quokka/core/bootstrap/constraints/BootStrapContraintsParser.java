@@ -77,7 +77,7 @@ public class BootStrapContraintsParser extends XmlParser {
             Assert.isTrue(bootStrapEl.getAttributes().getLength() == 1, message);
 
             // TODO: make sure there are no child elements. Easy way?
-            file = project.resolveFile(fileAttribute);
+            file = project.resolveFile(project.replaceProperties(fileAttribute));
             Assert.isTrue(file.exists(),
                 "'file' attribute specified by the 'bootstrap' element does not exist: " + file.getPath());
 

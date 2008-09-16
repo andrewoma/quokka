@@ -136,13 +136,13 @@ public class BootStrapper {
         try {
             if (resource.getFile() != null) {
                 // Use project to resolve to current handle the base dir
-                File file = project.resolveFile(resource.getFile());
+                File file = project.resolveFile(project.replaceProperties(resource.getFile()));
                 Assert.isTrue(file.exists() && !file.isDirectory() && file.canRead(),
                     "Boot dependency file either doesn't exist, is a directory, or isn't readable: " + file.getPath());
 
                 return file;
             } else {
-                String md5 = BootStrapResourcesParser.md5(resource.getUrl().getBytes("UTF8"));
+                String md5 = new IOUtils().md5String(resource.getUrl().getBytes("UTF8"));
                 File cachedFile = new File(cacheDir, md5 + ".jar");
 
                 if (!cachedFile.exists()) {
@@ -236,7 +236,9 @@ public class BootStrapper {
     }
 
     protected CommandlineJava createCommandLine(Jdk jdk, List bootStrapClassPath) {
-        Log.get().debug(bootStrapClassPath.toString());
+        if (Log.get().isDebugEnabled()) {
+            Log.get().debug(bootStrapClassPath.toString());
+        }
 
         // Convert the classpath to a string
         StringBuffer classPath = new StringBuffer();
@@ -262,7 +264,9 @@ public class BootStrapper {
         command.createVmArgument().setValue("-Dant.library.dir=" + new File(System.getProperty("ant.home"), "antlib"));
         command.createVmArgument().setValue("-Dquokka.bootstrap.jvmArgs=" + jdk.getMatchedConstraint().getJvmArgs());
 
-        Log.get().debug(classPath.toString());
+        if (Log.get().isDebugEnabled()) {
+            Log.get().debug(classPath.toString());
+        }
 
         command.createClasspath(project).setPath(classPath.toString());
         command.createVmArgument().setLine(jdk.getMatchedConstraint().getJvmArgs());

@@ -28,6 +28,7 @@ import org.w3c.dom.Element;
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.Log;
 import ws.quokka.core.bootstrap_util.XmlParser;
+import ws.quokka.core.bootstrap_util.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -91,19 +92,6 @@ public class BootStrapResourcesParser extends XmlParser {
         return availableLibraries;
     }
 
-    public static String md5(byte[] bytes) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-
-            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
-            messageDigest.reset();
-            messageDigest.update(bytes);
-
-            return toHex(messageDigest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new BuildException(e);
-        }
-    }
 
     public BootStrapResources parse_(File file, File librariesDir, File cacheDir)
             throws IOException {
@@ -150,7 +138,7 @@ public class BootStrapResourcesParser extends XmlParser {
                 + "' does not exist");
 
             // Create a hash of the jdk location and use it a key for a cache of jvm system properties
-            String locationHash = md5(jdk.getLocation().getAbsolutePath().getBytes("UTF8"));
+            String locationHash = new IOUtils().md5String(jdk.getLocation().getAbsolutePath().getBytes("UTF8"));
             File propertiesFile = new File(cacheDir, locationHash + ".properties");
 
             if (!propertiesFile.exists()
@@ -193,22 +181,6 @@ public class BootStrapResourcesParser extends XmlParser {
                 System.err.println(error);
             }
         }
-    }
-
-    private static String toHex(byte[] fileDigest) {
-        StringBuffer hex = new StringBuffer();
-
-        for (int i = 0; i < fileDigest.length; i++) {
-            String hexStr = Integer.toHexString(0x00ff & fileDigest[i]);
-
-            if (hexStr.length() < 2) {
-                hex.append("0");
-            }
-
-            hex.append(hexStr);
-        }
-
-        return hex.toString();
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------
