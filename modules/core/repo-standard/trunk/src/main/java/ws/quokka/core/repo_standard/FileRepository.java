@@ -97,11 +97,15 @@ public class FileRepository extends AbstractStandardRepository {
     }
 
     public void install(RepoArtifact artifact) {
+        File artifactFile = getArtifactFile(artifact.getId());
+        log().info("Installing '" + artifact.getId().toShortString() + "' into repository '" + getName()
+                + "' at " + artifactFile.getParent());
+
         File oldRootDir = rootDir;
 
         try {
             rootDir = (installRootDir == null) ? rootDir : installRootDir;
-            copyArtifact(artifact, getArtifactFile(artifact.getId()));
+            copyArtifact(artifact, artifactFile);
             writeRepositoryFile(artifact, getRepositoryFile(artifact.getId()));
         } finally {
             rootDir = oldRootDir;

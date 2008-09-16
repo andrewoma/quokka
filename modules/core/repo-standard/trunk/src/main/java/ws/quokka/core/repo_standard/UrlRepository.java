@@ -157,17 +157,8 @@ public class UrlRepository extends AbstractStandardRepository {
             throw new BuildException(e);
         }
 
-        Get get = (Get)getProject().createTask("get");
-        get.setSrc(url);
-        get.setUsername(user);
-        get.setPassword(password);
-        get.setDest(destination);
-        get.setUseTimestamp(false);
-        get.setIgnoreErrors(false);
-
         try {
-            // Get is incredibly noisy ... this limits it's logging to verbose level only
-            get.doGet(Project.MSG_VERBOSE, null);
+            new IOUtils().download(getProject(), url, user, password, destination);
         } catch (Exception e) {
             if (notFound(url)) {
                 return false;

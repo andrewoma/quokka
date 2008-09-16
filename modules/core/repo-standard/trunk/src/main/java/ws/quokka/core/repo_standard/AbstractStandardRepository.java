@@ -90,7 +90,9 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
         for (Iterator i = names.iterator(); i.hasNext();) {
             String name = (String)i.next();
-            parents.add(getFactory().getOrCreate(name, true));
+            if (!name.equals("")) {
+                parents.add(getFactory().getOrCreate(name, true));
+            }
         }
     }
 
@@ -246,13 +248,18 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
 
         for (Iterator i = parents.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
+            if (!repository.supportsReslove(artifactId)) {
+                continue;
+            }
 
             try {
                 RepoArtifact artifact = repository.resolve(artifactId, retrieveArtifact);
 
-                if (confirmImport) {
+                if (retrieveArtifact && confirmImport) {
                     if (confirmImport(artifactId, repository)) {
                         return new ResolvedArtifact(artifact, repository);
+                    } else {
+                        continue;
                     }
                 }
 
