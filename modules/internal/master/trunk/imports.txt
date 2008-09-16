@@ -1,6 +1,8 @@
 # Sun specs from Geronimo
 org.apache.geronimo.specs:geronimo-activation_1.1_spec:jar::1.0.2
 org.apache.geronimo.specs:geronimo-javamail_1.4_spec:jar::1.4
+org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar::1.1.1
+org.apache.geronimo.specs:geronimo-servlet_2.5_spec:jar::1.2
 
 # Ant 1.7.1
 org.apache.ant:ant-antlr:jar::1.7.1
@@ -28,5 +30,27 @@ org.apache.ant:ant-testutil:jar::1.7.1
 org.apache.ant:ant-trax:jar::1.7.1
 org.apache.ant:ant-weblogic:jar::1.7.1
 org.apache.ant:ant:jar::1.7.1
+
+# Ant 1.7
+#org.apache.ant:ant:jar::1.7.0
+#org.apache.ant:ant-junit:jar::1.7.0
+#org.apache.ant:ant-jsch:jar::1.7.0
+#org.apache.ant:ant-trax:jar::1.7.0
+
+log4j:log4j:jar::1.2.15
+asm:asm:jar::2.2.1
+cobertura:cobertura:jar::1.8
+com.jcraft:jsch:jar::0.1.25
+saxon:saxon:jar::6.5.3
+jalopy:jalopy-ant:jar::0.6.2
+jalopy:jalopy:jar::1.0b11
+jdom:jdom:jar::b8
+ch.ethz.ganymed:ganymed-ssh2:jar::build210
+fop:fop:jar::0.20.5
+commons-logging:commons-logging:jar::1.0.4
+commons-logging:commons-logging-api:jar::1.0.4
+xml-resolver:xml-resolver:jar::1.2
+xerces:xmlParserAPIs:jar::2.6.0
+xerces:xmlParserAPIs:jar::2.2.1
 
 #org.mortbay.jetty:jetty:jar::6.1.11

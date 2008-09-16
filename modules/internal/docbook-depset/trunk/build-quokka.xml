@@ -2,17 +2,15 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.internal.docbook-depset" version="0.1.1-ss">
+    <description>Quokka dependency set for transforming docbook XML files - for internal use only</description>
+
+    <artifacts group="quokka.internal.docbook-depset" type="depset" version="0.1.1-ss">
         <artifact/>
     </artifacts>
 
-    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
-        <dependency-set group="quokka.depset.resourcebundle" version="0.1"/>
-        <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <plugin group="quokka.plugin.help" version="0.1.1"/>
-        <plugin group="quokka.plugin.release" version="0.1"/>
-        <plugin group="quokka.plugin.subversion" version="0.1"/>
+        <dependency-set group="quokka.internal.depset-depset" version="0.1-ss"/>
     </dependency-set>
 </project>

@@ -1,23 +1,11 @@
 <dependency-set>
-    <profile id="skiptest" description="Skips tests, disabling all test-related targets"/>
-    <dependency-set group="quokka.depset.jar" version="0.1.1"/>
-    <plugin group="quokka.plugin.junit" version="0.1.1" profiles="-skiptest"/>
-    <plugin group="quokka.plugin.junitreport" version="0.1" use-defaults="false" profiles="-skiptest">
+    <plugin group="quokka.plugin.help" version="0.2.2" use-defaults="false">
         <target name="report" profiles="-hasParent"/>
         <target name="collect" profiles="hasParent"/>
-    </plugin>
-    <plugin group="quokka.plugin.cobertura" version="0.1" use-defaults="false" profiles="-skiptest">
-        <target name="report" profiles="-hasParent"/>
-        <target name="collect" profiles="hasParent"/>
-    </plugin>
-    <plugin group="quokka.plugin.help" version="0.1.2" use-defaults="false">
-        <target name="report" profiles="-hasParent"/>
-        <target name="collect" profiles="hasParent"/>
-        <target name="generate-help"/>
         <target name="help"/>
     </plugin>
-    <plugin group="quokka.plugin.devreport" version="0.1"/>
-    <plugin group="quokka.plugin.jalopy" version="0.1"/>
-    <plugin group="quokka.plugin.release" version="0.1"/>
-    <plugin group="quokka.plugin.subversion" version="0.1"/>
+    <plugin group="quokka.plugin.devreport" version="0.2.1"/>
+    <plugin group="quokka.plugin.release" version="0.2.1"/>
+    <plugin group="quokka.plugin.subversion" version="0.2.1"/>
+    <license group="license.apache" version="2.0"/>
 </dependency-set>

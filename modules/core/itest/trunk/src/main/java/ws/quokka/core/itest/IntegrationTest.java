@@ -231,7 +231,7 @@ public abstract class IntegrationTest extends AbstractTest {
             while (tokenizer.hasMoreTokens()) {
                 String pathElement = tokenizer.nextToken();
 
-                                System.out.println(pathElement);
+//                                System.out.println(pathElement);
                 assertTrue(new File(normalise(pathElement)).exists());
                 urls.add(new File(pathElement).toURL());
             }

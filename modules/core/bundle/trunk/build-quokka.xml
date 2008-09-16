@@ -2,43 +2,45 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project>
-    <artifacts group="quokka.bundle" version="0.2.2-ss">
+    <description>Quokka bundle module: Bundles the core modules and creates the distribution with documentation</description>
+
+    <artifacts group="quokka.bundle" version="0.3-ss">
         <artifact name="core" paths="dist"/>
     </artifacts>
 
-    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <path id="dist" description="Libraries required for the runtime distribution"/>
-        <dependency group="apache.ant" version="1.7.0" paths="dist+"/>
-        <dependency group="apache.ant" name="ant-launcher" version="1.7.0" paths="dist+"/>
+        <dependency group="apache.ant" version="1.7.1" paths="dist"/>
 
         <!-- Libraries for the core bundle -->
-        <plugin group="quokka.plugin.jarbundle" version="0.1" targets="package"/>
-        <dependency group="quokka.core.main" version="0.2.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.metadata" version="0.1.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.model" version="0.2.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.plugin-spi" version="0.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.repo-spi" version="0.2.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.repo-standard" version="0.2.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.repo-resolver" version="0.1.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.util" version="0.1.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.bootstrap" version="0.1.2" paths="jarbundle+"/>
-        <dependency group="quokka.core.bootstrap-util" version="0.1.1" paths="jarbundle+"/>
-        <dependency group="quokka.core.version" version="0.1.1" paths="jarbundle+"/>
+        <plugin group="quokka.plugin.jarbundle" version="0.2" targets="package"/>
 
-        <plugin group="quokka.plugin.standard-lifecycle" version="0.1"/>
+        <dependency group="quokka.core.main" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.metadata" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.model" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.plugin-spi" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-spi" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-standard" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.repo-resolver" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.util" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.bootstrap" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.bootstrap-util" version="0.3-ss" paths="jarbundle+"/>
+        <dependency group="quokka.core.version" version="0.3-ss" paths="jarbundle+"/>
 
-        <dependency-set group="quokka.internal.docbook-depset" version="0.1"/>
-        <plugin group="quokka.plugin.xml" version="0.1">
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.2.2"/>
+
+        <dependency-set group="quokka.internal.docbook-depset" version="0.1.1-ss"/>
+        <plugin group="quokka.plugin.xml" version="0.2">
             <target template="transform" name="docbook" prefix="docbook"/>
         </plugin>
-        <plugin group="quokka.plugin.fop" version="0.1">
+        <plugin group="quokka.plugin.fop" version="0.2">
             <target name="docbook-pdf" template="transform" prefix="docbook-pdf" depends="docbook"/>
         </plugin>
-        <plugin group="quokka.plugin.devreport" version="0.1"/>
-        <plugin group="quokka.plugin.help" version="0.1.1"/>
-        <plugin group="quokka.plugin.release" version="0.1"/>
-        <plugin group="quokka.plugin.subversion" version="0.1"/>
+        <plugin group="quokka.plugin.devreport" version="0.2.1"/>
+        <plugin group="quokka.plugin.help" version="0.2.2"/>
+        <plugin group="quokka.plugin.release" version="0.2.1"/>
+        <plugin group="quokka.plugin.subversion" version="0.2.1"/>
     </dependency-set>
 </project>

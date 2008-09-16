@@ -467,11 +467,15 @@
       <module fileurl="file://$PROJECT_DIR$/../../depset/jar/depset.jar.iml" filepath="$PROJECT_DIR$/../../depset/jar/depset.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" filepath="$PROJECT_DIR$/../../depset/resourcebundle/depset.resourcebundle.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" filepath="$PROJECT_DIR$/../../ant-logger/ide.intellij.ant_logger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../archetype-depset/internal.archetype-depset.iml" filepath="$PROJECT_DIR$/../archetype-depset/internal.archetype-depset.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../depset-depset/internal.depset-depset.iml" filepath="$PROJECT_DIR$/../depset-depset/internal.depset-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" filepath="$PROJECT_DIR$/../docbook-depset/internal.docbook-depset.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../java-depset/internal.java-depset.iml" filepath="$PROJECT_DIR$/../java-depset/internal.java-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/internal.master.iml" filepath="$PROJECT_DIR$/internal.master.iml" />
       <module fileurl="file://$PROJECT_DIR$/../module-depset/internal.module-depset.iml" filepath="$PROJECT_DIR$/../module-depset/internal.module-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../plugin-depset/internal.plugin-depset.iml" filepath="$PROJECT_DIR$/../plugin-depset/internal.plugin-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../site/internal.site.iml" filepath="$PROJECT_DIR$/../site/internal.site.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../xmlcat-depset/internal.xmlcat-depset.iml" filepath="$PROJECT_DIR$/../xmlcat-depset/internal.xmlcat-depset.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/cobertura/plugin.cobertura.iml" filepath="$PROJECT_DIR$/../../plugin/cobertura/plugin.cobertura.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/devreport/plugin.devreport.iml" filepath="$PROJECT_DIR$/../../plugin/devreport/plugin.devreport.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/fop/plugin.fop.iml" filepath="$PROJECT_DIR$/../../plugin/fop/plugin.fop.iml" />

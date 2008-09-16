@@ -2,7 +2,9 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
 
 <project name="internal.master">
-    <bootstrap core="[0.1.2,0.1.2]" spec-version="[1.4,1.6]"/>
+    <description>Quokka master module for building and managing all other modules at once</description>
+
+    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
     <!--<bootstrap>-->
     <!--<cores version="1.0">-->
     <!--<core options="xerces, xercesimpl" profiles="jdk1.2, jdk1.3"/>-->
@@ -18,14 +20,14 @@
     <!--</bootstrap>-->
 
     <dependency-set>
-        <plugin group="quokka.plugin.standard-lifecycle" version="0.1"/>
-        <plugin group="quokka.plugin.cobertura" version="0.1" use-defaults="false"
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.2.2"/>
+        <plugin group="quokka.plugin.cobertura" version="0.2.1" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.junitreport" version="0.1" use-defaults="false"
+        <plugin group="quokka.plugin.junitreport" version="0.2.2" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.help" version="0.1.1-ss" use-defaults="false"
+        <plugin group="quokka.plugin.help" version="0.2.2" use-defaults="false"
                 targets="aggregate-report, help"/>
-        <plugin group="quokka.plugin.devreport" version="0.1" use-defaults="false" targets="reports"/>
-        <plugin group="quokka.plugin.subversion" version="0.1"/>
+        <plugin group="quokka.plugin.devreport" version="0.2.1" use-defaults="false" targets="reports"/>
+        <plugin group="quokka.plugin.subversion" version="0.2.1"/>
     </dependency-set>
 </project>

@@ -33,7 +33,7 @@
     <target name="extract-resources">
         <unjar src="${quokka.project.path.site_naut05_custom}" dest="${quokka.project.targetDir}/temp"/>
         <copy todir="${quokka.project.targetDir}/site">
-            <fileset dir="${quokka.project.targetDir}/temp/META-INF/quokka/quokka.xmlcat.site-naut05-custom_site-naut05-custom_jar_0.1/catalog/site"/>
+            <fileset dir="${quokka.project.targetDir}/temp/META-INF/quokka/quokka.xmlcat.site-naut05-custom_site-naut05-custom_jar_0.1.1-ss/catalog/site"/>
         </copy>
     </target>
 

@@ -145,7 +145,7 @@
             enter:</para>
 
             <screen>$ quokka -version
-Quokka version 0.2                        </screen>
+Quokka version ?                        </screen>
           </listitem>
 
           <listitem>
@@ -174,11 +174,11 @@ Quokka version 0.2                        </screen>
           <para>Go to the command console and change to (or create) an empty
           directory for new project. Enter the following command:</para>
 
-          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar:0.2 -Dgroup=mygroup.myname
+          <screen>$ quokka archetype -Darchetype=quokka.archetype.jar -Dgroup=mygroup.myname
 Buildfile: C:\Temp\quokkatest\temp-19405.xml
 
 archetype:
-[archetype] Creating project based on artifact: quokka.archetype.jar:jar:jar:0.1
+[archetype] Creating project based on artifact: quokka.archetype.jar:jar:jar:?
 [archetype] Extracting the following archetype to C:\Temp\quokkatest:
 [archetype]     build-quokka.properties
 [archetype]     build-quokka.xml
@@ -194,8 +194,8 @@ archetype:
 [archetype]                 sample/
 [archetype]                     apptest.java
 [archetype]             resources/
-    [unjar] Expanding: C:\Data\Dev\Projects\stable-repository\quokka\archetype\jar\1.0-
-                m01\jar_jar.jar into C:\Temp\quokkatest
+    [unjar] Expanding: C:\Data\Dev\Projects\stable-repository\quokka\archetype\jar\?
+                \jar_jar.jar into C:\Temp\quokkatest
      [copy] Copying 5 files to C:\Temp\quokkatest
      [copy] Copied 9 empty directories to 2 empty directories under C:\Temp\quokkatest
    [delete] Deleting directory C:\Temp\quokkatest\META-INF
@@ -216,15 +216,7 @@ BUILD SUCCESSFUL
             <listitem>
               <para><literal>build-quokka.xml</literal>: This is the key
               project file. It defines what plugins are used by the project
-              and therefore what targets are available.</para>
-            </listitem>
-
-            <listitem>
-              <para><literal>build-quokka.properties</literal> (optional):
-              Allows properties to be defined for the project. See <link
-              linkend="properties">Properties</link> for more information on
-              how properties can be defined and the order of
-              processing.</para>
+              and therefore what targets are available</para>
             </listitem>
 
             <listitem>
@@ -542,7 +534,7 @@ Default target: package                    </screen>
         &lt;!-- ================================================================== --&gt;
         &lt;!-- The entries below add dependencies to project paths                --&gt;
         &lt;!-- ================================================================== --&gt;
-        &lt;dependency group="junit" version="3.8.1" paths="test-compile"/&gt;
+        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
         &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, runtime"/&gt;
 
         &lt;!-- ================================================================== --&gt;
@@ -646,11 +638,11 @@ Default target: package                    </screen>
           the dependency set, it looks like this:</para>
 
           <programlisting>&lt;dependency-set&gt;
-    &lt;plugin group="quokka.plugin.lifecycle" version="0.1"/&gt;
-    &lt;plugin group="quokka.plugin.standard-lifecycle" version="0.1"/&gt;
-    &lt;plugin group="quokka.plugin.resources" version="0.1"/&gt;
-    &lt;plugin group="quokka.plugin.javac" version="0.1"/&gt;
-    &lt;plugin group="quokka.plugin.jar" version="0.1"/&gt;
+    &lt;plugin group="quokka.plugin.lifecycle" version="?"/&gt;
+    &lt;plugin group="quokka.plugin.standard-lifecycle" version="?"/&gt;
+    &lt;plugin group="quokka.plugin.resources" version="?"/&gt;
+    &lt;plugin group="quokka.plugin.javac" version="?"/&gt;
+    &lt;plugin group="quokka.plugin.jar" version="?"/&gt;
 &lt;/dependency-set&gt;</programlisting>
 
           <para>In fact, you could replace the
@@ -760,6 +752,52 @@ Default target: package                    </screen>
           plugins</ulink>. Note that plugins are all separate mini-projects in
           their own right and have their own release cycles and
           documentation.</para>
+
+          <para>With quokka you have to be explict regarding the version of
+          plugin that you are going to use. This raises the problem of
+          determining what plugins are available and of those which are
+          compatible with your current version of quokka. To answer these
+          questions, use the built-in <literal>list-plugins</literal>
+          target.</para>
+
+          <programlisting>$ quokka list-plugins
+
+Available Plugins
+=================
+quokka.plugin.cobertura:           0.3-ss 
+    Quokka Cobertura plugin: performs code coverage analysis ...
+
+quokka.plugin.devreport:           0.3-ss 
+    Quokka Developer Reports plugin: co-ordinates developer reports ...
+
+quokka.plugin.fop:                 0.3-ss 
+    Quokka FOP (Formatting Objects Processor) plugin: transform FO XML ...
+
+quokka.plugin.help:                0.3-ss 
+    Quokka Help plugin: supports viewing and generating help for projects ...
+
+...</programlisting>
+
+          <para>By default, it will list the latest version of all plugins
+          available that are compatible with your quokka version or that can
+          be coerced into being compatible using overrides. </para>
+
+          <para>If multiple versions are shown, select the version that does
+          not have a trailing <literal>*</literal> character. You can also
+          display information about a particular plugin, using the
+          <literal>plugin</literal> option, and detailed information about any
+          conflicts using the <literal>verbose</literal> option. e.g.</para>
+
+          <programlisting>$ quokka list-plugins -Dplugin=quokka.plugin.help -Dverbose=true
+
+Available Plugins
+=================
+quokka.plugin.help:                
+    Quokka Help plugin: supports viewing and generating help for projects  ...
+    0.3-ss
+...</programlisting>
+
+          <para>For more information </para>
         </sect2>
 
         <sect2>
@@ -1207,7 +1245,7 @@ quokka.project.java.target=1.5                    </programlisting>
         &lt;profile id="skiptest" 
              description="Skips tests, disabling all test-related targets"/&gt;
 
-        &lt;dependency group="junit" version="3.8.1" paths="test-compile"/&gt;
+        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
         &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, runtime"/&gt;
 
         &lt;!-- quokka.depset.jar includes the plugins necessary to process resources, 
