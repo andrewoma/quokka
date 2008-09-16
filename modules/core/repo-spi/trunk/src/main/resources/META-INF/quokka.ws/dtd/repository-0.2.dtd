@@ -4,7 +4,7 @@
    PUBLIC "quokka.ws/dtd/repository-0.2"
    SYSTEM "http://quokka.ws/dtd/repository-0.2.dtd"
 -->
-<!ELEMENT artifact ( original-id?, description?, paths?, dependencies?, overrides?, licenses?, imported-from? ) >
+<!ELEMENT artifact ( description?, paths?, dependencies?, overrides?, licenses?, conflicts?, imported-from? ) >
 <!ATTLIST artifact group NMTOKEN #REQUIRED >
 <!ATTLIST artifact name NMTOKEN #IMPLIED >
 <!ATTLIST artifact type NMTOKEN #IMPLIED >
@@ -12,16 +12,19 @@
 <!ATTLIST artifact timestamp CDATA #IMPLIED >
 <!ATTLIST artifact stub ( true | false ) #IMPLIED >
 
-<!ELEMENT original-id EMPTY >
-<!ATTLIST original-id group NMTOKEN #REQUIRED >
-<!ATTLIST original-id name NMTOKEN #IMPLIED >
-<!ATTLIST original-id type NMTOKEN #IMPLIED >
-<!ATTLIST original-id version CDATA #IMPLIED >
+<!ELEMENT conflict EMPTY >
+<!ATTLIST conflict group NMTOKEN #REQUIRED >
+<!ATTLIST conflict name NMTOKEN #IMPLIED >
+<!ATTLIST conflict type NMTOKEN #IMPLIED >
+<!ATTLIST conflict version CDATA #IMPLIED >
+<!ATTLIST conflict kind NMTOKEN #REQUIRED>
 
 <!ELEMENT description ( #PCDATA ) >
 <!ELEMENT imported-from ( #PCDATA ) >
 
-<!ELEMENT dependencies ( dependency+ ) >
+<!ELEMENT dependencies ( dependency* ) >
+
+<!ELEMENT conflicts ( conflict* ) >
 
 <!ELEMENT dependency ( path-spec* ) >
 <!ATTLIST dependency group NMTOKEN #REQUIRED >
@@ -41,7 +44,7 @@
 <!ATTLIST path-spec options CDATA #IMPLIED >
 <!ATTLIST path-spec to NMTOKEN #IMPLIED >
 
-<!ELEMENT paths ( path+ ) >
+<!ELEMENT paths ( path* ) >
 
 <!ELEMENT overrides ( override+ ) >
 <!ELEMENT override ( path-spec* ) >
@@ -53,7 +56,7 @@
 <!ATTLIST override with CDATA #IMPLIED >
 <!ATTLIST override with-paths CDATA #IMPLIED >
 
-<!ELEMENT licenses ( license+ ) >
+<!ELEMENT licenses ( license* ) >
 <!ELEMENT license EMPTY >
 <!ATTLIST license group NMTOKEN #REQUIRED >
 <!ATTLIST license name NMTOKEN #IMPLIED >

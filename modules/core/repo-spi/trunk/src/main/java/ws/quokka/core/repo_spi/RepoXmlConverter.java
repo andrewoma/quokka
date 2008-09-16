@@ -260,6 +260,9 @@ public class RepoXmlConverter {
     public static class RepoArtifactConverter extends ReflectionConverter {
         private static final String LICENSE = "license";
         private static final String LICENSES = "licenses";
+        private static final String CONFLICTS = "conflicts";
+        private static final String CONFLICT = "conflict";
+        private static final String KIND = "kind";
 
         public RepoArtifactConverter(Class clazz) {
             super(clazz);
@@ -294,12 +297,19 @@ public class RepoXmlConverter {
                 }
             }
 
-            Element originalIdEl = artifactEl.getChild("original-id");
+            Element conflictsEl = artifactEl.getChild(CONFLICTS);
 
-            if (originalIdEl != null) {
-                artifact.setOriginalId(((RepoArtifactId)converter.fromXml(originalIdEl)).merge(
-                        new RepoArtifactId(null, RepoArtifactId.defaultName(artifact.getId().getGroup()),
-                            artifact.getId().getType(), (Version)null)));
+            if (conflictsEl != null) {
+                for (Iterator i = conflictsEl.getChildren(CONFLICT).iterator(); i.hasNext();) {
+                    Element conflictEl = (Element)i.next();
+                    RepoConflict conflict = new RepoConflict();
+                    RepoArtifactId id = (RepoArtifactId)getConverter(RepoArtifactId.class).fromXml(conflictEl);
+                    conflict.setId(id.merge(new RepoArtifactId(null, null, artifact.getId().getType(), (Version)null))
+                        .mergeDefaults());
+                    conflict.setKind(conflictEl.getAttribute(KIND));
+                    conflict.validate();
+                    artifact.addConflict(conflict);
+                }
             }
 
             Element pathsEl = artifactEl.getChild("paths");
@@ -411,11 +421,6 @@ public class RepoXmlConverter {
                 artifactEl.setAttribute("timestamp", getDateFormat().format(artifact.getTimestamp()));
             }
 
-            if (artifact.getOriginalId() != null) {
-                Element originalIdEl = artifactEl.addChild("original-id");
-                converter.toXml(artifact.getOriginalId(), originalIdEl);
-            }
-
             if (artifact.getDescription() != null) {
                 artifactEl.addChild("description").addText(artifact.getDescription());
             }
@@ -469,6 +474,17 @@ public class RepoXmlConverter {
                     if (license.getVersion() != null) {
                         licenseEl.setAttribute("version", license.getVersion().toString());
                     }
+                }
+            }
+
+            if (artifact.getConflicts().size() != 0) {
+                Element conflictsEl = artifactEl.addChild(CONFLICTS);
+
+                for (Iterator i = artifact.getConflicts().iterator(); i.hasNext();) {
+                    RepoConflict conflict = (RepoConflict)i.next();
+                    Element conflictEl = conflictsEl.addChild(CONFLICT);
+                    conflictEl.setAttribute(KIND, conflict.getKind());
+                    getConverter(RepoArtifactId.class).toXml(conflict.getId(), conflictEl);
                 }
             }
 

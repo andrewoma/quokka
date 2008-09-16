@@ -39,7 +39,10 @@ public class RepoXmlConverterTest extends AbstractTest {
     public void testConvert() {
         RepoArtifact artifact = new RepoArtifact(new RepoArtifactId("group", "name", "type", new Version("version")));
         artifact.setDescription("Some description");
-        artifact.setOriginalId(new RepoArtifactId("originalgroup", "originalname", "originaltype", "1.1"));
+        artifact.addConflict(new RepoConflict(
+                new RepoArtifactId("originalgroup", "originalname", "originaltype", "1.1"), RepoConflict.RENAMED));
+        artifact.addConflict(new RepoConflict(
+                new RepoArtifactId("originalgroup.subgroup", "subgroup", "type1", (Version)null), RepoConflict.BUNDLED));
         artifact.setTimestamp(new Date());
         artifact.setStub(true);
         artifact.addLicense(new RepoArtifactId("license.apache", "apache", "license", "2.0"));

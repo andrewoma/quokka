@@ -265,6 +265,21 @@ public class RepoArtifactId extends AnnotatedObject implements Cloneable, Compar
     }
 
     /**
+     * Returns true if the name is the default name for this id's group. i.e. the
+     * same as the last subgroup
+     */
+    public boolean isDefaultName() {
+        return defaultName(group).equals(name);
+    }
+
+    /**
+     * Returns a copy of the id with the version set to null
+     */
+    public RepoArtifactId toUnversionedId() {
+        return new RepoArtifactId(group, name, type, (Version)null);
+    }
+
+    /**
      * Comparision based on order of group, version, name then type
      */
     public int compareTo(Object o) {

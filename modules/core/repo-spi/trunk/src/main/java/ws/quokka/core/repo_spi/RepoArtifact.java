@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 
 /**
@@ -42,7 +43,7 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     private Set dependencies = new HashSet();
     private File localCopy;
     private Set paths = new HashSet();
-    private RepoArtifactId originalId; // The original group, name & type. Should be set if the artifact is renamed
+    private Set conflicts = new HashSet();
     private List overrides = new ArrayList();
     private String description;
     private Date timestamp; // Only set for snapshots to allow updates from parents
@@ -77,23 +78,6 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     }
 
     /**
-     * The original id should contain the original group, name and type (and possibly version) of the artifact when it was
-     * first put in the repository. This should be set when an artifact is renamed. e.g. migrates from
-     * sourceforge to it's own domain. This allows conflict resolution to detect what are essentially
-     * different versions of the same artifact, albeit with different groups, names and/or types.
-     */
-    public RepoArtifactId getOriginalId() {
-        return originalId;
-    }
-
-    /**
-     * @see #getOriginalId()
-     */
-    public void setOriginalId(RepoArtifactId originalId) {
-        this.originalId = originalId;
-    }
-
-    /**
      * Adds an override
      */
     public void addOverride(RepoOverride override) {
@@ -105,6 +89,20 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
      */
     public List getOverrides() {
         return Collections.unmodifiableList(overrides);
+    }
+
+    /**
+     * Adds a conflict
+     */
+    public void addConflict(RepoConflict conflict) {
+        conflicts.add(conflict);
+    }
+
+    /**
+     * Returns a read-only list of conflicts
+     */
+    public Set getConflicts() {
+        return Collections.unmodifiableSet(conflicts);
     }
 
     /**
@@ -299,7 +297,7 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
             return false;
         }
 
-        if ((originalId != null) ? (!originalId.equals(artifact.originalId)) : (artifact.originalId != null)) {
+        if ((conflicts != null) ? (!conflicts.equals(artifact.getConflicts())) : (artifact.conflicts != null)) {
             return false;
         }
 
@@ -323,7 +321,7 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
         result = ((id != null) ? id.hashCode() : 0);
         result = (31 * result) + ((dependencies != null) ? dependencies.hashCode() : 0);
         result = (31 * result) + ((paths != null) ? paths.hashCode() : 0);
-        result = (31 * result) + ((originalId != null) ? originalId.hashCode() : 0);
+        result = (31 * result) + ((conflicts != null) ? conflicts.hashCode() : 0);
         result = (31 * result) + ((overrides != null) ? overrides.hashCode() : 0);
         result = (31 * result) + ((description != null) ? description.hashCode() : 0);
         result = (31 * result) + ((timestamp != null) ? timestamp.hashCode() : 0);
@@ -359,5 +357,37 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
      */
     public void setHash(String hash) {
         this.hash = hash;
+    }
+
+    /**
+     * Returns the first sentence of the description, trimming any whitespace around words.
+     */
+    public String getShortDescription() {
+        if (description == null) {
+            return null;
+        }
+
+        StringBuffer sb = new StringBuffer();
+        StringTokenizer tokenizer = new StringTokenizer(description, " \r\n\t");
+
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken().trim();
+
+            if (token.length() != 0) {
+                if (sb.length() != 0) {
+                    sb.append(" ");
+                }
+
+                if (token.endsWith(".")) {
+                    sb.append(token.substring(0, token.length() - 1));
+
+                    break; // End of first sentence
+                } else {
+                    sb.append(token);
+                }
+            }
+        }
+
+        return sb.toString();
     }
 }
