@@ -1,8 +1,8 @@
 <dependency-set>
     <profile id="skiptest" description="Skips tests, disabling all test-related targets"/>
 
-    <dependency-set group="quokka.depset.jar" version="0.2.1-ss"/>
-    <dependency-set group="quokka.internal.module-depset" version="0.2-ss"/>
+    <dependency-set group="quokka.depset.jar" version="0.2.1"/>
+    <dependency-set group="quokka.internal.module-depset" version="0.2"/>
 
     <plugin group="quokka.plugin.junit" version="0.2.1" profiles="-skiptest"/>
 
