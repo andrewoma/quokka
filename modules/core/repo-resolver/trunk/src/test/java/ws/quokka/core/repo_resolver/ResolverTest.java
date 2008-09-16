@@ -624,29 +624,11 @@ public class ResolverTest extends AbstractTest {
         }
     }
 
-    public void testOverride() {
-        ResolvedPath path = new ResolvedPath();
-        ResolvedPath with = new ResolvedPath();
-
-        assertPath(resolver.override(path, with), "");
-        path.add(artifact("dep1"));
-        assertPath(resolver.override(path, with), "dep1");
-        path.add(artifact("dep2"));
-        assertPath(resolver.override(path, with), "dep1, dep2");
-        with.add(artifact("dep1:dep1:jar:2.0"));
-        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2");
-        path.add(artifact("dep3"));
-        path.add(artifact("dep4"));
-        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2, dep3, dep4");
-        with.add(artifact("dep4:dep4:jar:3.0"));
-        assertPath(resolver.override(path, with), "dep1:dep1:jar:2.0, dep2, dep3, dep4:dep4:jar:3.0");
-    }
-
-    public void testConflictWithOriginalId() {
+    public void testConflictRenamed() {
         artifact("dep1");
 
         RepoArtifact dep2 = artifact("dep2:dep2:jar:2.0");
-        dep2.setOriginalId(id("dep1")); // Indicate dep2 was dep1
+        dep2.addConflict(new RepoConflict(id("dep1"), RepoConflict.RENAMED)); // Indicate dep2 was dep1
 
         RepoArtifact root = createRoot();
         dep(root, get("dep1"), "root");
@@ -664,20 +646,110 @@ public class ResolverTest extends AbstractTest {
         }
     }
 
-    public void testConflictWithOriginalIdVersioned() {
+    public void testConflictEquivalent() {
         artifact("dep1");
-        artifact("dep1:dep1:jar:2.0");
 
-        RepoArtifact dep2 = artifact("dep2:dep2:jar:2.0");
-        dep2.setOriginalId(id("dep1:dep1:jar:1.0")); // Indicate dep2 was dep1
+        RepoArtifact dep2 = artifact("dep2");
+        dep2.addConflict(new RepoConflict(id("dep1"), RepoConflict.EQUIVALENT));
+
+        RepoArtifact dep3 = artifact("dep3");
+        dep3.addConflict(new RepoConflict(id("dep1"), RepoConflict.EQUIVALENT));
 
         RepoArtifact root = createRoot();
-        dep(root, get("dep1"), "root");
-        dep(root, get("dep1:dep1:jar:2.0"), "root");
+        dep(root, get("dep2"), "root");
+        dep(root, get("dep3"), "root");
 
         ResolvedPath path = resolver.resolvePath("root", root);
-        printPath(path);
 
+        try {
+            resolver.merge(Collections.singleton(path));
+            fail("Expected exception");
+        } catch (BuildException e) {
+            System.out.println(resolver.formatPath(path, true));
+            assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
+        }
+    }
+
+    public void testConflictRenameSameVersion() {
+        artifact("dep1");
+
+        RepoArtifact dep2 = artifact("dep2");
+        dep2.addConflict(new RepoConflict(id("dep1"), RepoConflict.RENAMED));
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep2"), "root");
+        dep(root, get("dep1"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+        assertPath(path, "dep1, dep2"); // TODO: Should probably cull one or the other ... however it's harmless
+    }
+
+    public void testConflictRenameResetSameVersion() {
+        artifact("dep1");
+
+        RepoArtifact dep2 = artifact("dep2");
+        dep2.addConflict(new RepoConflict(id("dep1"), RepoConflict.RENAMED_RESET));
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep2"), "root");
+        dep(root, get("dep1"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+
+        try {
+            resolver.merge(Collections.singleton(path));
+            fail("Expected exception");
+        } catch (BuildException e) {
+            System.out.println(resolver.formatPath(path, true));
+            assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
+        }
+    }
+
+    public void testConflictRenameDiffVersion() {
+        testConflictRenameDiffVersion(RepoConflict.RENAMED);
+    }
+
+    public void testConflictRenameResetDiffVersion() {
+        testConflictRenameDiffVersion(RepoConflict.RENAMED_RESET);
+    }
+
+    public void testConflictBundledDiffVersion() {
+        testConflictRenameDiffVersion(RepoConflict.BUNDLED);
+    }
+
+    private void testConflictRenameDiffVersion(String kind) {
+        artifact("dep1:dep1:jar:1.1");
+
+        RepoArtifact dep2 = artifact("dep2");
+        dep2.addConflict(new RepoConflict(id("dep1"), kind));
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep2"), "root");
+        dep(root, get("dep1:dep1:jar:1.1"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
+
+        try {
+            resolver.merge(Collections.singleton(path));
+            fail("Expected exception");
+        } catch (BuildException e) {
+            System.out.println(resolver.formatPath(path, true));
+            assertTrue(e.getMessage().indexOf("Conflicts have occurred") != -1);
+        }
+    }
+
+    public void testConflictAlias() {
+        artifact("dep1");
+        artifact("dep1:dep1:jar:1.1");
+
+        RepoArtifact dep2 = artifact("dep2");
+        dep2.addConflict(new RepoConflict(id("dep1"), RepoConflict.ALIAS));
+
+        RepoArtifact root = createRoot();
+        dep(root, get("dep2"), "root");
+        dep(root, get("dep1:dep1:jar:1.1"), "root");
+
+        ResolvedPath path = resolver.resolvePath("root", root);
         try {
             resolver.merge(Collections.singleton(path));
             fail("Expected exception");

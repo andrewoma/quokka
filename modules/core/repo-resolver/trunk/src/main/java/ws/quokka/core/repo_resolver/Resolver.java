@@ -153,7 +153,9 @@ public class Resolver {
                 // Override version if specified
                 if (override.getWithVersion() != null) {
                     overridden.setId(override(dependency.getId(), override.getWithVersion()));
-                    log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                    if (log.isDebugEnabled()) {
+                        log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                    }
                 }
 
                 // Copy and possibly override path specifications
@@ -175,7 +177,9 @@ public class Resolver {
 
                         log.verbose("Overriding path spec for dependency=" + dependency.toShortString() + " from '"
                             + pathSpec.toShortString() + "' to '" + overiddenPathSpec.toShortString() + "'");
-                        log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Applied " + override + (override.getLocator() == null ? "" : " from " + override.getLocator()));
+                        }
 
                         pathSpec = overiddenPathSpec;
                     }
@@ -211,8 +215,8 @@ public class Resolver {
     private void resolvePath(ResolvedPath path, RepoPathSpec pathSpec, Set options, boolean force,
         RepoArtifactId declaredBy, List overrides, List appliedOverrides, boolean retrieveArtifacts) {
         // TODO: do proper cycle detection
-        if (path.getArtifacts().size() > 150) {
-            StringBuffer sb = new StringBuffer("Cycle detected!\n");
+        if (path.getArtifacts().size() > 1000) {
+            StringBuffer sb = new StringBuffer("Possible cycle detected!\n");
 
             for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
                 RepoArtifact artifact = (RepoArtifact)i.next();
@@ -411,10 +415,13 @@ public class Resolver {
      * Returns a merged path from the collection of paths given, removing duplicates and ensuring
      * there are no conflicts. If a conflict occurs, a formatted tree showing the exacts paths of
      * any conflicts is contained in the exception message.
+     *
+     * TODO: rewrite this mess to avoid so many temporary maps and lists
      */
     public ResolvedPath merge(Collection paths) {
         // Build a map of all artifacts based on unversioned ids
         StringBuffer id = new StringBuffer("Merged: [");
+        Map possibleConflicts = new HashMap();
         Map merged = new HashMap();
 
         for (Iterator i = paths.iterator(); i.hasNext();) {
@@ -428,20 +435,29 @@ public class Resolver {
             for (Iterator j = path.getArtifacts().iterator(); j.hasNext();) {
                 RepoArtifact artifact = (RepoArtifact)j.next();
                 setConflict(artifact.getId(), null); // Clear conflict annotation
+                merged.put(artifact.getId(), artifact); // All artifacts with same id are equivalent
 
-                List unversionedIds = toUnversionedIds(artifact);
+                List conflictIds = toConflictIds(artifact);
 
-                for (Iterator k = unversionedIds.iterator(); k.hasNext();) {
-                    RepoArtifactId unversioned = (RepoArtifactId)k.next();
+                for (Iterator k = conflictIds.iterator(); k.hasNext();) {
+                    RepoArtifactId conflictId = (RepoArtifactId)k.next();
+                    RepoArtifactId unversioned = new RepoArtifactId(conflictId.getGroup(),
+                            conflictId.getName(), conflictId.getType(), (Version)null);
 
-                    List artifacts = (List)merged.get(unversioned);
+                    Map artifacts = (Map) possibleConflicts.get(unversioned);
 
                     if (artifacts == null) {
-                        artifacts = new ArrayList();
-                        merged.put(unversioned, artifacts);
+                        artifacts = new HashMap();
+                        possibleConflicts.put(unversioned, artifacts);
                     }
 
-                    artifacts.add(artifact);
+                    List artifactsForVersion = (List) artifacts.get(conflictId.getVersion());
+                    if (artifactsForVersion == null) {
+                        artifactsForVersion = new ArrayList();
+                        artifacts.put(conflictId.getVersion(), artifactsForVersion);
+                    }
+
+                    artifactsForVersion.add(artifact);
                 }
             }
         }
@@ -452,27 +468,20 @@ public class Resolver {
         ResolvedPath mergedPath = new ResolvedPath();
         mergedPath.setId(id.toString());
 
-        // Make sure all artifacts are of the same version
+        // Check for conflicts and mark them
         int conflictIndex = 1;
-        Set versions = new HashSet();
 
-        for (Iterator i = merged.values().iterator(); i.hasNext();) {
-            List artifacts = (List)i.next();
-            versions.clear();
+        for (Iterator i = possibleConflicts.values().iterator(); i.hasNext();) {
+            Map artifacts = (Map)i.next();
 
-            for (Iterator j = artifacts.iterator(); j.hasNext();) {
-                RepoArtifact artifact = (RepoArtifact)j.next();
-                versions.add(artifact.getId().getVersion());
-            }
-
-            if (versions.size() == 1) {
-                RepoArtifact artifact = (RepoArtifact)artifacts.iterator().next();
-                artifact.getId().getAnnotations().remove(DECLARED_BY); // In case the merged path is merged again or printed
-                mergedPath.add(artifact); // Any artifact will do ... all are equal
-            } else {
+            if (artifacts.size() != 1) {
                 // Conflict detected.
                 conflict = true;
-                markConflicted(artifacts, conflictIndex++);
+                for (Iterator j = artifacts.values().iterator(); j.hasNext();) {
+                    List artifactsForVersion = (List) j.next();
+                    markConflicted(artifactsForVersion, conflictIndex);
+                }
+                conflictIndex++;
             }
         }
 
@@ -480,46 +489,15 @@ public class Resolver {
             throw new BuildException("Conflicts have occurred between the following artifacts:\n"
                 + formatPaths(paths, true));
         } else {
-            return mergedPath;
-        }
-    }
-
-    /**
-     * Overrides any conflicting versions between 2 paths
-     * @param path the path to override in the case of a conflict
-     * @param with the path containing the versions to override to
-     * @return the overridden path
-     */
-    public ResolvedPath override(ResolvedPath path, ResolvedPath with) {
-        // Make sure there are no conflicts within the paths given
-        path = merge(Collections.singleton(path));
-        with = merge(Collections.singleton(with));
-
-        // Get a map of the overriding versions
-        Map withVersions = new HashMap();
-
-        for (Iterator i = with.getArtifacts().iterator(); i.hasNext();) {
-            RepoArtifact artifact = (RepoArtifact)i.next();
-            withVersions.put(toUnversionedIds(artifact), artifact.getId().getVersion());
-        }
-
-        ResolvedPath overridden = new ResolvedPath();
-        overridden.setId("Overridden '" + path.getId() + "' with '" + with.getId() + "'");
-
-        for (Iterator i = path.getArtifacts().iterator(); i.hasNext();) {
-            RepoArtifact artifact = (RepoArtifact)i.next();
-            artifact = (RepoArtifact)artifact.clone();
-
-            Version withVersion = (Version)withVersions.get(toUnversionedIds(artifact));
-
-            if ((withVersion != null) && !withVersion.equals(artifact.getId().getVersion())) {
-                artifact.setId(override(artifact.getId(), withVersion));
+            // No conflict
+            for (Iterator i = merged.values().iterator(); i.hasNext();) {
+                RepoArtifact artifact = (RepoArtifact) i.next();
+                mergedPath.add(artifact); // Any artifact will do ... all are equal
+                artifact.getId().getAnnotations().remove(DECLARED_BY); // In case the merged path is merged again or printed
             }
 
-            overridden.add(artifact);
+            return mergedPath;
         }
-
-        return overridden;
     }
 
     /**
@@ -628,33 +606,37 @@ public class Resolver {
     }
 
     /**
-     * Converts the artifact to an id that can be compared regardless of version. If the artifact
-     * has an original id set, it will use this instead, making comparisons valid across renames.
-     * If the original id has a version set then it means that there are 2 copies of the same
-     * artfiact in the repository (this can happen for example when sun.spec.servlet-api is
-     * and alias to apache.gernonimo.spec.servlet-api-2.5). In this case 2 ids are returned.
+     * Generates a set of ids that will produce conflicts if conflicting artifacts are on the path
      */
-    private List toUnversionedIds(RepoArtifact artifact) {
-        RepoArtifactId id = artifact.getId();
-        RepoArtifactId idUnversioned = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), Version.parse("0"));
+    private List toConflictIds(RepoArtifact artifact) {
+        List conflicts = new ArrayList();
+        conflicts.add(artifact.getId());
 
-        if (artifact.getOriginalId() == null) {
-            return Collections.singletonList(idUnversioned);
+        for (Iterator i = artifact.getConflicts().iterator(); i.hasNext();) {
+            RepoConflict conflict = (RepoConflict) i.next();
+            RepoArtifactId id = conflict.getId();
+            String kind = conflict.getKind();
+            if (kind.equals(RepoConflict.BUNDLED) || kind.equals(RepoConflict.RENAMED_RESET)
+                    || kind.equals(RepoConflict.EQUIVALENT)) {
+                // Any version of id named in the conflict must clash
+                // In the case of equivalence, if more than 1 group/name/type is equivalent, this will
+                // also result in a conflict.
+                String dummy = artifact.getId().getGroup() + "-" + artifact.getId().getName() + "-"
+                        + artifact.getId().getType() + "-conflict-dummy";
+                RepoArtifactId id1 = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), dummy);
+                System.out.println("adding " + id1.toShortString());
+                conflicts.add(id1);
+            } else if (kind.equals(RepoConflict.RENAMED)) {
+                // Same version of the old name is OK, otherwise there's a conflict
+                conflicts.add(new RepoArtifactId(id.getGroup(), id.getName(), id.getType(), artifact.getId().getVersion()));
+            } else if (kind.equals(RepoConflict.ALIAS)) {
+                // Any other version of the aliased id will lead to a conflict
+                conflicts.add(id);
+            } else {
+                Assert.isTrue(false, conflict.getLocator(), "Unknown kind: " + kind);
+            }
         }
 
-        id = artifact.getOriginalId();
-
-        RepoArtifactId originalUnversioned = new RepoArtifactId(id.getGroup(), id.getName(), id.getType(),
-                Version.parse("0"));
-
-        if (artifact.getOriginalId().getVersion() == null) {
-            return Collections.singletonList(originalUnversioned);
-        }
-
-        List unversioned = new ArrayList();
-        unversioned.add(idUnversioned);
-        unversioned.add(originalUnversioned);
-
-        return unversioned;
+        return conflicts;
     }
 }
