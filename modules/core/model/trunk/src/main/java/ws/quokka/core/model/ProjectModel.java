@@ -39,6 +39,8 @@ public interface ProjectModel {
 
     List getPluginPath(Plugin plugin, String id, boolean mergeWithCore, boolean flatten);
 
+    List getPathGroup(Target target, String id);
+
     Map getTargets();
 
     AnnotatedProperties getProperties();
