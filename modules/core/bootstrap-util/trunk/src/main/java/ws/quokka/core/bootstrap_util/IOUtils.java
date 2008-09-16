@@ -18,6 +18,8 @@
 package ws.quokka.core.bootstrap_util;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Get;
 import org.apache.tools.ant.util.FileUtils;
 
 import java.io.BufferedInputStream;
@@ -40,6 +42,8 @@ import java.io.Writer;
 import java.net.URL;
 
 import java.util.Properties;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 /**
@@ -271,5 +275,86 @@ public class IOUtils {
         } catch (IOException e) {
             throw new BuildException(e);
         }
+    }
+
+    /**
+     * Returns a MD5 hash as a hex string of the bytes given
+     */
+    public String md5String(byte[] bytes) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+
+            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
+            messageDigest.reset();
+            messageDigest.update(bytes);
+
+            return toHex(messageDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    /**
+     * Returns a MD5 hash of the bytes given
+     */
+    public byte[] md5(byte[] bytes) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+
+            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
+            messageDigest.reset();
+            messageDigest.update(bytes);
+
+            return messageDigest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    /**
+     * Converts the bytes given to a hex string representation
+     */
+    public String toHex(byte[] fileDigest) {
+        StringBuffer hex = new StringBuffer();
+
+        for (int i = 0; i < fileDigest.length; i++) {
+            String hexStr = Integer.toHexString(0x00ff & fileDigest[i]);
+
+            if (hexStr.length() < 2) {
+                hex.append("0");
+            }
+
+            hex.append(hexStr);
+        }
+
+        return hex.toString();
+    }
+
+    /**
+     * Downloads a file from the given url to the destination using Ant's Get task.
+     * User and password may be null.
+     */
+    public void download(Project project, URL url, String user, String password, File destination) {
+        try {
+            Get get = (Get) project.createTask("get");
+            get.setSrc(url);
+            get.setUsername(user);
+            get.setPassword(password);
+            get.setDest(destination);
+            get.setUseTimestamp(false);
+            get.setIgnoreErrors(false);
+
+            // Get is incredibly noisy ... this limits it's logging to verbose level only
+            get.doGet(Project.MSG_VERBOSE, null);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    /**
+     * Creates the directory if it doesn't already exist
+     */
+    public void createDir(File dir) {
+        Assert.isTrue(dir.exists() || dir.mkdirs(), "Could not create: " + dir.getPath());
     }
 }
