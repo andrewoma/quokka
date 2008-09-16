@@ -1,0 +1,14 @@
+<dependency-set>
+    <dependency-set group="quokka.internal.module-depset" version="0.2"/>
+
+    <property name="quokka.resources.main.output"
+              value="${quokka.lifecycle.resourcesOutput}/META-INF/quokka/${quokka.project.artifact.group}_${quokka.project.artifact.name[archetype]}_archetype_${quokka.project.artifact.version}"/>
+
+    <plugin group="quokka.plugin.resources" version="0.2.3"/>
+    <plugin group="quokka.plugin.standard-lifecycle" version="0.2.2"/>
+    <plugin group="quokka.plugin.jar" version="0.2.2"/>
+
+    <plugin group="quokka.plugin.help" version="0.2.2" use-defaults="false">
+        <target name="generate-help"/>
+    </plugin>
+</dependency-set>
