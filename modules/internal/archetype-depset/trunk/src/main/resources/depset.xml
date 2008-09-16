@@ -1,5 +1,5 @@
 <dependency-set>
-    <dependency-set group="quokka.internal.module-depset" version="0.2-ss"/>
+    <dependency-set group="quokka.internal.module-depset" version="0.2"/>
 
     <property name="quokka.resources.main.output"
               value="${quokka.lifecycle.resourcesOutput}/META-INF/quokka/${quokka.project.artifact.group}_${quokka.project.artifact.name[archetype]}_archetype_${quokka.project.artifact.version}"/>
