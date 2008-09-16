@@ -4,7 +4,7 @@
 <project>
     <description>Quokka dependency set defining common plugins and licenses for all modules</description>
 
-    <artifacts group="quokka.internal.module-depset" type="depset" version="0.2">
+    <artifacts group="quokka.internal.module-depset" type="depset" version="0.3-ss">
         <artifact/>
     </artifacts>
 
