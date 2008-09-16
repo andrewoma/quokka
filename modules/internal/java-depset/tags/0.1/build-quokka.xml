@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+
+<project>
+    <description>Quokka dependency set for creating java modules</description>
+
+    <artifacts group="quokka.internal.java-depset" type="depset" version="0.1">
+        <artifact/>
+    </artifacts>
+
+    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
+
+    <dependency-set>
+        <dependency-set group="quokka.internal.depset-depset" version="0.1"/>
+    </dependency-set>
+</project>

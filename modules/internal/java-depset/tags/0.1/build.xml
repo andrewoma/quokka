@@ -1,0 +1,3 @@
+<project name="quokka.internal.java-depset.ext">
+    <import file="../../internal/master/ide-parent.xml"/>
+</project>
