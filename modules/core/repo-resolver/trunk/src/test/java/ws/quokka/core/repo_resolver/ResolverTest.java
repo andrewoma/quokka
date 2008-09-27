@@ -750,6 +750,7 @@ public class ResolverTest extends AbstractTest {
         dep(root, get("dep1:dep1:jar:1.1"), "root");
 
         ResolvedPath path = resolver.resolvePath("root", root);
+
         try {
             resolver.merge(Collections.singleton(path));
             fail("Expected exception");
