@@ -37,18 +37,27 @@ public class PropertiesUtil {
      * and also means any changes to properties set will not be reflected after the copy is made.
      */
     public static Map getProperties(Project project) {
-        return Collections.unmodifiableMap(getModifiableProperties(project));
+        return Collections.unmodifiableMap(getProjectProperties(project, "properties"));
     }
 
     /**
      * Uses reflection to gain direct access to the projects properties.
      * Useful in rare cases to allow removal of properties
      */
-    public static Map getModifiableProperties(Project project) {
+    private static Map getProjectProperties(Project project, String field) {
         PropertyHelper ph = PropertyHelper.getPropertyHelper(project);
         Reflect reflect = new Reflect();
-        Hashtable properties = (Hashtable)reflect.get(reflect.getField(PropertyHelper.class, "properties"), ph);
 
-        return properties;
+        return (Hashtable)reflect.get(reflect.getField(PropertyHelper.class, field), ph);
+    }
+
+    /**
+     * Clears a project property from the underlying Ant project maps
+     */
+    public static void clearProperty(Project project, String property) {
+        Map properties = getProjectProperties(project, "properties");
+        properties.remove(property);
+        properties = getProjectProperties(project, "userProperties");
+        properties.remove(property);
     }
 }

@@ -27,7 +27,11 @@ public class LogTest extends ProjectLoggerTest {
     protected void setUp() throws Exception {
         super.setUp();
         Log.clear();
-        Log.set(logger);
-        logger = Log.get();
+    }
+
+    public Logger createLogger() {
+        Log.set(new ProjectLogger(project));
+
+        return Log.get();
     }
 }

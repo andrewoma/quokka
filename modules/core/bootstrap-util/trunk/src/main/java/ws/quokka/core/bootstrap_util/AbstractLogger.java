@@ -99,7 +99,7 @@ public abstract class AbstractLogger implements Logger {
     }
 
     public boolean isEnabled(int level) {
-        return this.level <= level;
+        return level <= this.level;
     }
 
     protected void log(String message, int level) {

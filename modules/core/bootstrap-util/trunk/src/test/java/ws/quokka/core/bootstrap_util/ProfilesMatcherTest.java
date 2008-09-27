@@ -40,39 +40,35 @@ public class ProfilesMatcherTest extends AbstractTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public void testProfileVsDefault() {
-        assertTrue(!matcher.matches(s("p1"), NONE));
-        assertTrue(!matcher.matches(s("p1, p2"), NONE));
-    }
-
-    public void testDefaultVsActive() {
-        assertTrue(matcher.matches(NONE, s("p1")));
-        assertTrue(matcher.matches(NONE, s("p1", "p2")));
+        assertTrue(!matcher.matches("p1", NONE));
+        assertTrue(!matcher.matches("p1 | p2", NONE));
     }
 
     public void testProfileInActive() {
-        assertTrue(matcher.matches(s("p1"), s("p1")));
-        assertTrue(matcher.matches(s("p1"), s("p1", "p2")));
-        assertTrue(matcher.matches(s("p2"), s("p1", "p2")));
-        assertTrue(matcher.matches(s("p1", "p2"), s("p1", "p2")));
+        assertTrue(matcher.matches("p1", s("p1")));
+        assertTrue(matcher.matches("p1", s("p1", "p2")));
+        assertTrue(matcher.matches("p2", s("p1", "p2")));
+        assertTrue(matcher.matches("p1 | p2", s("p1", "p2")));
     }
 
     public void testNegativeVsDefault() {
-        assertTrue(matcher.matches(s("-p1"), NONE));
-        assertTrue(matcher.matches(s("-p1, -p2"), NONE));
+        assertTrue(matcher.matches("!p1", NONE));
+        assertTrue(matcher.matches("!p1 & !p2", NONE));
     }
 
     public void testNegativeInActive() {
-        assertTrue(!matcher.matches(s("-p1"), s("p1")));
-        assertTrue(!matcher.matches(s("-p1"), s("p1", "p2")));
-        assertTrue(!matcher.matches(s("-p1", "-p2"), s("p1", "p2")));
-        assertTrue(!matcher.matches(s("-p2"), s("p1", "p2")));
+        assertTrue(!matcher.matches("!p1", s("p1")));
+        assertTrue(!matcher.matches("!p1", s("p1", "p2")));
+        assertTrue(!matcher.matches("!p1 & !p2", s("p1", "p2")));
+        assertTrue(!matcher.matches("!p1 + !p2", s("p1", "p2")));
+        assertTrue(!matcher.matches("!p2", s("p1", "p2")));
     }
 
     public void testNegativeNotInActive() {
-        assertTrue(matcher.matches(s("-p1"), s("p3")));
-        assertTrue(matcher.matches(s("-p1"), s("p3", "p4")));
-        assertTrue(matcher.matches(s("-p1", "-p2"), s("p3")));
-        assertTrue(matcher.matches(s("-p1", "-p2"), s("p3", "p4")));
+        assertTrue(matcher.matches("!p1", s("p3")));
+        assertTrue(matcher.matches("!p1", s("p3", "p4")));
+        assertTrue(matcher.matches("!p1 & !p2", s("p3")));
+        assertTrue(matcher.matches("!p1 & !p2", s("p3", "p4")));
     }
 
     public Set s(Object o1) {

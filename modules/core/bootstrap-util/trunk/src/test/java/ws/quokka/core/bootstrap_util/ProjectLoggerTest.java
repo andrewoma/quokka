@@ -30,7 +30,6 @@ public class ProjectLoggerTest extends TestCase {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     protected ResultLogger resultLogger = new ResultLogger();
-    protected Logger logger;
     protected Project project;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -41,7 +40,6 @@ public class ProjectLoggerTest extends TestCase {
         resultLogger.setErrorPrintStream(System.err);
         resultLogger.setOutputPrintStream(System.out);
         project.init();
-        logger = new ProjectLogger(project);
     }
 
     public void testDebug() {
@@ -64,9 +62,15 @@ public class ProjectLoggerTest extends TestCase {
         assertMessages(Project.MSG_ERR);
     }
 
+    public Logger createLogger() {
+        return new ProjectLogger(project);
+    }
+
     public void assertMessages(int level) {
         resultLogger.clear();
         resultLogger.setMessageOutputLevel(level);
+
+        Logger logger = createLogger();
 
         switch (level) {
         case Project.MSG_DEBUG:
@@ -79,21 +83,47 @@ public class ProjectLoggerTest extends TestCase {
             assertEquals("debug", getMessage());
 
         case Project.MSG_VERBOSE:
+
+            if (level <= Project.MSG_VERBOSE) {
+                assertTrue(!logger.isDebugEnabled());
+            }
+
             assertTrue(logger.isVerboseEnabled());
             logger.verbose("verbose");
             assertEquals("verbose", getMessage());
 
         case Project.MSG_INFO:
+
+            if (level <= Project.MSG_INFO) {
+                assertTrue(!logger.isDebugEnabled());
+                assertTrue(!logger.isVerboseEnabled());
+            }
+
             assertTrue(logger.isInfoEnabled());
             logger.info("info");
             assertEquals("info", getMessage());
 
         case Project.MSG_WARN:
+
+            if (level <= Project.MSG_WARN) {
+                assertTrue(!logger.isDebugEnabled());
+                assertTrue(!logger.isVerboseEnabled());
+                assertTrue(!logger.isInfoEnabled());
+            }
+
             assertTrue(logger.isWarnEnabled());
             logger.warn("warn");
             assertEquals("warn", getMessage());
 
         case Project.MSG_ERR:
+
+            if (level <= Project.MSG_ERR) {
+                assertTrue(!logger.isDebugEnabled());
+                assertTrue(!logger.isVerboseEnabled());
+                assertTrue(!logger.isInfoEnabled());
+                assertTrue(!logger.isWarnEnabled());
+            }
+
             assertTrue(logger.isErrorEnabled());
             logger.error("error");
             assertEquals("error", getMessage());

@@ -41,9 +41,10 @@ import java.io.Writer;
 
 import java.net.URL;
 
-import java.util.Properties;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import java.util.Properties;
 
 
 /**
@@ -336,7 +337,7 @@ public class IOUtils {
      */
     public void download(Project project, URL url, String user, String password, File destination) {
         try {
-            Get get = (Get) project.createTask("get");
+            Get get = (Get)project.createTask("get");
             get.setSrc(url);
             get.setUsername(user);
             get.setPassword(password);

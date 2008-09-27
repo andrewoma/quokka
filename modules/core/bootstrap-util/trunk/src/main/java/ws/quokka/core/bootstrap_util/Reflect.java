@@ -180,4 +180,15 @@ public class Reflect {
             }
         }
     }
+
+    /**
+     * Loads the named class from the given class loader
+     */
+    public Class loadClass(ClassLoader classLoader, String name) {
+        try {
+            return classLoader.loadClass(name);
+        } catch (ClassNotFoundException e) {
+            throw new BuildException(e);
+        }
+    }
 }

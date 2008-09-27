@@ -35,6 +35,9 @@ public class TargetLoggerTest extends ProjectLoggerTest {
         target = new Target();
         target.setName("targetName");
         target.setProject(project);
-        logger = new TargetLogger(target);
+    }
+
+    public Logger createLogger() {
+        return new TargetLogger(target);
     }
 }

@@ -24,17 +24,24 @@ import org.apache.tools.ant.Task;
  *
  */
 public class TaskLoggerTest extends TargetLoggerTest {
+    //~ Instance fields ------------------------------------------------------------------------------------------------
+
+    Task task;
+
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     protected void setUp() throws Exception {
         super.setUp();
 
-        Task task = new Task() {
-            };
+        task = new Task() {
+                };
 
         task.setTaskName("taskName");
         task.setProject(project);
         task.setOwningTarget(target);
-        logger = new TaskLogger(task);
+    }
+
+    public Logger createLogger() {
+        return new TaskLogger(task);
     }
 }
