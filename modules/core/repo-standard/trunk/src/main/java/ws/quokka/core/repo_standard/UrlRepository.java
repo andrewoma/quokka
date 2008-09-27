@@ -83,7 +83,7 @@ public class UrlRepository extends AbstractStandardRepository {
 
         String indexUrl = "checksum:" + indexExpanded.getPath() + ";hierarchical=false";
         String indexId = getName() + "-index";
-        getFactory().getProperties().put("quokka.repo." + indexId + ".url", indexUrl);
+        getFactory().getProperties().put("q.repo." + indexId + ".url", indexUrl);
         indexRepository = (ChecksumRepository)getFactory().getOrCreate(indexId, true);
 
         Assert.isTrue(getParents().size() == 0, "Url repositories cannot have parents");
@@ -95,11 +95,7 @@ public class UrlRepository extends AbstractStandardRepository {
         if (!retrieveArtifact) {
             updateIndex();
 
-            try {
-                return indexRepository.resolve(id, false);
-            } catch (UnresolvedArtifactException e) {
-                // Fall through and hit the actual remote repository
-            }
+            return indexRepository.resolve(id, false);
         }
 
         File artifactFile = getRemoteArtifact(id);
@@ -210,7 +206,7 @@ public class UrlRepository extends AbstractStandardRepository {
     public Collection listArtifactIds(boolean includeReferenced) {
         updateIndex();
 
-        return indexRepository.listArtifactIds(false);
+        return indexRepository.listArtifactIds(includeReferenced);
     }
 
     protected void updateIndex() {

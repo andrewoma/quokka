@@ -29,10 +29,10 @@ import ws.quokka.core.util.Strings;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.HashSet;
 
 
 /**
@@ -41,7 +41,7 @@ import java.util.HashSet;
 public class RepositoryFactoryImpl implements RepositoryFactory {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
-    private String prefix = "quokka.repo.";
+    private String prefix = "q.repo.";
     private AnnotatedProperties properties;
     private Map classes = new HashMap();
     private Map repositories = new HashMap();
@@ -152,9 +152,9 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
     /**
      * Converts a repository url into a set of properties:
      * <pre>
-     * quokka.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
-     * quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=global;confirmImport=false
-     * quokka.repo.global.url=url:http://quokka.ws/repository/
+     * q.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
+     * q.repo.release.url=file:${user.home}/.quokka/releases;parents=global;confirmImport=false
+     * q.repo.global.url=url:http://quokka.ws/repository/
      * </pre>
      */
     public static Properties parseUrl(String prefix, String url) {

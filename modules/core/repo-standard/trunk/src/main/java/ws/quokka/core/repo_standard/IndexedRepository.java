@@ -75,7 +75,7 @@ public class IndexedRepository extends AbstractRepository {
         if (indexRepository == null) {
             String url = "checksum:" + indexRoot.getPath() + ";hierarchical=false;parents=" + repository.getName();
             String id = getName() + "-index";
-            getFactory().getProperties().put("quokka.repo." + id + ".url", url);
+            getFactory().getProperties().put("q.repo." + id + ".url", url);
             indexRepository = (ChecksumRepository)getFactory().getOrCreate(id, true);
         }
     }
@@ -146,7 +146,7 @@ public class IndexedRepository extends AbstractRepository {
     }
 
     public Collection listArtifactIds(String group, String name, String type, boolean includeReferenced) {
-        return repository.listArtifactIds(group, name, type, true);
+        return repository.listArtifactIds(group, name, type, includeReferenced);
     }
 
     public void rebuildCaches() {
