@@ -34,6 +34,10 @@
         <iterate target="install"/>
     </target>
 
+    <target name="install-all-code" description="Install all modules">
+        <iterate target="install" buildpathref="buildpath-code"/>
+    </target>
+
     <target name="process-test-resources-all">
         <iterate target="process-test-resources"/>
     </target>
@@ -51,15 +55,15 @@
     </target>
 
     <target name="help-report-all">
-        <iterate target="quokka.help:collect" master="quokka.help:aggregate-report" buildpathref="buildpath-code"/>
+        <iterate target="help:collect" master="help:aggregate-report" buildpathref="buildpath-code"/>
     </target>
 
     <target name="cobertura-all">
-        <iterate target="quokka.cobertura:collect" master="quokka.cobertura:aggregate-report" buildpathref="buildpath-code"/>
+        <iterate target="cobertura:collect" master="cobertura:aggregate-report" buildpathref="buildpath-code"/>
     </target>
 
     <target name="junitreport-all">
-        <iterate target="quokka.junitreport:collect" master="quokka.junitreport:aggregate-report" buildpathref="buildpath-code"/>
+        <iterate target="junitreport:collect" master="junitreport:aggregate-report" buildpathref="buildpath-code"/>
     </target>
 
     <target name="format-all">
@@ -67,7 +71,7 @@
     </target>
 
     <target name="reports-all">
-        <iterate target="quokka.devreport:generate" master="quokka.devreport:reports"/>
+        <iterate target="devreport:generate" master="devreport:reports"/>
     </target>
 
     <target name="install-quokka">
@@ -96,8 +100,8 @@
     </target>
 
     <target name="update-release-repo">
-        <copy todir="${quokka.repo.localRelease.rootDir}">
-            <fileset dir="${quokka.repo.localRelease.installRootDir}"/>
+        <copy todir="${q.repo.localRelease.rootDir}">
+            <fileset dir="${q.repo.localRelease.installRootDir}"/>
         </copy>
     </target>
 
@@ -181,7 +185,7 @@
             <!--<path location="${home}/xmlcat/xhtml1-20020801"/>-->
         </path>
         <subant buildpathref="releasepath" target="release">
-            <property name="quokka.release.rolloverVersion" value="0.1.1-ss"/>
+            <property name="q.release.rolloverVersion" value="0.1.1-ss"/>
         </subant>
     </target>
 </project>

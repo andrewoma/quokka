@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project relativePaths="true" version="4">
   <component name="AntConfiguration">
-    <defaultAnt name="Quokka 0.1.1" />
+    <defaultAnt name="Quokka 0.3" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
-      <additionalClassPath />
+      <additionalClassPath>
+        <entry path="file://$PROJECT_DIR$/../../intellij-nobanner-logger-0.1.jar" />
+        <entry path="file://$PROJECT_DIR$/../../core/bundle/target/dist/quokka-0.3-ss/lib/apache.ant_ant_jar_1.7.1.jar" />
+        <entry path="file://$PROJECT_DIR$/../../core/bundle/target/dist/quokka-0.3-ss/lib/apache.ant_launcher_jar_1.7.1.jar" />
+        <entry path="file://$PROJECT_DIR$/../../core/bundle/target/dist/quokka-0.3-ss/lib/quokka.bundle_core_jar_0.3-ss.jar" />
+      </additionalClassPath>
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties>
-        <property name="quokka.bootstrap.initialise" value="true" />
-      </properties>
+      <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/../../core/metadata/build.xml">
       <additionalClassPath />
@@ -258,6 +261,11 @@
               <file url="file://$PROJECT_DIR$/../../plugin/jee/src/test/resources/JeePluginITest/src/main/webapp/WEB-INF/web.xml" />
             </files>
           </module>
+          <module name="plugin.jetty">
+            <files>
+              <file url="file://$PROJECT_DIR$/../../plugin/jetty/src/test/resources/JettyPluginITest/src/main/webapp/WEB-INF/web.xml" />
+            </files>
+          </module>
         </modules>
       </facet-type>
     </autodetection-disabled>
@@ -484,6 +492,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../plugin/jar/plugin.jar.iml" filepath="$PROJECT_DIR$/../../plugin/jar/plugin.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/jarbundle/plugin.jarbundle.iml" filepath="$PROJECT_DIR$/../../plugin/jarbundle/plugin.jarbundle.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/javac/plugin.javac.iml" filepath="$PROJECT_DIR$/../../plugin/javac/plugin.javac.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/javacc/plugin.javacc.iml" filepath="$PROJECT_DIR$/../../plugin/javacc/plugin.javacc.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/javadoc/plugin.javadoc.iml" filepath="$PROJECT_DIR$/../../plugin/javadoc/plugin.javadoc.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/jee/plugin.jee.iml" filepath="$PROJECT_DIR$/../../plugin/jee/plugin.jee.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/jetty/plugin.jetty.iml" filepath="$PROJECT_DIR$/../../plugin/jetty/plugin.jetty.iml" />
@@ -494,6 +503,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../plugin/release/plugin.release.iml" filepath="$PROJECT_DIR$/../../plugin/release/plugin.release.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/repository/plugin.repository.iml" filepath="$PROJECT_DIR$/../../plugin/repository/plugin.repository.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/resources/plugin.resources.iml" filepath="$PROJECT_DIR$/../../plugin/resources/plugin.resources.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../plugin/script/plugin.script.iml" filepath="$PROJECT_DIR$/../../plugin/script/plugin.script.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/standard-lifecycle/plugin.standard-lifecycle.iml" filepath="$PROJECT_DIR$/../../plugin/standard-lifecycle/plugin.standard-lifecycle.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/subversion/plugin.subversion.iml" filepath="$PROJECT_DIR$/../../plugin/subversion/plugin.subversion.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../plugin/versioncontrol/plugin.versioncontrol.iml" filepath="$PROJECT_DIR$/../../plugin/versioncontrol/plugin.versioncontrol.iml" />
@@ -537,15 +547,13 @@
   <component name="libraryTable">
     <library name="ant-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/ant_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/ant-launcher_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/jsch_jar.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/launcher_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/apache/ant/1.7.1/ant_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/apache/ant/1.7.1/launcher_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/apache/ant/1.7.1/nodeps_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../../../Apps/apache-ant-1.7.0/src/main" />
-        <root url="file:///Volumes/NewDataDisk/Dev/Apps/apache-ant-1.7.0/src/main" />
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/apache-ant-1.7.1 2/src/main" />
       </SOURCES>
     </library>
     <library name="junit-3.8.1">
@@ -557,11 +565,11 @@
     </library>
     <library name="ant-junit-1.7">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.1/apache/ant/1.7/junit_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/apache/ant/1.7.1/junit_jar.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../../../Apps/apache-ant-1.7.0/src/main" />
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/apache-ant-1.7.1 2/src/main" />
       </SOURCES>
     </library>
     <library name="cobertura-1.8">
@@ -604,6 +612,28 @@
       <JAVADOC />
       <SOURCES>
         <root url="intellijad://intellijad" />
+      </SOURCES>
+    </library>
+    <library name="javacc-4.0">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/java-net/javacc/4.0/javacc_jar.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jetty-6.1.11">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/mortbay/jetty/6.1.11/util_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/mortbay/jetty/6.1.11/jetty_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/mortbay/jetty/6.1.11/plus_jar.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../../repository/0.2/mortbay/jetty/6.1.11/start_jar.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/jetty-6.1.11 3/modules/jetty/src/main/java" />
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/jetty-6.1.11 3/modules/util/src/main/java" />
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/jetty-6.1.11 3/modules/plus/src/main/java" />
+        <root url="file://$PROJECT_DIR$/../../../../../../../Downloads/jetty-6.1.11 3/modules/start/src/main/java" />
       </SOURCES>
     </library>
   </component>

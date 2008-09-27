@@ -1,8 +1,12 @@
-# Sun specs from Geronimo
+# Distributable Sun specs from Geronimo/Jetty
 org.apache.geronimo.specs:geronimo-activation_1.1_spec:jar::1.0.2
 org.apache.geronimo.specs:geronimo-javamail_1.4_spec:jar::1.4
 org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar::1.1.1
 org.apache.geronimo.specs:geronimo-servlet_2.5_spec:jar::1.2
+org.apache.geronimo.specs:geronimo-jta_1.0.1B_spec:jar::1.0.1
+org.apache.geronimo.specs:geronimo-annotation_1.0_spec:jar::1.1.1
+org.mortbay.jetty:jsp-api-2.0:jar::6.1.11
+javax.servlet:servlet-api:jar::2.4
 
 # Ant 1.7.1
 org.apache.ant:ant-antlr:jar::1.7.1
@@ -37,6 +41,16 @@ org.apache.ant:ant:jar::1.7.1
 #org.apache.ant:ant-jsch:jar::1.7.0
 #org.apache.ant:ant-trax:jar::1.7.0
 
+# Jetty 6.1.11
+org.mortbay.jetty:jetty:jar::6.1.11
+org.mortbay.jetty:jetty-plus:jar::6.1.11
+org.mortbay.jetty:start:jar::6.1.11
+org.mortbay.jetty:jetty-naming:jar::6.1.11
+org.mortbay.jetty:jetty-management:jar::6.1.11
+org.mortbay.jetty:jetty-annotations:jar::6.1.11
+org.mortbay.jetty:jsp-2.1:jar::6.1.11
+org.mortbay.jetty:jsp-2.0:pom::6.1.11
+
 log4j:log4j:jar::1.2.15
 asm:asm:jar::2.2.1
 cobertura:cobertura:jar::1.8
@@ -52,5 +66,6 @@ commons-logging:commons-logging-api:jar::1.0.4
 xml-resolver:xml-resolver:jar::1.2
 xerces:xmlParserAPIs:jar::2.6.0
 xerces:xmlParserAPIs:jar::2.2.1
+rhino:js:jar::1.6R7
+net.java.dev.javacc:javacc:jar::4.0
 
-#org.mortbay.jetty:jetty:jar::6.1.11
