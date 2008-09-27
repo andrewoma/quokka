@@ -4,16 +4,16 @@
 <project name="quokka.internal.site">
     <description>Quokka module for generating and deploying the web site</description>
 
-    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.3-ss,0.3-ss]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <path id="site_naut05_custom"/>
 
-        <plugin group="quokka.plugin.resources" version="0.2.3"/>
-        <plugin group="quokka.plugin.standard-lifecycle" version="0.2.2"/>
-        <plugin group="quokka.plugin.jar" version="0.2.2"/>
+        <plugin group="quokka.plugin.resources" version="0.3-ss"/>
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.3-ss"/>
+        <!--<plugin group="quokka.plugin.jar" version="0.2.2"/>-->
 
-        <dependency group="apache.ant" name="trax" version="1.7" paths="xml-transform"/>
+        <dependency group="apache.ant" name="trax" version="1.7.1" paths="xml-transform"/>
         <dependency group="sf.saxon" version="6.5.3" paths="xml-transform"/>
         <dependency group="sf.docbook.xsl" name="saxon65-ext" version="1.72" paths="xml-transform"/>
 
@@ -23,31 +23,29 @@
         <dependency group="quokka.xmlcat.docbook-xsl-1-72-0" version="0.1.1-ss" paths="xml-catalog"/>
         <dependency group="quokka.xmlcat.docbook-dtd-4-5" version="0.1.1-ss" paths="xml-catalog"/>
 
-        <dependency group="apache.ant" name="jsch" version="1.7" paths="ant-types"/>
+        <dependency group="apache.ant" name="jsch" version="1.7.1" paths="ant-types"/>
         <!--<dependency group="sf.jsch" version="0.1.38" paths="ant-types"/>-->
 
         <!--<dependency group="apache.commons.net" version="1.4.1" paths="ant-types"/>-->
         <!--<dependency group="apache.ant" name="commons-net" version="1.7" paths="ant-types"/>-->
 
-        <dependency-set group="quokka.internal.docbook-depset" version="0.1.1-ss"/>
-        <plugin group="quokka.plugin.xml" version="0.2">
+        <dependency-set group="quokka.internal.docbook-depset" version="0.2-ss"/>
+        <dependency-set group="quokka.internal.module-depset" version="0.3-ss"/>
+
+        <plugin group="quokka.plugin.xml" version="0.3-ss">
             <target name="transform-html" template="transform" prefix="transform-html"/>
             <target name="transform-temp-html" template="transform" prefix="transform-temp-html"
-                    depends="quokka.help:generate-summary"/>
+                    depends="help:generate-summary"/>
             <target name="transform-docbook" template="transform" prefix="transform-docbook"/>
             <target name="transform-docbook-html" template="transform" prefix="transform-docbook-html"
                     depends="transform-docbook"/>
         </plugin>
-        <plugin group="quokka.plugin.help" version="0.2.2">
+        <plugin group="quokka.plugin.help" version="0.3-ss">
             <target name="generate-summary" depends="transform-html"/>
         </plugin>
-        <plugin group="quokka.plugin.devreport" version="0.2.1"/>
         <!-- Problem with this ... fixed in trunk? -->
         <!--<plugin group="quokka.plugin.resources" version="0.1">-->
             <!--<target name="extract-resources" template="extract" prefix="extract-resources"/>-->
         <!--</plugin>-->
-        <plugin group="quokka.plugin.subversion" version="0.2.1"/>
-        <!--<license group="license.apache" version="2.0"/>-->
-
     </dependency-set>
 </project>

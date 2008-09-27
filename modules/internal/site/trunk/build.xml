@@ -3,8 +3,8 @@
 
     <target name="site"
             depends="transform-html, transform-docbook, transform-docbook-html, transform-temp-html, extract-resources, help">
-        <copy todir="${quokka.project.targetDir}/site/help-example">
-            <fileset dir="${quokka.project.targetDir}/help"/>
+        <copy todir="${q.project.targetDir}/site/help-example">
+            <fileset dir="${q.project.targetDir}/help"/>
         </copy>
     </target>
 
@@ -31,31 +31,31 @@
     </macrodef>
 
     <target name="extract-resources">
-        <unjar src="${quokka.project.path.site_naut05_custom}" dest="${quokka.project.targetDir}/temp"/>
-        <copy todir="${quokka.project.targetDir}/site">
-            <fileset dir="${quokka.project.targetDir}/temp/META-INF/quokka/quokka.xmlcat.site-naut05-custom_site-naut05-custom_jar_0.1.1-ss/catalog/site"/>
+        <unjar src="${q.project.path.site_naut05_custom}" dest="${q.project.targetDir}/temp"/>
+        <copy todir="${q.project.targetDir}/site">
+            <fileset dir="${q.project.targetDir}/temp/META-INF/quokka/quokka.xmlcat.site-naut05-custom_site-naut05-custom_jar_0.1.1-ss/catalog/site"/>
         </copy>
     </target>
 
     <target name="deploy-site">
-        <zip destfile="${quokka.project.targetDir}/quokka.ws.zip">
-            <fileset dir="${quokka.project.targetDir}/site"/>
+        <zip destfile="${q.project.targetDir}/quokka.ws.zip">
+            <fileset dir="${q.project.targetDir}/site"/>
         </zip>
 
-        <deploy file="${quokka.project.targetDir}/quokka.ws.zip" script="deploy-site"/>
+        <deploy file="${q.project.targetDir}/quokka.ws.zip" script="deploy-site"/>
     </target>
 
     <target name="deploy-snapshot-repo">
-        <property name="snapshotRepoTemp" location="${quokka.project.targetDir}/snapshot-repo.zip"/>
+        <property name="snapshotRepoTemp" location="${q.project.targetDir}/snapshot-repo.zip"/>
         <zip destfile="${snapshotRepoTemp}">
-            <fileset dir="${quokka.repo.snapshot.rootDir}" includes="quokka/**"/>
+            <fileset dir="${q.repo.snapshot.rootDir}" includes="quokka/**"/>
         </zip>
 
         <deploy file="${snapshotRepoTemp}" script="deploy-snapshot-repo"/>
     </target>
 
     <target name="deploy-reports">
-        <property name="reportsTemp" location="${quokka.project.targetDir}/reports.zip"/>
+        <property name="reportsTemp" location="${q.project.targetDir}/reports.zip"/>
         <zip destfile="${reportsTemp}">
             <fileset dir="../../internal/master/target/dev-reports"/>
         </zip>
@@ -64,9 +64,9 @@
     </target>
 
     <target name="deploy-repo">
-        <property name="repoTemp" location="${quokka.project.targetDir}/repo.zip"/>
+        <property name="repoTemp" location="${q.project.targetDir}/repo.zip"/>
         <zip destfile="${repoTemp}">
-            <fileset dir="${quokka.repo.localRelease.rootDir}"/>
+            <fileset dir="${q.repo.localRelease.rootDir}"/>
         </zip>
 
         <deploy file="${repoTemp}" script="deploy-repo"/>
