@@ -166,7 +166,7 @@ public class TypePropertiesTest extends AbstractTest {
         Path path = (Path)rc;
 
         assertEquals(1, path.list().length);
-        assertTrue(path.list()[0].contains("SomeDir"));
+        assertTrue(path.list()[0].indexOf("SomeDir") != -1);
 
         // Try bogus property
         p.put("rc.path.crud", "C:\\SomeDir");

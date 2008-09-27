@@ -78,7 +78,7 @@ public interface Resources {
     /**
      * Returns true if the named target is enabled. Enabled means that the target is not
      * abstract and has an actual implementation.
-     * @param name the name of the target. It must be fully qualified with the name space. e.g. quokka.lifecycle:test
+     * @param name the name of the target. It must be fully qualified with the name space. e.g. lifecycle:test
      */
     boolean isTargetEnabled(String name);
 

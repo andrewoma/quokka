@@ -78,7 +78,7 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
             properties = createProperties(resources.getPrefix() + ".");
         }
 
-        globalProperties = createProperties("quokka.project.");
+        globalProperties = createProperties("q.project.");
 
         typedProjectProperties = new TypedProperties("", projectProperties, resources.getProject());
 
@@ -87,21 +87,21 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
     }
 
     /**
-     * Returns the project wide target dir as defined by quokka.project.targetDir
+     * Returns the project wide target dir as defined by q.project.targetDir
      */
     public File getTargetDir() {
         return globalProperties.getFile("targetDir");
     }
 
     /**
-     * Returns the project wide source dir as defined by quokka.project.sourceDir
+     * Returns the project wide source dir as defined by q.project.sourceDir
      */
     public File getSourceDir() {
         return globalProperties.getFile("sourceDir");
     }
 
     /**
-     * Returns the project wide resources dir as defined by quokka.project.resourcesDir
+     * Returns the project wide resources dir as defined by q.project.resourcesDir
      */
     public File getResourcesDir() {
         return globalProperties.getFile("resourcesDir");
@@ -166,6 +166,10 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
                 public void run() {
                     new VoidExceptionHandler() {
                             public void run() throws Exception {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug(properties.toString());
+                                }
+
                                 new Reflect().invoke(AbstractPlugin.this, toMethodName(name), new Object[] {  });
                             }
                         };
@@ -220,12 +224,18 @@ public abstract class AbstractPlugin implements Plugin, ResourcesAware {
     }
 
     /**
-     * Returns the underlying Ant properties instance. In general this method should not be used
-     * - use {@link #getProjectProperties()} instead. However
-     * it is necessary is rare instances to clear a property that an underlying Ant task would otherwise
+     * Clears a property from the underlying Ant properties instances. In general this method should not be used
+     * However it is necessary is rare instances to clear a property that an underlying Ant task would otherwise
      * refuse to set as it already exists.
      */
-    public Map getModifiableProjectProperties() {
-        return PropertiesUtil.getModifiableProperties(resources.getProject());
+    public void clearProjectProperty(String property) {
+        PropertiesUtil.clearProperty(resources.getProject(), property);
+    }
+
+    /**
+     * Returns the string prefixed by the target prefix
+     */
+    public String prefix(String string) {
+        return getResources().getPrefix() + "." + string;
     }
 }

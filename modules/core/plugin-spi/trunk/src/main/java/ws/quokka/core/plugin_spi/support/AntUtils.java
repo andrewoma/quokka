@@ -17,7 +17,6 @@
 
 package ws.quokka.core.plugin_spi.support;
 
-import org.apache.tools.ant.ComponentHelper;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -26,6 +25,7 @@ import org.apache.tools.ant.taskdefs.Mkdir;
 import org.apache.tools.ant.types.DirSet;
 import org.apache.tools.ant.types.FileList;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.util.FileUtils;
@@ -115,9 +115,21 @@ public class AntUtils {
     public FileSet toFileSet(File file) {
         FileSet fileSet = new FileSet();
         fileSet.setProject(project);
-        fileSet.setFile(file);
+
+        if (file.isDirectory()) {
+            fileSet.setDir(file);
+        } else {
+            fileSet.setFile(file);
+        }
 
         return fileSet;
+    }
+
+    /**
+     * Converts a file to a path
+     */
+    public Path toPath(File file) {
+        return new Path(project, file.getPath());
     }
 
     /**

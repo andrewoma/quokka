@@ -144,7 +144,7 @@ public class TypedProperties {
 
     private String getProperty(String key, boolean mandatory) {
         String value = (String)properties.get(prefix + key);
-        Assert.isTrue(!mandatory || (value != null), "Mandatory property '" + key + "' has not been set.");
+        Assert.isTrue(!mandatory || (value != null), "Mandatory property '" + prefix + key + "' has not been set.");
 
         return value;
     }
