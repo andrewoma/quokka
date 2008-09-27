@@ -1,11 +1,12 @@
 <dependency-set>
-    <plugin group="quokka.plugin.help" version="0.2.2" use-defaults="false">
-        <target name="report" profiles="-hasParent"/>
+    <plugin group="quokka.plugin.help" version="0.3-ss" use-defaults="false">
+        <target name="report" profiles="!hasParent"/>
         <target name="collect" profiles="hasParent"/>
         <target name="help"/>
     </plugin>
-    <plugin group="quokka.plugin.devreport" version="0.2.1"/>
-    <plugin group="quokka.plugin.release" version="0.2.1"/>
-    <plugin group="quokka.plugin.subversion" version="0.2.1"/>
+    <plugin group="quokka.plugin.devreport" version="0.3-ss"/>
+    <plugin group="quokka.plugin.release" version="0.3-ss"/>
+    <plugin group="quokka.plugin.subversion" version="0.3-ss"/>
+    <plugin group="quokka.plugin.repository" version="0.1-ss"/>
     <license group="license.apache" version="2.0"/>
 </dependency-set>
