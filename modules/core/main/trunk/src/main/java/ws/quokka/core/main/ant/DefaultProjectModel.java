@@ -27,6 +27,7 @@ import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.Logger;
 import ws.quokka.core.bootstrap_util.ProfilesMatcher;
 import ws.quokka.core.bootstrap_util.ProjectLogger;
+import ws.quokka.core.bootstrap_util.PropertiesUtil;
 import ws.quokka.core.main.parser.PluginParser;
 import ws.quokka.core.metadata.Metadata;
 import ws.quokka.core.metadata.MetadataAware;
@@ -110,6 +111,7 @@ public class DefaultProjectModel implements ProjectModel {
     private List resolvedImports = new ArrayList();
     private Map pathCache = Collections.synchronizedMap(new HashMap());
     private List overrides = new ArrayList();
+    private int counter;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -559,7 +561,7 @@ public class DefaultProjectModel implements ProjectModel {
         resolvedTargets = targets;
         corePath = resolveCorePath();
 
-        if ("true".equals(antProject.getProperty("quokka.project.overrideCore"))) {
+        if ("true".equals(antProject.getProperty("q.project.overrideCore"))) {
             coreOverrides = getCoreOverrides();
         }
     }
@@ -593,7 +595,7 @@ public class DefaultProjectModel implements ProjectModel {
 //                queue.addLast(subSet);
 //            }
 //        }
-//        return sets;
+    //        return sets;
     //    }
     private void addPath(Path path) {
         resolvedPaths.put(path.getId(), path);
@@ -666,9 +668,9 @@ public class DefaultProjectModel implements ProjectModel {
         AnnotatedProperties resolvedProperties = new AnnotatedProperties();
 
         // Add the global defaults
-        resolvedProperties.put("quokka.project.targetDir", "${basedir}/target");
-        resolvedProperties.put("quokka.project.sourceDir", "${basedir}/src");
-        resolvedProperties.put("quokka.project.resourcesDir", "${basedir}/resources");
+        resolvedProperties.put("q.project.targetDir", "${basedir}/target");
+        resolvedProperties.put("q.project.sourceDir", "${basedir}/src");
+        resolvedProperties.put("q.project.resourcesDir", "${basedir}/resources");
 
         // Define the exported paths ... these are effectively the runtime dependencies
         StringBuffer exportedPaths = new StringBuffer();
@@ -677,8 +679,8 @@ public class DefaultProjectModel implements ProjectModel {
         if (project.getArtifacts().size() > 0) {
             // Add properties common to all (group & version)
             RepoArtifactId artifactId = ((Artifact)getProject().getArtifacts().iterator().next()).getId();
-            resolvedProperties.put("quokka.project.artifact.group", artifactId.getGroup());
-            resolvedProperties.put("quokka.project.artifact.version", artifactId.getVersion().toString());
+            resolvedProperties.put("q.project.artifact.group", artifactId.getGroup());
+            resolvedProperties.put("q.project.artifact.version", artifactId.getVersion().toString());
 
             // Build up a list of names by type
             Map namesByType = new HashMap();
@@ -712,12 +714,12 @@ public class DefaultProjectModel implements ProjectModel {
             for (Iterator i = namesByType.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();
                 List names = (List)entry.getValue();
-                resolvedProperties.put("quokka.project.artifact.name[" + entry.getKey() + "]",
+                resolvedProperties.put("q.project.artifact.name[" + entry.getKey() + "]",
                     Strings.join(names.iterator(), ","));
             }
         }
 
-        resolvedProperties.put("quokka.project.exportedPaths", exportedPaths.toString()); // May be empty
+        resolvedProperties.put("q.project.exportedPaths", exportedPaths.toString()); // May be empty
 
         // Put the plugin properties in first. Order is not important as plugin properties should be
         // unique to their plugin
@@ -735,7 +737,7 @@ public class DefaultProjectModel implements ProjectModel {
         // Put the project paths as properties
         for (Iterator i = resolvedPaths.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
-            resolvedProperties.put("quokka.project.path." + entry.getKey(),
+            resolvedProperties.put("q.project.path." + entry.getKey(),
                 toAntPath(getProjectPath((String)entry.getKey(), false, true)).toString());
         }
 
@@ -863,7 +865,7 @@ public class DefaultProjectModel implements ProjectModel {
                 String property = id.substring(propertyPrefix.length());
                 property = Strings.replace(property, "prefix", target.getPrefix());
 
-                String value = project.getProperties().getProperty(property);
+                String value = antProject.getProperty(property);
 
                 if ((value != null) && !value.trim().equals("")) {
                     resolvePath(Strings.commaSepList(value), paths, mergeWithCore, overrideCore, target, flatten);
@@ -909,6 +911,9 @@ public class DefaultProjectModel implements ProjectModel {
 
     public ResolvedPath _getResolvedPluginPath(Plugin plugin, String pathId, boolean mergeWithCore,
         boolean overrideCore, boolean flatten) {
+        Assert.isTrue(plugin.getArtifact().getPath(pathId) != null,
+            "Path '" + pathId + "' does not exist in plugin " + plugin.getArtifact().getId().toShortString());
+
         // Create a mock artifact for the resolver as a way to add user specified path specs and overrides
         RepoArtifact artifact = new RepoArtifact();
         RepoDependency dependency = new RepoDependency();
@@ -1027,7 +1032,10 @@ public class DefaultProjectModel implements ProjectModel {
             // Add dependencies
             for (Iterator j = set.getDependencies().iterator(); j.hasNext();) {
                 RepoDependency dependency = (RepoDependency)j.next();
-                artifact.addDependency(dependency);
+
+                if (!(dependency instanceof PluginDependency)) {
+                    artifact.addDependency(dependency);
+                }
             }
 
             // Add core overrides first if applicable
@@ -1137,7 +1145,7 @@ public class DefaultProjectModel implements ProjectModel {
         return aliases;
     }
 
-    public Runnable createTargetInstance(Target target, Properties localProperties, Logger logger) {
+    public TargetInstance createTargetInstance(Target target, Logger logger) {
         //        System.out.println("DefaultProjectModel.createTargetInstance");
         AntClassLoader loader = null;
         DefaultResources resources;
@@ -1148,7 +1156,7 @@ public class DefaultProjectModel implements ProjectModel {
             // Allow additional classes to added to the plugin classpath. This is primarily designed to
             // allow the additional of instrumented testing classes and libraries for code coverage of integration
             // tests with Cobertura
-            String key = "quokka.classpath." + target.getPlugin().getArtifact().getId().getGroup();
+            String key = "q.classpath." + target.getPlugin().getArtifact().getId().getGroup();
 
             if (log.isDebugEnabled()) {
                 log.debug("Searching for additional classpath with key: " + key);
@@ -1163,7 +1171,7 @@ public class DefaultProjectModel implements ProjectModel {
                 classPath.append(existing); // Make sure additions override existing
             }
 
-            if ("true".equals(antProject.getProperty("quokka.project.debugclassloaders"))) {
+            if ("true".equals(antProject.getProperty("q.project.debugClassLoaders"))) {
                 loader = new QuokkaLoader(target, antProject.getClass().getClassLoader(), antProject, classPath);
             } else {
                 loader = antProject.createClassLoader(classPath);
@@ -1209,15 +1217,12 @@ public class DefaultProjectModel implements ProjectModel {
 
             actualPlugin.initialise();
 
-            return actualPlugin.getTarget((target.getTemplateName() != null) ? target.getTemplateName() : target
-                .getName());
+            Runnable targ = actualPlugin.getTarget((target.getTemplateName() != null) ? target.getTemplateName()
+                                                                                      : target.getName());
+
+            return new TargetInstance(actualPlugin, targ, loader);
         } catch (Exception e) {
             throw new BuildException(e);
-        } finally {
-            if (loader != null) {
-                loader.resetThreadContextLoader();
-                loader.cleanup();
-            }
         }
     }
 
@@ -1268,10 +1273,10 @@ public class DefaultProjectModel implements ProjectModel {
                 int index = key.indexOf("]");
 
                 if (index != -1) {
-                    Set profiles = new HashSet(Strings.commaSepList(key.substring(1, index)));
+                    String expression = key.substring(1, index);
                     ProfilesMatcher profilesMatcher = new ProfilesMatcher();
 
-                    if (profilesMatcher.matches(profiles, activeProfiles)) {
+                    if (profilesMatcher.matches(expression, activeProfiles)) {
                         applied.setProperty(key.substring(index + 1), value, annotations);
                     }
                 }
@@ -1292,6 +1297,63 @@ public class DefaultProjectModel implements ProjectModel {
         }
 
         return licenses;
+    }
+
+    /**
+     * Called via the scripting interface to dynamically create a template instance with the properties
+     * provided
+     */
+    public TargetInstance createTargetInstance(RepoArtifactId pluginId, String template, Map properties,
+        ProjectLogger logger) {
+        // Force users to declare the template up front so that static analysis of dependencies is still possible
+        PluginDependency dependency = findPluginDependency(pluginId, template);
+        Assert.isTrue(dependency != null,
+            "The template '" + template + "' has not been declared for plugin '" + pluginId.toShortString() + "'");
+
+        // TODO ... reparsing is wasteful, but at present it's the easiest way to ensure it doesn't interfere
+        // with any other targets
+        Plugin plugin = pluginParser.getPluginInstance(getArtifact(dependency.getId()));
+        template = (template.indexOf(":") != -1) ? template : (plugin.getNameSpace() + ":" + template);
+
+        Target target = plugin.getTarget(template);
+        Assert.isTrue((target != null) && target.isTemplate(),
+            "There is no template named '" + template + "' within plugin '" + dependency.getId().toShortString());
+
+        String prefix = "q.project.script" + ++counter;
+        target.setPrefix(prefix);
+        target.setTemplateName(target.getName());
+        target.setName(target.getName() + counter);
+
+        for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            String value = (String)entry.getValue();
+
+            // TODO: need to handle interdependencies between properties
+            value = antProject.replaceProperties(value);
+            antProject.setProperty(prefix + "." + entry.getKey(), value);
+        }
+
+        return createTargetInstance(target, logger);
+    }
+
+    private PluginDependency findPluginDependency(RepoArtifactId pluginId, String template) {
+        for (Iterator i = depthFirst(project.getDependencySet()).iterator(); i.hasNext();) {
+            DependencySet set = (DependencySet)i.next();
+
+            for (Iterator j = set.getDependencies().iterator(); j.hasNext();) {
+                Dependency dependency = (Dependency)j.next();
+
+                if (dependency instanceof PluginDependency && dependency.getId().matches(pluginId)) {
+                    PluginDependency pluginDependency = (PluginDependency)dependency;
+
+                    if (pluginDependency.getTemplates().contains(template)) {
+                        return pluginDependency;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------------------------

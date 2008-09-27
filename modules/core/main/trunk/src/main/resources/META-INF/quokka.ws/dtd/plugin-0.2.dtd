@@ -4,8 +4,6 @@
    PUBLIC "quokka.ws/dtd/plugin-0.2"
    SYSTEM "http://quokka.ws/dtd/plugin-0.2.dtd"
 -->
-<!ELEMENT description (#PCDATA) >
-
 <!ELEMENT path-group EMPTY >
 <!ATTLIST path-group id NMTOKEN #REQUIRED >
 <!ATTLIST path-group paths CDATA #REQUIRED >
@@ -17,7 +15,7 @@
 <!ATTLIST type extension CDATA #REQUIRED >
 
 <!ELEMENT types ( type* ) >
-<!ELEMENT plugin ( description?, types?, targets?, properties? ) >
+<!ELEMENT plugin ( types?, targets?, properties? ) >
 <!ATTLIST plugin class NMTOKEN #IMPLIED >
 <!ATTLIST plugin name-space NMTOKEN #REQUIRED >
 

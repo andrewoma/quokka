@@ -38,7 +38,7 @@ public class ParentProjectBuildListener implements SubBuildListener {
         event.getProject().log("<----- Building " + event.getProject().getName() + " ----->");
 
         Project parent = (Project)parents.peek();
-        event.getProject().addReference("quokka.parentProject", parent);
+        event.getProject().addReference("q.parentProject", parent);
         parents.push(event.getProject());
     }
 

@@ -19,6 +19,8 @@ package ws.quokka.core.main.ant.task;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.input.InputRequest;
+import org.apache.tools.ant.input.MultipleChoiceInputRequest;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
@@ -28,8 +30,8 @@ import ws.quokka.core.bootstrap_util.ArtifactPropertiesParser;
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Logger;
+import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.bootstrap_util.PropertiesUtil;
-import ws.quokka.core.bootstrap_util.TaskLogger;
 import ws.quokka.core.main.ant.ProjectHelper;
 import ws.quokka.core.plugin_spi.support.AntUtils;
 import ws.quokka.core.repo_spi.RepoArtifact;
@@ -40,14 +42,15 @@ import ws.quokka.core.repo_spi.RepositoryAware;
 import ws.quokka.core.repo_spi.RepositoryFactory;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.util.URLs;
+import ws.quokka.core.util.xml.Document;
+import ws.quokka.core.util.xml.Element;
 import ws.quokka.core.version.Version;
 import ws.quokka.core.version.VersionRange;
 
 import java.io.File;
 
-import java.net.URL;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,6 +64,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -84,7 +88,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
     }
 
     public void init() throws BuildException {
-        logger = new TaskLogger(this);
+        logger = new ProjectLogger(getProject());
         utils = new AntUtils(getProject());
     }
 
@@ -120,16 +124,16 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         logger.info("Creating project based on artifact: " + id.toShortString());
 
         RepoArtifact artifact = repository.resolve(id);
-        logger.info("Extracting the following archetype to " + getProject().getBaseDir().getAbsolutePath() + ":");
 
         String root = "META-INF/quokka/" + artifact.getId().toPathString() + "/";
 
         File localCopy = artifact.getLocalCopy();
-        loadDefaults(localCopy, root);
-        checkProperties(localCopy, root);
 
-        displayEntries(localCopy, root);
-        copyEntries(localCopy, root);
+        if (checkProperties(localCopy, root)) {
+            logger.info("Extracting the following archetype to " + getProject().getBaseDir().getAbsolutePath() + ":");
+            displayEntries(localCopy, root);
+            copyEntries(localCopy, root);
+        }
     }
 
     private void listArchetypes(boolean onlyCompatible) {
@@ -246,7 +250,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         String repositoryUrl = getProject().getProperty("repository");
 
         if (repositoryUrl != null) {
-            factory.getProperties().put("quokka.repo.archetype.url", repositoryUrl);
+            factory.getProperties().put("q.repo.archetype.url", repositoryUrl);
             repository = factory.getOrCreate("archetype", true);
         }
 
@@ -300,44 +304,75 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         }
     }
 
-    private void checkProperties(File localCopy, String root) {
-        Properties archetypeProperties = ioUtils.loadProperties(URLs.toURL(localCopy, root + "archetype.properties"));
-        List mandatory = new ArrayList(Strings.commaSepList(archetypeProperties.getProperty("mandatory")));
+    private boolean checkProperties(File localCopy, String root) {
+        Document document = Document.parse(URLs.toURL(localCopy, root + "archetype.xml"),
+                new Document.NullEntityResolver());
+        boolean first = true;
+        List properties = new ArrayList();
 
-        for (Iterator i = mandatory.iterator(); i.hasNext();) {
-            String key = (String)i.next();
+        for (Iterator i = document.getRoot().getChildren("property").iterator(); i.hasNext();) {
+            Element propertyEl = (Element)i.next();
+            String name = propertyEl.getAttribute("name");
+            properties.add(name);
 
-            if (getProject().getProperty(key) != null) {
-                i.remove();
+            boolean mandatory = "true".equals(propertyEl.getAttribute("mandatory"));
+            String defaultValue = propertyEl.getAttribute("default");
+            String prompt = propertyEl.getAttribute("prompt");
+            Vector choices = new Vector();
+            choices.addAll(Strings.commaSepList(propertyEl.getAttribute("choices")));
+
+            if (getProject().getProperty(name) == null) {
+                if (first) {
+                    first = false;
+                    logger.info(
+                        "    Properties can be used to configure this archetype. Those ending in * are mandatory.");
+                    logger.info("    Choices are shown in brackets, defaults in square brackets.");
+                }
+
+                prompt = "Enter " + name + (mandatory ? "*" : "") + ":" + ((prompt == null) ? "" : (" " + prompt));
+
+                String value;
+
+                do {
+                    InputRequest request = (choices.size() == 0) ? new InputRequest(prompt)
+                                                                 : new MultipleChoiceInputRequest(prompt, choices);
+                    request.setDefaultValue(defaultValue);
+                    getProject().getInputHandler().handleInput(request);
+                    value = request.getInput().trim();
+                    value = value.equals("") ? defaultValue : value;
+
+                    if ((choices.size() != 0) && !choices.contains(value)) {
+                        value = ""; // Not sure why, but choice validation not working properly in test, so double check here
+                    }
+
+                    if ((value != null) && !value.equals("")) {
+                        getProject().setProperty(name, value);
+                    }
+                } while (!mandatory || (value == null) || value.equals(""));
             }
         }
 
-        Assert.isTrue(mandatory.size() == 0, "The following properties must be set for this archetype: " + mandatory);
-    }
+        if (properties.size() != 0) {
+            logger.info("The following properties have been set:");
 
-    private void loadDefaults(File localCopy, String root) {
-        URL url = URLs.toURL(localCopy, root + "default.properties");
+            for (Iterator i = properties.iterator(); i.hasNext();) {
+                String name = (String)i.next();
+                String value = getProject().getProperty(name);
 
-        if (url != null) {
-            Properties defaults = ioUtils.loadProperties(url);
-
-            for (Iterator i = defaults.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry)i.next();
-
-                if (getProject().getProperty((String)entry.getKey()) == null) {
-                    getProject().setProperty((String)entry.getKey(), (String)entry.getValue());
+                if (value != null) {
+                    logger.info("    " + name + " -> " + value);
                 }
             }
+
+            InputRequest request = new MultipleChoiceInputRequest("Do you want to continue?",
+                    new Vector(Arrays.asList(new String[] { "y", "n" })));
+            request.setDefaultValue("y");
+            getProject().getInputHandler().handleInput(request);
+
+            return request.getInput().equals("") || request.getInput().equals(request.getDefaultValue());
         }
 
-        // Add default name as a special case of the last segment of group if it was supplied
-        if (getProject().getProperty("name") == null) {
-            String group = getProject().getProperty("group");
-
-            if (group != null) {
-                getProject().setProperty("name", RepoArtifactId.defaultName(group));
-            }
-        }
+        return true;
     }
 
     private void displayEntries(File localCopy, String rootURL) {

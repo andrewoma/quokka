@@ -29,6 +29,7 @@ import ws.quokka.core.model.Dependency;
 import ws.quokka.core.model.DependencySet;
 import ws.quokka.core.model.License;
 import ws.quokka.core.model.ModelFactory;
+import ws.quokka.core.model.Override;
 import ws.quokka.core.model.Path;
 import ws.quokka.core.model.PathGroup;
 import ws.quokka.core.model.PluginDependency;
@@ -195,36 +196,17 @@ public class ProjectMetadata implements Metadata {
             RepoPath exportedPath = new RepoPath(mapping.getTo(), path.getDescription(), path.isDescendDefault(),
                     path.isMandatoryDefault());
             exported.addPath(exportedPath);
+        }
 
-            // Add any overrides that apply
-            List appliedOverrides = new ArrayList();
-            projectModel.getReslovedProjectPath(mapping.getFrom(), false, false, false, appliedOverrides);
+        // Add overrides that apply
+        for (Iterator i = projectModel.getOverrides().iterator(); i.hasNext();) {
+            Override override = (Override)i.next();
+            Set matchingPaths = matches(artifact, override);
 
-            for (Iterator j = appliedOverrides.iterator(); j.hasNext();) {
-                RepoOverride override = (RepoOverride)j.next();
-
-                // Check if an existing override matches, if so add this path to it
-                boolean added = false;
-
-                for (Iterator k = exported.getOverrides().iterator(); k.hasNext();) {
-                    RepoOverride existing = (RepoOverride)k.next();
-
-                    if (existing.equalsExcludingPaths(override)) {
-                        existing.addPath(mapping.getTo());
-                        added = true;
-
-                        break;
-                    }
-                }
-
-                // Add the override to the exported artifact
-                if (!added) {
-                    Set paths = new HashSet();
-                    paths.add(mapping.getTo());
-                    exported.addOverride(new RepoOverride(paths, override.getGroup(), override.getName(),
-                            override.getType(), override.getVersion(), override.getWithVersion(),
-                            override.getWithPathSpecs()));
-                }
+            if (matchingPaths.size() != 0) {
+                exported.addOverride(new RepoOverride(matchingPaths, override.getGroup(), override.getName(),
+                        override.getType(), override.getVersion(), override.getWithVersion(),
+                        override.getWithPathSpecs()));
             }
         }
 
@@ -232,6 +214,20 @@ public class ProjectMetadata implements Metadata {
         addDependencies(exported, artifact.getExportedPaths(), projectModel.getProject().getDependencySet());
 
         return exported;
+    }
+
+    private Set matches(Artifact artifact, Override override) {
+        Set paths = new HashSet();
+
+        for (Iterator j = artifact.getExportedPaths().iterator(); j.hasNext();) {
+            Artifact.PathMapping mapping = (Artifact.PathMapping)j.next();
+
+            if (override.matches(mapping.getFrom())) {
+                paths.add(mapping.getTo());
+            }
+        }
+
+        return paths;
     }
 
     private void addDependencies(RepoArtifact exported, List exportedPaths, DependencySet dependencySet) {

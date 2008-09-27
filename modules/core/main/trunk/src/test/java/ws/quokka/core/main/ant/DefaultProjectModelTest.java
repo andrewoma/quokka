@@ -127,10 +127,10 @@ public class DefaultProjectModelTest extends AbstractMainTest {
     public void testResolveProjectPathWithCoreConflictOverridden() {
         createArtifacts1();
         set.addPath(new Path("path1", null, true, true));
-        artifact("quokka.core.bootstrap-util:bootstrap-util:jar:0.1.1");
+        artifact("quokka.core.bootstrap-util:bootstrap-util:jar:0.3-ss");
         set.addDependency(pdep("quokka.core.bootstrap-util", "path1"));
         set.addDependency(pdep("dep3", "path1"));
-        model.getAntProject().setProperty("quokka.project.overrideCore", "true");
+        model.getAntProject().setProperty("q.project.overrideCore", "true");
         model.initialise();
 
         ResolvedPath path = model.getReslovedProjectPath("path1", true, true, true);
@@ -309,10 +309,10 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         Target target = target(plugin, "target1", "", "group1=plugin.ppath1");
 
         artifact("plugin1", path("ppath1", true, true));
-        artifact("quokka.core.bootstrap-util:bootstrap-util:jar:0.1.1");
+        artifact("quokka.core.bootstrap-util:bootstrap-util:jar:0.3-ss");
         artifact("quokka.core.bootstrap-util");
         dep(get("plugin1"), get("quokka.core.bootstrap-util"), "ppath1");
-        model.getAntProject().setProperty("quokka.project.overrideCore", "true");
+        model.getAntProject().setProperty("q.project.overrideCore", "true");
         model.initialise();
 
         // Test access via the path group
@@ -444,7 +444,7 @@ public class DefaultProjectModelTest extends AbstractMainTest {
         AnnotatedProperties properties = new AnnotatedProperties();
         properties.put("key1", "value1");
         properties.put("[p1]key2", "value2");
-        properties.put("[p1, p2]key3", "value3");
+        properties.put("[p1 | p2]key3", "value3");
 
         Set activeProfiles = new HashSet();
         AnnotatedProperties applied = DefaultProjectModel.applyProfiles(properties, activeProfiles);

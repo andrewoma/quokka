@@ -129,6 +129,7 @@
 <!ATTLIST plugin targets CDATA #IMPLIED >
 <!ATTLIST plugin paths CDATA #IMPLIED >
 <!ATTLIST plugin version CDATA #REQUIRED >
+<!ATTLIST plugin templates CDATA #IMPLIED >
 <!ATTLIST plugin use-defaults ( true | false ) #IMPLIED >
 
 <!ELEMENT license EMPTY >

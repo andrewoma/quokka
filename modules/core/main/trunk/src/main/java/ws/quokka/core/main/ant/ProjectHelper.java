@@ -58,6 +58,7 @@ import ws.quokka.core.main.ant.task.ListPluginsTask;
 import ws.quokka.core.main.ant.task.PluginTargetTask;
 import ws.quokka.core.main.ant.task.RunTargetTask;
 import ws.quokka.core.main.ant.task.SwitchTask;
+import ws.quokka.core.main.ant.task.VariableTask;
 import ws.quokka.core.main.parser.ProjectParser;
 import ws.quokka.core.model.Profiles;
 import ws.quokka.core.repo_spi.RepoType;
@@ -93,11 +94,11 @@ import java.util.TreeMap;
 public class ProjectHelper extends ProjectHelper2 {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
 
-    private static final String BUILD_RESOURCES_PREFIX = "quokka.project.resources[";
+    private static final String BUILD_RESOURCES_PREFIX = "q.project.resources[";
     private static final Map SPECIAL_TARGETS = new HashMap();
-    private static final String BUILD_RESOURCES_LISTENER = "quokka.project.buildResourcesListener";
-    public static final String REPOSITORY_FACTORY = "quokka.project.repositoryFactory";
-    public static final String REPOSITORY = "quokka.project.repository";
+    private static final String BUILD_RESOURCES_LISTENER = "q.project.buildResourcesListener";
+    public static final String REPOSITORY_FACTORY = "q.project.repositoryFactory";
+    public static final String REPOSITORY = "q.project.repository";
 
     static {
         SPECIAL_TARGETS.put("archetype", ArchetypeTask.class);
@@ -127,11 +128,31 @@ public class ProjectHelper extends ProjectHelper2 {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public void parse(final Project antProject, Object source) {
+        try {
+            _parse(antProject, source);
+        } finally {
+            // Ant 1.7.1 uses a nasty hack to remove duplicates from -projecthelp using the location toString value
+            // This effectively removes all but one quokka target as they all have a toString of "".
+            // This hack circumvents that hack by giving each target a unique location
+            // TODO: time to ditch Ant's Main in favour of a completely custom Main
+            int number = 1;
+
+            for (Iterator i = antProject.getTargets().values().iterator(); i.hasNext();) {
+                Target target = (Target)i.next();
+
+                if (target.getLocation().equals(Location.UNKNOWN_LOCATION)) {
+                    target.setLocation(new Location("" + number++, 1, 1));
+                }
+            }
+        }
+    }
+
+    private void _parse(Project antProject, Object source) {
         File antFile = new File(antProject.getUserProperty("ant.file"));
 
         try {
             // Handle special cases of "archetype" & "help" targets
-            String specialTarget = antProject.getProperty("quokka.project.specialTarget");
+            String specialTarget = antProject.getProperty("q.project.specialTarget");
 
             if (specialTarget != null) {
                 handleSpecialTarget(antProject, specialTarget);
@@ -237,7 +258,7 @@ public class ProjectHelper extends ProjectHelper2 {
 
     private DefaultProjectModel initialise_(Project antProject, File quokkaFile, boolean topLevel) {
         clearInheritedProperties(antProject);
-        antProject.setProperty("quokka.project.file", quokkaFile.getAbsolutePath());
+        antProject.setProperty("q.project.file", quokkaFile.getAbsolutePath());
         antProject.setBaseDir(quokkaFile.getParentFile());
 
         Profiles profiles = new Profiles(antProject.getProperty("profiles"));
@@ -258,7 +279,8 @@ public class ProjectHelper extends ProjectHelper2 {
                 new ArrayList(profiles.getElements()), topLevel, projectProperties, new ProjectLogger(antProject),
                 antProject);
         projectModel.setBootStrapper(bootStrapper);
-        antProject.addReference("quokka.projectModel", projectModel);
+        antProject.addReference("q.projectModel", projectModel);
+        antProject.addReference("q.project.scriptHelper", new ScriptHelper(projectModel));
         antProject.setDefault(projectModel.getProject().getDefaultTarget());
 
         Map antTargets = addTargets(projectModel, antProject, projectModel.getTargets());
@@ -286,7 +308,7 @@ public class ProjectHelper extends ProjectHelper2 {
     }
 
     private String getTargetDir(Project antProject) {
-        return antProject.getProperty("quokka.project.targetDir");
+        return antProject.getProperty("q.project.targetDir");
     }
 
     /**
@@ -420,11 +442,11 @@ public class ProjectHelper extends ProjectHelper2 {
     private BootStrapper bootStrap(Project antProject, Map properties, File quokkaFile, Profiles profiles,
         boolean topLevel) {
         // Disable bootstrapping:
-        // 1. If quokka.bootstrap.enabled=false
+        // 1. If q.bootstrap.enabled=false
         // 2. Otherwise, it defaults to enabled if launched from a script, or disabled otherwise (e.g. from an IDE)
-        // This gets around having to continually specify quokka.bootstrap.enabled=false in IDEs
-        boolean script = "true".equals(properties.get("quokka.bootstrap.script"));
-        String enabled = (String)properties.get("quokka.bootstrap.enabled");
+        // This gets around having to continually specify q.bootstrap.enabled=false in IDEs
+        boolean script = "true".equals(properties.get("q.bootstrap.script"));
+        String enabled = (String)properties.get("q.bootstrap.enabled");
 
         if ("false".equals(enabled) || (!script && (enabled == null))) {
             return null; // Bootstrapping disabled
@@ -434,7 +456,7 @@ public class ProjectHelper extends ProjectHelper2 {
         List arguments = new ArrayList();
 
         for (int i = 0; true; i++) {
-            String key = "quokka.bootstrap.args[" + i + "]";
+            String key = "q.bootstrap.args[" + i + "]";
             String argument = (String)properties.get(key);
 
             if (argument == null) {
@@ -732,7 +754,7 @@ public class ProjectHelper extends ProjectHelper2 {
         Repository repository;
 
         // Check for an override (usually for integration testing of quokka itself)
-        String override = properties.getProperty("quokka.repositoryOverride");
+        String override = properties.getProperty("q.repositoryOverride");
 
         if (override != null) {
             repository = factory.getOrCreate(override, true);
@@ -776,6 +798,7 @@ public class ProjectHelper extends ProjectHelper2 {
         registerBuiltIn(antProject, "switch", SwitchTask.class);
         registerBuiltIn(antProject, "run-target", RunTargetTask.class);
         registerBuiltIn(antProject, "for", ForTask.class);
+        registerBuiltIn(antProject, "var", VariableTask.class);
         registerBuiltIn(antProject, "dependency-of", DependencyOfTask.class);
         registerBuiltIn(antProject, "buildpath", BuildPathTask.class);
         registerBuiltIn(antProject, "input-unless-set", InputUnlessSetTask.class);

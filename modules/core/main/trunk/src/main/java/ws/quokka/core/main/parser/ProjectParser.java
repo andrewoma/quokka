@@ -17,6 +17,8 @@
 
 package ws.quokka.core.main.parser;
 
+import org.apache.tools.ant.taskdefs.condition.Os;
+
 import org.xml.sax.Locator;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -59,6 +61,7 @@ import java.net.URL;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +71,25 @@ import java.util.Map;
  *
  */
 public class ProjectParser {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static final Map OSes = new HashMap();
+
+    static {
+        OSes.put(Os.FAMILY_WINDOWS, "osWindows");
+        OSes.put(Os.FAMILY_9X, "osWin9x");
+        OSes.put(Os.FAMILY_NT, "osWinnt");
+        OSes.put(Os.FAMILY_OS2, "osOs2");
+        OSes.put(Os.FAMILY_NETWARE, "osNetware");
+        OSes.put(Os.FAMILY_DOS, "osDos");
+        OSes.put(Os.FAMILY_MAC, "osMac");
+        OSes.put(Os.FAMILY_TANDEM, "osTandem");
+        OSes.put(Os.FAMILY_UNIX, "osUnix");
+        OSes.put(Os.FAMILY_VMS, "osOpenvms");
+        OSes.put(Os.FAMILY_ZOS, "osZos");
+        OSes.put(Os.FAMILY_OS400, "osOs400");
+    }
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private File projectFile;
@@ -112,8 +134,8 @@ public class ProjectParser {
     private void activateAutomaticProfiles() {
         for (int i = 1; i <= 6; i++) {
             String version = "1." + i;
-            activatePropertyProfile("source" + version, "quokka.project.java.source", version);
-            activatePropertyProfile("target" + version, "quokka.project.java.target", version);
+            activatePropertyProfile("source" + version, "q.project.java.source", version);
+            activatePropertyProfile("target" + version, "q.project.java.target", version);
         }
     }
 
@@ -155,25 +177,7 @@ public class ProjectParser {
             return null;
         }
 
-        return activeProfiles.matches(getProfiles(element)) ? element : null;
-    }
-
-    private Profiles getProfiles(Element element) {
-        Profiles elementProfiles = new Profiles(element.getAttribute("profiles"));
-
-        for (Iterator j = elementProfiles.getElements().iterator(); j.hasNext();) {
-            String profileId = (String)j.next();
-            String absoluteProfileId = profileId;
-
-            if (profileId.startsWith("-")) {
-                absoluteProfileId = profileId.substring(1);
-            }
-
-            Assert.isTrue(project.getProfiles().get(absoluteProfileId) != null, getLocator(element),
-                "Profile '" + profileId + "' has not been defined in the project");
-        }
-
-        return elementProfiles;
+        return activeProfiles.matches(element.getAttribute("profiles")) ? element : null;
     }
 
     private void addProperties(AnnotatedProperties properties, String prefix, Element el) {
@@ -296,6 +300,11 @@ public class ProjectParser {
 
         public Object fromXml(Element element) {
             PluginDependencyTarget target = (PluginDependencyTarget)super.fromXml(element);
+
+            if ((target.getTemplate() != null) && (target.getPrefix() == null)) {
+                target.setPrefix(target.getName()); // Default the prefix to the target name if not supplied
+            }
+
             List dependencies = Strings.commaSepList(element.getAttribute("depends"));
 
             for (Iterator i = dependencies.iterator(); i.hasNext();) {
@@ -424,10 +433,18 @@ public class ProjectParser {
 
             for (int i = 1; i <= 6; i++) {
                 String version = "1." + i;
-                addPropertyProfile("source" + version, "quokka.project.java.source", version);
-                addPropertyProfile("target" + version, "quokka.project.java.target", version);
+                addPropertyProfile("source" + version, "q.project.java.source", version);
+                addPropertyProfile("target" + version, "q.project.java.target", version);
                 addProfile("java" + version, "Automatic profile: activated if 'ant.java.version='" + version,
                     version.equals(projectProperties.get("ant.java.version")));
+            }
+
+            // Adds profiles for OS families and activates the current one
+            for (Iterator i = OSes.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String profileId = (String)entry.getValue();
+                String antId = (String)entry.getKey();
+                addProfile(profileId, "Automatic profile: activated if the OS is " + antId, Os.isFamily(antId));
             }
         }
 
@@ -601,7 +618,7 @@ public class ProjectParser {
                 Assert.isTrue(((file == null) && (id.getGroup() != null) && (id.getVersion() != null))
                     || ((file != null) && (id.getGroup() == null) && (id.getVersion() == null)), locator,
                     "license element must have either single a 'file' attribute, or have 'group' and 'version' attributes set");
-                id = id.merge(new RepoArtifactId(null, null, "license", (Version)null));
+                id = id.merge(new RepoArtifactId(null, null, "license", (Version)null)).mergeDefaults();
                 dependencySet.addLicense(new License((file == null) ? null : new File(file), id));
             }
 
@@ -669,8 +686,6 @@ public class ProjectParser {
                 Element targetEl = (Element)i.next();
                 Converter converter = getConverter(PluginDependencyTarget.class);
                 PluginDependencyTarget target = (PluginDependencyTarget)converter.fromXml(targetEl);
-                Assert.isTrue(target.isValid(), target.getLocator(),
-                    "Target must specify 'prefix' when 'template' is specified");
                 dependency.addTarget(target);
             }
 
@@ -679,6 +694,13 @@ public class ProjectParser {
                 PathSpec pathSpec = (PathSpec)i.next();
                 Assert.isTrue(pathSpec.getTo() == null, pathSpec.getLocator(),
                     "The 'to' attribute is not valid for plugin path specifications");
+            }
+
+            List templates = Strings.commaSepList(dependencyEl.getAttribute("templates"));
+
+            for (Iterator i = templates.iterator(); i.hasNext();) {
+                String template = (String)i.next();
+                dependency.addTemplate(template);
             }
 
             return dependency;

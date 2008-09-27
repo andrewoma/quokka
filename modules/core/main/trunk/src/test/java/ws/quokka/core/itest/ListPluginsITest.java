@@ -19,15 +19,11 @@ package ws.quokka.core.itest;
 
 import org.apache.tools.ant.Project;
 
-import ws.quokka.core.bootstrap_util.IOUtils;
-
-import java.io.File;
-
 
 /**
  *
  */
-public class ListPluginsITest extends IntegrationTest {
+public class ListPluginsITest extends AbstractMainIntegrationTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public void testArchetype() {
@@ -35,7 +31,7 @@ public class ListPluginsITest extends IntegrationTest {
 
 //        properties.put("all", "true");
 //        properties.put("verbose", "true");
-        properties.put("quokka.project.overrideCore", "true");
+        properties.put("q.project.overrideCore", "true");
         properties.put("plugin", "quokka.plugin.help");
         ant(new String[] { "list-plugins" });
     }

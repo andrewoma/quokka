@@ -23,7 +23,7 @@ import org.apache.tools.ant.Project;
 /**
  *
  */
-public class ImportITest extends IntegrationTest {
+public class ImportITest extends AbstractMainIntegrationTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public void testImport() {

@@ -72,7 +72,7 @@ public class DefaultResources implements Resources {
     }
 
     public PluginState getPluginState(Project project) {
-        return (PluginState)project.getReference("quokka.pluginState");
+        return (PluginState)project.getReference("q.pluginState");
     }
 
     public org.apache.tools.ant.Project getProject() {
@@ -84,7 +84,7 @@ public class DefaultResources implements Resources {
     }
 
     public Project getParentProject(Project project) {
-        return (Project)project.getReference("quokka.parentProject");
+        return (Project)project.getReference("q.parentProject");
     }
 
     public String getTargetName() {

@@ -195,13 +195,6 @@ public class StandardPluginParser implements PluginParser {
                 }
             }
 
-            // Description
-            Element descriptionEl = pluginEl.getChild("description");
-
-            if (descriptionEl != null) {
-                plugin.setDescription(descriptionEl.getText());
-            }
-
             return plugin;
         }
 

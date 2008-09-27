@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
     <description>Quokka main module: provides the core quokka functionality</description>
@@ -8,11 +8,13 @@
         <artifact paths="runtime"/>
     </artifacts>
 
-    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.3-ss,0.3-ss]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
         <dependency group="apache.ant" version="1.7.1" paths="compile, runtime"/>
         <dependency group="apache.ant" name="launcher" version="1.7.1" paths="compile, runtime"/>
+        <dependency group="apache.ant" name="nodeps" version="1.7.1" paths="ant-types"/>
+        <!--<dependency group="apache.ant" name="bsf" version="1.7.1" paths="ant-types"/>-->
         <dependency group="quokka.core.repo-spi" version="0.3-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.repo-standard" version="0.3-ss" paths="compile, runtime+"/>
         <dependency group="quokka.core.repo-resolver" version="0.3-ss" paths="compile, runtime+"/>
@@ -25,8 +27,8 @@
         <dependency group="quokka.core.util" version="0.3-ss" paths="compile, runtime+"/>
 
         <dependency group="quokka.core.test" version="0.3-ss" paths="test-compile(junit)"/>
-        <dependency group="quokka.core.itest" version="0.3-ss" paths="itest+"/>
+        <dependency group="quokka.core.itest" version="0.3-ss" paths="test-compile, itest+"/>
 
-        <dependency-set group="quokka.internal.java-depset" version="0.1"/>
+        <dependency-set group="quokka.internal.java-depset" version="0.2-ss"/>
     </dependency-set>
 </project>

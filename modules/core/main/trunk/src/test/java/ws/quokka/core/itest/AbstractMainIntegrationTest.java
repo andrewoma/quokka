@@ -17,32 +17,30 @@
 
 package ws.quokka.core.itest;
 
-import ws.quokka.core.bootstrap_util.IOUtils;
+import java.net.URL;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
- *
+ * MainIntegrationTest adds the core.main instrumented classes to the front of the class path
+ * so that test coverage data is collected for the integration tests
  */
-public class ArchetypeITest extends AbstractMainIntegrationTest {
+public class AbstractMainIntegrationTest extends IntegrationTest {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
-    public void testArchetype() {
-//        setLogLevel(Project.MSG_VERBOSE);
-        File temp = new IOUtils().createTempFile("quokka-archetype", ".xml");
+    protected URL[] getCoreClassPath(String path) {
+        List classPath = new ArrayList();
+        String testPath = System.getProperty("q.junit.instrumentCompiledOutput");
 
-        try {
-            properties.put("q.project.specialTarget", "archetype");
-
-//            properties.put("archetype", "quokka.archetype.jar");
-            ant(temp, new String[] { "archetype" });
-        } finally {
-            temp.delete();
+        if (testPath != null) {
+            classPath.add(toURL(testPath));
         }
-    }
 
-    public static void main(String[] args) {
-        new ArchetypeITest().testArchetype();
+        classPath.addAll(Arrays.asList(super.getCoreClassPath(path)));
+
+        return (URL[])classPath.toArray(new URL[classPath.size()]);
     }
 }

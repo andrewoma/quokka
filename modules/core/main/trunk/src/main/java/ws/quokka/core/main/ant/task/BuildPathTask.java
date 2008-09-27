@@ -99,8 +99,7 @@ public class BuildPathTask extends Task {
         }
 
         if (cache == null) {
-            cache = utils.normalise(getProject().getProperty("quokka.project.targetDir") + "/build-sequence/" + id
-                    + ".txt");
+            cache = utils.normalise(getProject().getProperty("q.project.targetDir") + "/build-sequence/" + id + ".txt");
         }
 
         // Collect all of the project files
@@ -182,7 +181,7 @@ public class BuildPathTask extends Task {
 
     private List generateSequence(List projects) {
         DefaultModelFactory factory = new DefaultModelFactory();
-        Repository repository = (Repository)getProject().getReference("quokka.project.repository");
+        Repository repository = (Repository)getProject().getReference("q.project.repository");
         factory.setRepository(repository);
 
         // 1st pass: map artifacts generated from each project to a target representing their project files

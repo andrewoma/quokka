@@ -42,7 +42,6 @@ public class StandardPluginParserTest extends AbstractTest {
         StandardPluginParser parser = new StandardPluginParser();
         Plugin plugin = parser.parsePluginXml(getTestCaseResource("plugin.xml").toURI().toURL());
         assertEquals("somepackage.someclass", plugin.getClassName());
-        assertEquals("Plugin description", plugin.getDescription());
         assertEquals("some.name.space", plugin.getNameSpace());
         assertEquals(2, plugin.getTargets().size());
 

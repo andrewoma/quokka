@@ -2,8 +2,6 @@
 <!DOCTYPE plugin PUBLIC "quokka.ws/dtd/plugin-0.2" "http://quokka.ws/dtd/plugin-0.2.dtd">
 
 <plugin class="somepackage.someclass" name-space="some.name.space">
-    <description>Plugin description</description>
-
     <types>
         <type id="war" description="war desc" extension="war"/>
         <type id="ear" description="ear desc" extension="ear"/>

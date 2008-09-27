@@ -66,7 +66,7 @@ public class CopyPathTask extends Task {
     }
 
     public void execute() throws BuildException {
-        ProjectModel projectModel = (ProjectModel)getProject().getReference("quokka.projectModel");
+        ProjectModel projectModel = (ProjectModel)getProject().getReference("q.projectModel");
 
         List path = projectModel.getProjectPath(id, false, true);
         copyPath(getProject(), path, todir, pattern);
@@ -91,7 +91,7 @@ public class CopyPathTask extends Task {
     }
 
     public static String translate(Project project, RepoArtifactId id, String pattern) {
-        ProjectModel projectModel = (ProjectModel)project.getReference("quokka.projectModel");
+        ProjectModel projectModel = (ProjectModel)project.getReference("q.projectModel");
         RepoType type = projectModel.getRepository().getFactory().getType(id.getType());
 
         PropertyHelper ph = PropertyHelper.getPropertyHelper(project);

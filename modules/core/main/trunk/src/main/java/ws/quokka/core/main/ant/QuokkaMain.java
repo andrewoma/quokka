@@ -78,7 +78,7 @@ public class QuokkaMain extends Main {
         }
 
         if (specialTarget != null) {
-            additionalUserProperties.put("quokka.project.specialTarget", specialTarget);
+            additionalUserProperties.put("q.project.specialTarget", specialTarget);
         }
 
         // Store the arguments in case bootstrapping is needed
@@ -86,7 +86,7 @@ public class QuokkaMain extends Main {
 
         for (Iterator i = args.iterator(); i.hasNext();) {
             String arg = (String)i.next();
-            additionalUserProperties.put("quokka.bootstrap.args[" + count++ + "]", arg);
+            additionalUserProperties.put("q.bootstrap.args[" + count++ + "]", arg);
 
             // Intercept version processing to print out the quokka version instead of the ant version
             if (arg.equals("-version")) {

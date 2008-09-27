@@ -27,7 +27,7 @@
         <profile id="skip" description="Skip description"/>
         <profile id="profile2" description="Another profile"/>
 
-        <property name="quokka.project.java.source" value="1.4"/>
+        <property name="q.project.java.source" value="1.4"/>
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
         <property name="prop3">value3</property>
@@ -59,7 +59,7 @@
         <plugin group="quokka.plugin7" version="1.0" profiles="nestedprofile"/>
         <plugin group="quokka.plugin2" version="2.0" profiles="skip"/>
         <plugin group="quokka.plugin3" version="1.0" paths="path1(opt1)" targets="target1, target2"/>
-        <plugin group="quokka.plugin4" version="1.0">
+        <plugin group="quokka.plugin4" version="1.0" templates="template1, template2">
             <path-spec from="from" descend="false" mandatory="false" options="opt3, opt4"/>
             <path-spec to="blah" from="blah" profiles="skip"/>
             <target name="t1" alias="t1alias" depends="ta, tb" prefix="t1prefix" template="t1template">

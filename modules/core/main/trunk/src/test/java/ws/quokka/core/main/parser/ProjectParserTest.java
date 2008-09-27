@@ -203,7 +203,7 @@ public class ProjectParserTest extends AbstractMainTest {
         props.put("prop2", "value2");
         props.put("prop3", "value3");
         props.put("prop5", "Hello there");
-        props.put("quokka.project.java.source", "1.4");
+        props.put("q.project.java.source", "1.4");
         props.put("t1prefix.prop1", "value1");
         props.put("t1prefix.prop2", "value2");
         assertEquals(props, dependencySet.getProperties());
@@ -220,6 +220,9 @@ public class ProjectParserTest extends AbstractMainTest {
         dependencies.add(pldep("quokka.plugin3:plugin3:plugin", "path1(opt1)", "target1, target2"));
 
         PluginDependency dependency = pldep("quokka.plugin4:plugin4:plugin", "?+from(opt3, opt4)", "t1");
+        dependency.addTemplate("template1");
+        dependency.addTemplate("template2");
+
         PluginDependencyTarget target = dependency.getTarget("t1");
         target.setAlias("t1alias");
         target.setPrefix("t1prefix");

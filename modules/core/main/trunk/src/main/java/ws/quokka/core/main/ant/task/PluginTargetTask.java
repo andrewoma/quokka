@@ -23,9 +23,8 @@ import org.apache.tools.ant.Task;
 
 import ws.quokka.core.bootstrap_util.TaskLogger;
 import ws.quokka.core.main.ant.DefaultProjectModel;
+import ws.quokka.core.main.ant.TargetInstance;
 import ws.quokka.core.model.Target;
-
-import java.util.Properties;
 
 
 /**
@@ -54,8 +53,13 @@ public class PluginTargetTask extends Task {
             log("Executing '" + pluginTarget.getName() + "' from plugin '"
                 + pluginTarget.getPlugin().getArtifact().getId().toShortString() + "'", Project.MSG_VERBOSE);
 
-            Runnable task = projectModel.createTargetInstance(pluginTarget, new Properties(), new TaskLogger(this));
-            task.run();
+            TargetInstance targetInstance = projectModel.createTargetInstance(pluginTarget, new TaskLogger(this));
+
+            try {
+                targetInstance.getTarget().run();
+            } finally {
+                targetInstance.cleanUp();
+            }
         }
     }
 }

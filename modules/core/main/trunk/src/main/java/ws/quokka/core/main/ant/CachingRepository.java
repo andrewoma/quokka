@@ -89,7 +89,7 @@ public class CachingRepository implements Repository {
     }
 
     public Collection listArtifactIds(boolean includeReferenced) {
-        return repository.listArtifactIds(false);
+        return repository.listArtifactIds(includeReferenced);
     }
 
     public boolean supportsReslove(RepoArtifactId artifactId) {
@@ -119,7 +119,7 @@ public class CachingRepository implements Repository {
     }
 
     public Collection listArtifactIds(String group, String name, String type, boolean includeReferenced) {
-        return repository.listArtifactIds(group, name, type, true);
+        return repository.listArtifactIds(group, name, type, includeReferenced);
     }
 
     public void rebuildCaches() {

@@ -61,7 +61,7 @@ public class ListPluginsTask extends Task {
 
     public void execute() {
         repository = (Repository)getProject().getReference(ProjectHelper.REPOSITORY);
-        overrideCore = "true".equals(getProject().getProperty("quokka.project.overrideCore"));
+        overrideCore = "true".equals(getProject().getProperty("q.project.overrideCore"));
 
         RepoArtifactId id = getPluginId();
         Repository repository = (Repository)getProject().getReference(ProjectHelper.REPOSITORY);
@@ -96,7 +96,7 @@ public class ListPluginsTask extends Task {
         log("     => You should not use any plugin versions with this status.");
         log("  *: One or more plugin dependencies will conflict and will need to be explicitly overridden.");
         log("     => If compatible, you may be able to use the plugin by specifying overrides.");
-        log("        For quokka.core.* modules you can set the project property quokka.project.overrideCore=true.");
+        log("        For quokka.core.* modules you can set the project property q.project.overrideCore=true.");
         log("        For plugin depencies you define an override, e.g. Force all plugins to use dev reports 0.3.1:");
         log("          <override group=\"quokka.plugin.devreport\" plugin-paths=\"*\" with=\"0.3.1\"/>");
         log("  >: One or more plugin dependencies have been overridden.");
@@ -119,7 +119,7 @@ public class ListPluginsTask extends Task {
 
         for (Iterator i = model.getTargets().values().iterator(); i.hasNext();) {
             Target target = (Target)i.next();
-            plugins.add(target.getPlugin().getArtifact().getId());
+            plugins.add(target.getPlugin().getArtifact());
         }
 
         return new ResolvedPath("Plugins", new ArrayList(plugins));
@@ -316,7 +316,7 @@ public class ListPluginsTask extends Task {
     }
 
     private DefaultProjectModel getProjectModel() {
-        return (DefaultProjectModel)getProject().getReference("quokka.projectModel");
+        return (DefaultProjectModel)getProject().getReference("q.projectModel");
     }
 
     public List getOverrides() {
