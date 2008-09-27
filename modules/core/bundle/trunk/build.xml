@@ -1,18 +1,18 @@
 <project name="core.bundle.ext">
     <import file="../../internal/master/ide-parent.xml"/>
 
-    <target name="dist" depends="quokka.lifecycle:package, docbook-pdf">
-    <!--<target name="dist" depends="quokka.lifecycle:package">-->
-        <property name="distdir" location="${quokka.project.targetDir}/dist/quokka-${quokka.project.artifact.version}"/>
+    <target name="dist" depends="lifecycle:package, docbook-pdf">
+    <!--<target name="dist" depends="lifecycle:package">-->
+        <property name="distdir" location="${q.project.targetDir}/dist/quokka-${q.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}">
-            <fileset dir="${quokka.project.sourceDir}/distribution"/>
+            <fileset dir="${q.project.sourceDir}/distribution"/>
         </copy>
         <mkdir dir="${distdir}/lib"/>
         <copy-path id="dist" todir="${distdir}/lib" pattern="#{group}_#{name}_#{type}_#{version}.#{extension}"/>
         <copy todir="${distdir}/lib"
-              file="${quokka.lifecycle.packageOutput}/${quokka.project.artifact.group}_core_jar_${quokka.project.artifact.version}.jar"/>
-        <property name="distfile" location="${quokka.project.targetDir}/quokka-${quokka.project.artifact.version}.zip"/>
+              file="${q.lifecycle.packageOutput}/${q.project.artifact.group}_core_jar_${q.project.artifact.version}.jar"/>
+        <property name="distfile" location="${q.project.targetDir}/quokka-${q.project.artifact.version}.zip"/>
         <copy todir="${distdir}" file="${docbook-pdf.out}"/>
         <chmod file="${distdir}/bin/quokka" perm="a+x"/>
 

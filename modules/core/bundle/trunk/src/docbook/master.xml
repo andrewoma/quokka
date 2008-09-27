@@ -253,7 +253,7 @@ BUILD SUCCESSFUL
           <screen>$ quokka package
 Buildfile: build-quokka.xml
 
-quokka.stdlifecycle:generate-resources:
+stdlifecycle:generate-resources:
    [plugin] Generated artifact properties to C:\Temp\quokkatest\target\compile\META-INF\
                 quokka\mygroup.myname_myname_jar_artifacts.properties
     [mkdir] Created dir: C:\Temp\quokkatest\target\compile\META-INF\quokka
@@ -266,7 +266,7 @@ quokka.stdlifecycle:generate-resources:
 quokka.javac:compile:
     [javac] Compiling 1 source file to C:\Temp\quokkatest\target\compile
 
-quokka.cobertura:instrument:
+cobertura:instrument:
 [cobertura-instrument] Cobertura 1.8 - GNU GPL License (NO WARRANTY) - See COPYRIGHT file
 [cobertura-instrument] Instrumenting 1 file to C:\Temp\quokkatest\target\
                            instrumented-compile
@@ -283,19 +283,19 @@ quokka.javac:test-compile:
 after-compile-before-test:
      [echo] Hello from "after-compile-before-test"
 
-quokka.junit:test:
+junit:test:
     [mkdir] Created dir: C:\Temp\quokkatest\target\test\junit
     [junit] Hello!
     [junit] Cobertura: Loaded information on 1 classes.
     [junit] Cobertura: Saved information on 1 classes.
     [junit] Test sample.AppTest FAILED
 
-quokka.stdlifecycle:package:
+stdlifecycle:package:
     [mkdir] Created dir: C:\Temp\quokkatest\target\package
    [plugin] Generated repository file for mygroup.myname:myname:jar:0.1: C:\Temp\
              quokkatest\target\package\mygroup.myname_myname_jar_0.1_repository.xml
 
-quokka.jar:package:
+jar:package:
       [jar] Building jar: C:\Temp\quokkatest\target\package\
                 mygroup.myname_myname_jar_0.1.jar
 
@@ -310,8 +310,8 @@ BUILD SUCCESSFUL                    </screen>
 
           <para>So what happened? Looking again at the output, you will notice
           a number of headings, from
-          <literal>quokka.stdlifecycle:generate-resources</literal> to
-          <literal>quokka.jar:package</literal>. Each one of these banners
+          <literal>stdlifecycle:generate-resources</literal> to
+          <literal>jar:package</literal>. Each one of these banners
           represents a target, and the output below each target is generated
           by the tasks that make up the target. When you specified the
           <literal>package</literal> target, it automatically included its
@@ -331,7 +331,7 @@ Buildfile: build-quokka.xml
 after-compile-before-test:
      [echo] Hello from "after-compile-before-test"
 
-quokka.junit:test:
+junit:test:
     [junit] Hello!
     [junit] Cobertura: Loaded information on 1 classes.
     [junit] Cobertura: Saved information on 1 classes.
@@ -534,7 +534,7 @@ Default target: package                    </screen>
         &lt;!-- ================================================================== --&gt;
         &lt;!-- The entries below add dependencies to project paths                --&gt;
         &lt;!-- ================================================================== --&gt;
-        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
+        &lt;dependency group="junit" version="3.8.1" paths="test-compile"/&gt;
         &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, runtime"/&gt;
 
         &lt;!-- ================================================================== --&gt;
@@ -551,13 +551,13 @@ Default target: package                    </screen>
 
         &lt;!-- Adds jUnit support for running unit and integration tests --&gt;
         &lt;plugin group="quokka.plugin.junit" version="0.1"
-                profiles="-skiptest"/&gt;
+                profiles="!skiptest"/&gt;
         &lt;plugin group="quokka.plugin.junitreport" version="0.1"
-                profiles="-skiptest"/&gt;
+                profiles="!skiptest"/&gt;
 
         &lt;!-- Adds Cobertura support for producing code coverage reports --&gt;
         &lt;plugin group="quokka.plugin.cobertura" version="0.1"
-                profiles="-skiptest"/&gt;
+                profiles="!skiptest"/&gt;
 
         &lt;!-- Adds the help plugin --&gt;
         &lt;plugin group="quokka.plugin.help" version="0.1"/&gt;
@@ -724,6 +724,16 @@ Default target: package                    </screen>
           However, transitive dependencies will be added to the
           <literal>runtime</literal> path. See <link linkend="path-specs">Path
           Specifications</link> for detailed information.</para>
+
+          <para>To find out what artifacts are available in the repository,
+          you can use the repository plugin (already included) to list
+          them.</para>
+
+          <programlisting>$ quokka repo:list
+
+</programlisting>
+
+          <para></para>
         </sect2>
 
         <sect2>
@@ -797,7 +807,13 @@ quokka.plugin.help:
     0.3-ss
 ...</programlisting>
 
-          <para>For more information </para>
+          <para>Once you've added the help plugin to your project, you can
+          also use it to view the help for a given extension or target. e.g.
+          the following will display the XML plugin help in the browser (the
+          format or the id is
+          <literal>group:name:type:version</literal>).</para>
+
+          <programlisting>$ quokka help -Did=quokka.plugin.xml:xml:plugin:0.3</programlisting>
         </sect2>
 
         <sect2>
@@ -824,16 +840,16 @@ quokka.plugin.help:
           available to all projects. By default the <literal>shared</literal>
           repository is defined as follows:</para>
 
-          <programlisting>quokka.repo.shared.url=delegate:snapshot,release
+          <programlisting>q.repo.shared.url=delegate:snapshot,release
 
 # Snapshot: Local snapshots
-quokka.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
+q.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
 
 # Release: Local cache of the global repository and location where any local releases are installed
-quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
+q.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
 
 # Global: the global quokka repository
-quokka.repo.quokka.url=url:http://quokka.ws/repository/
+q.repo.quokka.url=url:http://quokka.ws/repository/
 </programlisting>
 
           <para>The definition above results in snapshots (versions of
@@ -894,7 +910,7 @@ quokka.repo.quokka.url=url:http://quokka.ws/repository/
 Buildfile: build-quokka.xml
 ...
 
-quokka.stdlifecycle:install:
+stdlifecycle:install:
      [copy] Copying 1 file to C:\Data\Dev\Projects\snapshot-repository\mygroup\
                 myname\0.1
 
@@ -956,7 +972,7 @@ BUILD SUCCESSFUL                    </programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>quokka.project.java.source</term>
+              <term>q.project.java.source</term>
 
               <listitem>
                 <para>Defines the java source level for the project. Values
@@ -970,7 +986,7 @@ BUILD SUCCESSFUL                    </programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.java.target</term>
+              <term>q.project.java.target</term>
 
               <listitem>
                 <para>Defines the java target level. Values may be 1.2 to 1.6.
@@ -980,7 +996,7 @@ BUILD SUCCESSFUL                    </programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.forkMaxMemory</term>
+              <term>q.project.forkMaxMemory</term>
 
               <listitem>
                 <para>Defines the default maximum heap size for forked java
@@ -993,8 +1009,8 @@ BUILD SUCCESSFUL                    </programlisting>
           target levels to 1.5. To do this edit build-quokka.properties and
           add the following lines.</para>
 
-          <programlisting>quokka.project.java.source=1.5
-quokka.project.java.target=1.5                    </programlisting>
+          <programlisting>q.project.java.source=1.5
+q.project.java.target=1.5                    </programlisting>
 
           <para>Assuming you are using a jdk &gt;= 1.5, you can now rebuild
           the project with <literal>quokka clean package</literal> to
@@ -1052,7 +1068,7 @@ quokka.project.java.target=1.5                    </programlisting>
             description="This is an ordinary Ant target that will run after compile,
                          but before test"
             depends="compile"&gt;
-        &lt;dependency-of targets="quokka.lifecycle:pre-test"/&gt;
+        &lt;dependency-of targets="lifecycle:pre-test"/&gt;
 
         &lt;echo&gt;Hello from "after-compile-before-test"&lt;/echo&gt;
     &lt;/target&gt;
@@ -1245,7 +1261,7 @@ quokka.project.java.target=1.5                    </programlisting>
         &lt;profile id="skiptest" 
              description="Skips tests, disabling all test-related targets"/&gt;
 
-        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
+        &lt;dependency group="junit" version="3.8.1" paths="test-compile"/&gt;
         &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, runtime"/&gt;
 
         &lt;!-- quokka.depset.jar includes the plugins necessary to process resources, 
@@ -1258,11 +1274,11 @@ quokka.project.java.target=1.5                    </programlisting>
         &lt;!-- Adds jUnit support for running unit and integration tests --&gt;
         &lt;plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/&gt;
         &lt;plugin group="quokka.plugin.junitreport" version="0.1"
-                profiles="-skiptest"/&gt;
+                profiles="!skiptest"/&gt;
 
         &lt;!-- Adds Cobertura support for producing code coverage reports --&gt;
         &lt;plugin group="quokka.plugin.cobertura" version="0.1"
-                profiles="-skiptest"/&gt;
+                profiles="!skiptest"/&gt;
 
         &lt;!-- Adds the help plugin --&gt;
         &lt;plugin group="quokka.plugin.help" version="0.1"/&gt;
@@ -1921,7 +1937,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   <para>Optional. A comma separated list of targets that this
                   target depends on. If the targets are not defined in the
                   plugin they must be fully qualified with the plugin name
-                  space. e.g. <literal>quokka.lifecycle:package</literal>, not
+                  space. e.g. <literal>lifecycle:package</literal>, not
                   package. If the plugin declared other dependencies, these
                   will be added to them.</para>
                 </listitem>
@@ -1934,7 +1950,7 @@ quokka.project.java.target=1.5                    </programlisting>
                   <para>Optional. A comma separated list of targets that
                   depend on this target. If the targets are not defined in the
                   plugin they must be fully qualified with the plugin name
-                  space. e.g. <literal>quokka.lifecycle:package</literal>, not
+                  space. e.g. <literal>lifecycle:package</literal>, not
                   package. Together with <literal>depends</literal>, this
                   allows you to insert this target in a precise location in
                   the build sequence.</para>
@@ -2070,7 +2086,7 @@ quokka.project.java.target=1.5                    </programlisting>
             <para>For example, to exclude the jUnit plugin when the
             <literal>skiptest</literal> profile is enabled would be:</para>
 
-            <programlisting>&lt;plugin group="quokka.plugin.junit" version="0.1" profiles="-skiptest"/&gt;</programlisting>
+            <programlisting>&lt;plugin group="quokka.plugin.junit" version="0.1" profiles="!skiptest"/&gt;</programlisting>
 
             <para>Enabling profiles is via the <literal>profiles</literal>
             property, commonly set at the command line as:</para>
@@ -2100,9 +2116,9 @@ quokka.project.java.target=1.5                    </programlisting>
 
                   <listitem>
                     <para>Where x is 1 to 6. The profile is enabled when the
-                    <literal>quokka.project.java.source</literal> value
+                    <literal>q.project.java.source</literal> value
                     matches. i.e. <literal>source1.4</literal> is enabled when
-                    <literal>quokka.project.java.source=1.4</literal>. All
+                    <literal>q.project.java.source=1.4</literal>. All
                     other source1.x profiles would be disabled.</para>
                   </listitem>
                 </varlistentry>
@@ -2112,7 +2128,7 @@ quokka.project.java.target=1.5                    </programlisting>
 
                   <listitem>
                     <para>Same as source1.x above, but depends on the
-                    <literal>quokka.project.java.target</literal> value</para>
+                    <literal>q.project.java.target</literal> value</para>
                   </listitem>
                 </varlistentry>
 
@@ -2591,9 +2607,9 @@ key=${foo}</programlisting>
         <para>A special comment line can define an <literal>alias</literal>,
         allowing you to use the alias followed by a '!' character in place of
         a prefix. In the example below, <literal>repo</literal> is an alias
-        for <literal>quokka.repo.</literal>.</para>
+        for <literal>q.repo.</literal>.</para>
 
-        <programlisting>#{repo=quokka.repo.}
+        <programlisting>#{repo=q.repo.}
 repo!snapshot.rootDir=${user.home}/.quokka/snapshots
 repo!snapshot.hierarchical=true</programlisting>
 
@@ -2690,17 +2706,17 @@ myTarget.*=defaults</programlisting>
         powerful defaults handling. For example, the xml plugin defines the
         following properties in the plugin:</para>
 
-        <programlisting>quokka.xml.transform.defaults.transformClassPath=xml-transform
-quokka.xml.transform.defaults.catalogPath=xml-catalog
-quokka.xml.transform.defaults.targetDir${quokka.project.targetDir}/xml
-quokka.xml.transform.defaults.sourceDir=${quokka.project.sourceDir}/xml
+        <programlisting>q.xml.transform.defaults.transformClassPath=xml-transform
+q.xml.transform.defaults.catalogPath=xml-catalog
+q.xml.transform.defaults.targetDir${q.project.targetDir}/xml
+q.xml.transform.defaults.sourceDir=${q.project.sourceDir}/xml
 
-prefix.defs=${<literal>ifdef</literal> prefix.defaults ? prefix.defaults : 'quokka.xml.transform.defaults'}
+prefix.defs=${<literal>ifdef</literal> prefix.defaults ? prefix.defaults : 'q.xml.transform.defaults'}
 prefix.*=${prefix.defs}</programlisting>
 
         <para>Above, if <literal>prefix.defaults</literal> is defined by the
         user, all properties starting with that prefix are used as defaults,
-        otherwise <literal>quokka.xml.transform.defaults</literal> are used.
+        otherwise <literal>q.xml.transform.defaults</literal> are used.
         This allows users to define different sets of defaults for different
         transforms, such as docbook processing versus xhtml processing. Which
         set of defaults is used is controlled by setting a single property,
@@ -2720,7 +2736,7 @@ prefix.*=${prefix.defs}</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>quokka.project.targetDir</term>
+              <term>q.project.targetDir</term>
 
               <listitem>
                 <para>The root directory of all generated output. Defaults to
@@ -2729,7 +2745,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.sourceDir</term>
+              <term>q.project.sourceDir</term>
 
               <listitem>
                 <para>The root directory of all source related files. Defaults
@@ -2738,7 +2754,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.resourcesDir</term>
+              <term>q.project.resourcesDir</term>
 
               <listitem>
                 <para>The root directory of all project resources. Defaults to
@@ -2747,7 +2763,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.artifact.group</term>
+              <term>q.project.artifact.group</term>
 
               <listitem>
                 <para>The group of the project artifacts</para>
@@ -2755,7 +2771,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.artifact.version</term>
+              <term>q.project.artifact.version</term>
 
               <listitem>
                 <para>The version of the project artifacts</para>
@@ -2763,7 +2779,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.artifact.name[&lt;type&gt;]</term>
+              <term>q.project.artifact.name[&lt;type&gt;]</term>
 
               <listitem>
                 <para>A comma separated list of all artifacts names of the
@@ -2772,7 +2788,7 @@ prefix.*=${prefix.defs}</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term>quokka.project.path.&lt;pathId&gt;</term>
+              <term>q.project.path.&lt;pathId&gt;</term>
 
               <listitem>
                 <para>Each path, fully resolved to files on the local
@@ -3043,26 +3059,26 @@ prefix.*=${prefix.defs}</programlisting>
       shared repositories can vary depending on the project and/or
       installation. Quokka determines the installation from the standard
       properties, those starting with
-      <literal>quokka.repo.&lt;repositoryName&gt;</literal> controlling
+      <literal>q.repo.&lt;repositoryName&gt;</literal> controlling
       repository configuration.</para>
 
       <para>The default installation of quokka creates the following
       configuration in your <literal>$HOME/.quokka/quokka.properties</literal>
       file:</para>
 
-      <programlisting># Defines shared repositories across all projects. Used unless quokka.repo.project is defined
-# Note: DO NOT define quokka.repo.project here, it is reserved for individual projects to define their
+      <programlisting># Defines shared repositories across all projects. Used unless q.repo.project is defined
+# Note: DO NOT define q.repo.project here, it is reserved for individual projects to define their
 #       own local repositories
-quokka.repo.shared.url=delegate:snapshot,release
+q.repo.shared.url=delegate:snapshot,release
 
 # Snapshot: Local snapshots
-quokka.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
+q.repo.snapshot.url=file:${user.home}/.quokka/snapshots;snapshots=true
 
 # Release: Local cache of the global repository and location where any local releases are installed
-quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
+q.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false
 
 # Global: the global quokka repository
-quokka.repo.quokka.url=url:http://quokka.ws/repository/
+q.repo.quokka.url=url:http://quokka.ws/repository/
 </programlisting>
 
       <para>The above configuration defines that the <literal>shared</literal>
@@ -3082,17 +3098,17 @@ quokka.repo.quokka.url=url:http://quokka.ws/repository/
       <literal>&lt;class&gt;[:root][;property1=value1]*</literal>.</para>
 
       <para>So
-      <literal>quokka.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false</literal>
+      <literal>q.repo.release.url=file:${user.home}/.quokka/releases;parents=quokka;confirmImport=false</literal>
       could be rewritten as:</para>
 
-      <programlisting>quokka.repo.release.class=file
-quokka.repo.release.root=${user.home}/.quokka/releases
-quokka.repo.release.parents=quokka
-quokka.repo.release.confirmImport=false</programlisting>
+      <programlisting>q.repo.release.class=file
+q.repo.release.root=${user.home}/.quokka/releases
+q.repo.release.parents=quokka
+q.repo.release.confirmImport=false</programlisting>
 
       <para>When initialising a repository quokka looks for a property
       matching the name with a
-      <literal>quokka.repo.&lt;name&gt;.class</literal>. The class property
+      <literal>q.repo.&lt;name&gt;.class</literal>. The class property
       can be the fully qualified class name of your custom repository
       implementation, or one of the following built-in repository
       implementations:</para>
@@ -3281,10 +3297,10 @@ quokka.repo.release.confirmImport=false</programlisting>
       </variablelist>
 
       <para>Using the above information, we can now explore the default
-      configuration in detail. <literal>The quokka.repo.share.url</literal>
+      configuration in detail. <literal>The q.repo.share.url</literal>
       property is set to <literal>delegate:snapshot,release</literal>. So
       assuming your project has not defined a
-      <literal>quokka.repo.project.url</literal> property, the
+      <literal>q.repo.project.url</literal> property, the
       <literal>shared</literal> repository will be used. The
       <literal>shared</literal> repository is a delegating repository, so will
       forward requests to the <literal>snapshot</literal> and
@@ -3348,8 +3364,8 @@ quokka.repo.release.confirmImport=false</programlisting>
             <para>To implement this, you would use a project repository with
             the following properties:</para>
 
-            <programlisting>quokka.repo.project.url=delegate:local,shared
-quokka.repo.local.url=file:build/repository;parents=shared</programlisting>
+            <programlisting>q.repo.project.url=delegate:local,shared
+q.repo.local.url=file:build/repository;parents=shared</programlisting>
 
             <para>This will store all releases locally in your project's
             build/repository directory, automatically importing them from the
@@ -3381,8 +3397,8 @@ quokka.repo.local.url=file:build/repository;parents=shared</programlisting>
             <para>To implement this, you would use a project repository with
             the following properties:</para>
 
-            <programlisting>quokka.repo.project.url=delegate:local,shared
-quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
+            <programlisting>q.repo.project.url=delegate:local,shared
+q.repo.local.url=checksum:build/repository;parents=shared</programlisting>
 
             <para><emphasis role="bold">Pros:</emphasis> Reproducibility is
             not guaranteed, but it can detect if a build is not reproducible.
@@ -3491,13 +3507,13 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
         linkend="naming-standards">naming standards</link> below. Then install
         the artifact using the following command:</para>
 
-        <programlisting>$ quokka quokka.repository:install -Did=&lt;group&gt;:[name]:[type]:&lt;version&gt; \
+        <programlisting>$ quokka repo:install -Did=&lt;group&gt;:[name]:[type]:&lt;version&gt; \
      -Dfile=&lt;path of file to install&gt;</programlisting>
 
         <para>For example, to install the hibernate annotations 3.3 jar file,
         you would use:</para>
 
-        <programlisting>$ quokka quokka.repository:install -Did=hibernate.annotations:::3.3 \
+        <programlisting>$ quokka repo:install -Did=hibernate.annotations:::3.3 \
     -Dfile=~/Downloads/hibernate-annotaions.jar</programlisting>
 
         <para>Note: in this case the name will default to
@@ -3908,12 +3924,12 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
          Also, by using the collect target on the child modules, it skips the 
          report generation at lower levels, only collecting the data --&gt;
     &lt;target name="cobertura-all" description="Runs the cobertura report code modules"&gt;
-        &lt;iterate target="quokka.cobertura:collect" buildpathref="buildpath-code"
-                 master="quokka.cobertura:aggregate-report"/&gt;
+        &lt;iterate target="cobertura:collect" buildpathref="buildpath-code"
+                 master="cobertura:aggregate-report"/&gt;
     &lt;/target&gt;
 
     &lt;target name="reports-all" description="Runs the dev reports for all modules"&gt;
-        &lt;iterate target="quokka.devreport:generate" master="quokka.devreport:reports"/&gt;
+        &lt;iterate target="devreport:generate" master="devreport:reports"/&gt;
     &lt;/target&gt;
 &lt;/project&gt;</programlisting>
 
@@ -4032,7 +4048,7 @@ quokka.repo.local.url=checksum:build/repository;parents=shared</programlisting>
         an example:</para>
 
         <programlisting>&lt;target name="after-compile-before-test" depends="compile"&gt;
-    &lt;dependency-of targets="quokka.lifecycle:pre-test"/&gt;
+    &lt;dependency-of targets="lifecycle:pre-test"/&gt;
 
     &lt;echo&gt;Hello from "after-compile-before-test"&lt;/echo&gt;
 &lt;/target&gt;</programlisting>
