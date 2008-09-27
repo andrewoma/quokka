@@ -65,12 +65,12 @@ public class Profiles extends AnnotatedObject {
         return Collections.unmodifiableSet(elements);
     }
 
-    /**
-     * Profiles match if any of the the elements are common to both profiles, or if the rhs has no elements.
-     * Note: the matching is not symmetrical. i.e. a.matches(b) is not necessarily equal to b.matches(a)
-     */
-    public boolean matches(Profiles profiles) {
-        return new ProfilesMatcher().matches(new HashSet(profiles.getElements()), elements);
+    public boolean matches(String expression) {
+        if (expression == null) {
+            return true;
+        }
+
+        return new ProfilesMatcher().matches(expression, elements);
     }
 
     public String toShortString() {

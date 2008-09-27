@@ -30,6 +30,7 @@ public class PluginDependency extends Dependency {
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     private List targets = new ArrayList();
+    private List templates = new ArrayList();
     private boolean useDefaults = true;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
@@ -40,6 +41,14 @@ public class PluginDependency extends Dependency {
 
     public void addTarget(PluginDependencyTarget target) {
         targets.add(target);
+    }
+
+    public List getTemplates() {
+        return Collections.unmodifiableList(templates);
+    }
+
+    public void addTemplate(String template) {
+        templates.add(template);
     }
 
     public PluginDependencyTarget getTarget(String name) {

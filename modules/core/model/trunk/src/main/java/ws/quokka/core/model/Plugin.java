@@ -45,7 +45,6 @@ public class Plugin extends AnnotatedObject {
     private PluginDependency dependency;
     private Map buildResources = new HashMap();
     private BuildResources localResources;
-    private String description;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -136,13 +135,5 @@ public class Plugin extends AnnotatedObject {
 
     public String toShortString() {
         return (artifact == null) ? super.toShortString() : artifact.toShortString();
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }
