@@ -34,8 +34,8 @@ public class Debugger {
         DebuggerTest debugger = new DebuggerTest();
         debugger.setUp();
         debugger.setLogLevel(Project.MSG_INFO);
-        debugger.properties.put("quokka.bootstrap.enabled", "false");
-        debugger.properties.put("quokka.project.overrideCore", "true");
+        debugger.properties.put("q.bootstrap.enabled", "false");
+        debugger.properties.put("q.project.overrideCore", "true");
 
 //        debugger.properties.put("profiles", "skiptest");
 //        debugger.debug("plugin/standard-lifecycle", "install");

@@ -102,17 +102,9 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         }
 
         // See if a module exists in a relative location
-        String prefix = "quokka.";
+        File artifactClasses = getLocalClasses(artifactId);
 
-        if (artifactId.getGroup().startsWith(prefix) && !artifactId.getGroup().equals("quokka.bundle.core")) {
-            String moduleHome = (String)properties.get("moduleHome");
-            moduleHome = new File(moduleHome).getParentFile().getParentFile().getAbsolutePath();
-            moduleHome += (
-                "/" + artifactId.getGroup().substring(prefix.length()).replace('.', '/') + "/target/compile"
-            );
-
-            File artifactClasses = new File(moduleHome.replace('/', File.separatorChar));
-
+        if (artifactClasses != null) {
             //                    System.out.println(artifactClasses.getAbsolutePath());
             if (artifactClasses.exists()) {
                 Properties properties = getProperties(artifactClasses, artifactId);
@@ -131,22 +123,45 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
                     project.log("Resolve: using repository for " + artifactId, Project.MSG_DEBUG);
                 }
             } else {
-                System.out.println("In project: " + project.getName());
-                throw new BuildException("Override not found for " + artifactId); // These should always be available
+                throw new BuildException("Override not found for " + artifactId.toShortString()); // These should always be available
             }
         }
 
-        RepoArtifact repoArtifact = repository.resolve(artifactId);
-        project.log("Resolve: using parent, file=" + repoArtifact.getLocalCopy().getAbsolutePath(), Project.MSG_DEBUG);
+        RepoArtifact repoArtifact = repository.resolve(artifactId, retrieveArtifact);
+        project.log("Resolve: using parent, file="
+            + ((repoArtifact.getLocalCopy() == null) ? "unknown" : repoArtifact.getLocalCopy().getAbsolutePath()),
+            Project.MSG_DEBUG);
 
         return repoArtifact;
     }
 
-    private Properties getProperties(File base, RepoArtifactId id) {
+    /**
+     * 3rd party plugins should override this with whatever mechansim they choose to map the id
+     * to the directory where compiled classes are stored
+     */
+    protected File getLocalClasses(RepoArtifactId id) {
+        String prefix = "quokka.";
+
+        if (id.getGroup().startsWith(prefix) && !id.getGroup().equals("quokka.bundle.core")) {
+            String moduleHome = (String)properties.get("moduleHome");
+            moduleHome = new File(moduleHome).getParentFile().getParentFile().getAbsolutePath();
+            moduleHome += ("/" + id.getGroup().substring(prefix.length()).replace('.', '/') + "/target/compile");
+
+            return new File(moduleHome.replace('/', File.separatorChar));
+        }
+
+        return null;
+    }
+
+    /**
+     * 3rd party plugins can override this if necessary, setting the artifact.id.version property
+     * to the version of the module contained in the directory
+     */
+    protected Properties getProperties(File dir, RepoArtifactId id) {
         Properties properties = new Properties();
         String name = "META-INF/quokka/" + id.getGroup() + "_" + id.getName() + "_" + id.getType()
             + "_artifacts.properties";
-        File file = new File(base, name.replace('/', File.separatorChar));
+        File file = new File(dir, name.replace('/', File.separatorChar));
 
         if (file.exists()) {
             try {
@@ -194,7 +209,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
     }
 
     public Collection listArtifactIds(boolean includeReferenced) {
-        return repository.listArtifactIds(false);
+        return repository.listArtifactIds(includeReferenced);
     }
 
     public boolean supportsReslove(RepoArtifactId artifactId) {
@@ -210,7 +225,7 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
     }
 
     public Collection listArtifactIds(String group, String name, String type, boolean includeReferenced) {
-        return repository.listArtifactIds(group, name, type, true);
+        return repository.listArtifactIds(group, name, type, includeReferenced);
     }
 
     public void rebuildCaches() {

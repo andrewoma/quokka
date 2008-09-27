@@ -17,8 +17,6 @@
 
 package ws.quokka.core.itest;
 
-import org.apache.tools.ant.BuildException;
-
 import ws.quokka.core.test.AbstractTest;
 
 import java.io.BufferedReader;
@@ -44,9 +42,14 @@ import java.util.StringTokenizer;
 
 
 /**
- *
+ * IntegrationTest is a base class for running Quokka integration tests.
+ * It runs the
  */
 public abstract class IntegrationTest extends AbstractTest {
+    //~ Static fields/initializers -------------------------------------------------------------------------------------
+
+    private static FilteredClassLoader classLoader;
+
     //~ Instance fields ------------------------------------------------------------------------------------------------
 
     protected Map results;
@@ -81,15 +84,16 @@ public abstract class IntegrationTest extends AbstractTest {
      */
     protected void ant(String testProject, String[] targets) {
         // Override the output to go to this module's output
-        properties.put("quokka.project.targetDir", getTargetDir(testProject));
-        properties.put("quokka.repositoryOverride", "itest");
-        properties.put("quokka.repo.itest.url", "ws.quokka.core.itest.IntegrationTestRepository");
+        properties.put("q.project.targetDir", getTargetDir(testProject));
+        properties.put("q.project.targetDir", getTargetDir(testProject));
+        properties.put("q.repositoryOverride", "itest");
+        properties.put("q.repo.itest.url", "ws.quokka.core.itest.IntegrationTestRepository");
 
         ant(getBuildFile(testProject), targets);
     }
 
     public void setLogLevel(int level) {
-        properties.setProperty("quokka.debugger.logLevel", Integer.toString(level));
+        properties.setProperty("q.debugger.logLevel", Integer.toString(level));
     }
 
     protected void deleteDir(File dir) {
@@ -101,13 +105,9 @@ public abstract class IntegrationTest extends AbstractTest {
             if (file.isDirectory()) {
                 deleteDir(file);
             } else {
-                //                System.out.println("Deleting: " + file.getPath());
                 assertTrue("Cannot delete: " + file.getPath(), file.delete());
             }
         }
-
-        //        System.out.println("Deleting dir: " + dir.getPath());
-        //        assertTrue("Cannot delete: " + dir.getPath(), dir.delete());
     }
 
     protected void clean() {
@@ -126,39 +126,44 @@ public abstract class IntegrationTest extends AbstractTest {
      * Runs the given targets for the test project specified
      */
     protected void ant(File buildFile, String[] targets) {
-        String moduleClassPathId = "quokka.classpath." + getModuleId(getClass().getName());
+        String moduleClassPathId = "q.classpath." + getModuleId(getClass().getName());
 
         try {
             properties.putAll(getITestProperties());
             addProperties(properties);
 
             // Set up a system property to add instrumented classes and their associated .jar if specified
-            String testPath = System.getProperty("quokka.junit.instrumentCompiledOutput");
+            String testPath = System.getProperty("q.junit.instrumentCompiledOutput");
 
             if (testPath != null) {
-                testPath += (File.pathSeparator + System.getProperty("quokka.junit.instrumentTestPath"));
+                // The instrumentTestPath has already been added to the JVM forked to run these tests
+                // Do not add again or Cobertura fails to obtain locks properly
+                // testPath += (File.pathSeparator + System.getProperty("q.junit.instrumentTestPath"));
                 System.setProperty(moduleClassPathId, testPath);
+//                System.out.println("Skipping adding cobertura");
 
-                //                System.out.println("Setting module class path: moduleClasspathId=" + moduleClassPathId + ", value=" + testPath);
+//                System.out.println("Setting module class path: moduleClasspathId=" + moduleClassPathId + ", value=" + testPath);
             }
 
             // Set up URLs
-            FilteredClassLoader loader = new FilteredClassLoader(getCoreClassPath(getITestProperties().getProperty("itest.classPath")),
-                    getClass().getClassLoader(), getClassLoaderFilter());
+            if (classLoader == null) {
+                // Cache class loader as Cobertura can't exist on multiple loaders within one JVM
+                classLoader = new FilteredClassLoader(getCoreClassPath(getITestProperties().getProperty("itest.classPath")),
+                        getClass().getClassLoader(), getClassLoaderFilter());
+            }
+
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 
             try {
-//                buildFile = filterBuildFile(buildFile);
-                Thread.currentThread().setContextClassLoader(loader);
+                buildFile = filterBuildFile(buildFile);
+                Thread.currentThread().setContextClassLoader(classLoader);
 
-                Class clazz = loader.loadClass("ws.quokka.core.itest.AntRunner");
+                Class clazz = classLoader.loadClass("ws.quokka.core.itest.AntRunner");
                 Object antRunner = clazz.newInstance();
                 Method method = clazz.getMethod("run",
                         new Class[] { File.class, List.class, Properties.class, Properties.class });
                 results = (Map)method.invoke(antRunner,
                         new Object[] { buildFile, Arrays.asList(targets), properties, pluginState });
-
-//                buildFile.delete(); // Leave around if an exception occurred
             } catch (Throwable e) {
                 if (e instanceof InvocationTargetException) {
                     e = ((InvocationTargetException)e).getTargetException();
@@ -168,8 +173,9 @@ public abstract class IntegrationTest extends AbstractTest {
                     throw (RuntimeException)e;
                 }
 
-                throw new BuildException(e);
+                throw new RuntimeException(e);
             } finally {
+                buildFile.delete();
                 Thread.currentThread().setContextClassLoader(originalLoader);
             }
         } finally {
@@ -182,11 +188,12 @@ public abstract class IntegrationTest extends AbstractTest {
      * increment the versions between releases
      */
     protected File filterBuildFile(File buildFile) throws IOException {
-        File tempDir = new File(getTargetDir());
         BufferedReader reader = new BufferedReader(new FileReader(buildFile));
 
         try {
-            File temp = File.createTempFile("ibuild", "-quokka.xml", tempDir);
+            File temp = new File(buildFile.getParentFile(), buildFile.getName().substring(1)); // Strips the first char from the name
+            temp.deleteOnExit();
+
             BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
 
             try {
@@ -213,40 +220,50 @@ public abstract class IntegrationTest extends AbstractTest {
     public void addProperties(Properties properties) {
     }
 
-    public Filter getClassLoaderFilter() {
+    protected Filter getClassLoaderFilter() {
         return new Filter() {
                 public boolean loadFromParent(String name) {
-                    return !name.startsWith("org.apache.tools.ant") && !name.startsWith("ws.quokka")
-                    && !name.startsWith("net.sourceforge.cobertura") && !name.startsWith("de.hunsicker");
+                    return IntegrationTest.this.loadFromParent(name);
                 }
             };
     }
 
-    private URL[] getCoreClassPath(String path) {
+    protected boolean loadFromParent(String name) {
+        return !name.startsWith("org.apache.tools.ant") && !name.startsWith("ws.quokka")
+        && !name.startsWith("de.hunsicker");
+    }
+
+    protected URL[] getCoreClassPath(String path) {
         List urls = new ArrayList();
         StringTokenizer tokenizer = new StringTokenizer(path, ";" + File.pathSeparator);
 
         //        System.out.println("\n\nIntegration test class path:");
-        try {
-            while (tokenizer.hasMoreTokens()) {
-                String pathElement = tokenizer.nextToken();
+        while (tokenizer.hasMoreTokens()) {
+            String pathElement = tokenizer.nextToken();
 
 //                                System.out.println(pathElement);
-                assertTrue(new File(normalise(pathElement)).exists());
-                urls.add(new File(pathElement).toURL());
-            }
+            assertTrue("Core classpath element does not exist: " + normalise(pathElement),
+                new File(normalise(pathElement)).exists());
+            urls.add(toURL(pathElement));
+        }
 
-            File toolsJar = getToolsJar();
+        File toolsJar = getToolsJar();
 
-            if (toolsJar != null) {
-                urls.add(toolsJar.toURL());
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+        if (toolsJar != null) {
+            urls.add(toURL(toolsJar.getPath()));
         }
 
         return (URL[])urls.toArray(new URL[urls.size()]);
+    }
+
+    protected URL toURL(String pathElement) {
+        try {
+            assertTrue(new File(normalise(pathElement)).exists());
+
+            return new File(pathElement).toURI().toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public File getBuildFile(String buildFile) {
@@ -258,7 +275,7 @@ public abstract class IntegrationTest extends AbstractTest {
     }
 
     public File getTarget() {
-        return getFile("quokka.lifecycle.target");
+        return getFile("q.lifecycle.target");
     }
 
     public File getFile(String antPropertyKey) {

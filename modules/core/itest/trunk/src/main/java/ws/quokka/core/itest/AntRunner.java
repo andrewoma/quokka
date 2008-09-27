@@ -60,7 +60,7 @@ public class AntRunner {
         project.setCoreLoader(getClass().getClassLoader());
         antListener = new AntRunner.AntListener();
 
-        project.addBuildListener(createLogger(projectProperties.getProperty("quokka.debugger.logLevel")));
+        project.addBuildListener(createLogger(projectProperties.getProperty("q.debugger.logLevel")));
         project.addBuildListener(antListener);
 
         //        project.setInputHandler(new DefaultInputHandler());
@@ -98,7 +98,7 @@ public class AntRunner {
             project.fireBuildStarted();
 
             project.init();
-            project.setUserProperty("ant.version", "1.7.0");
+            project.setUserProperty("ant.version", "1.7.1");
             project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 
             // Remove hard dependency on core.main to allow integration tests to be
@@ -110,7 +110,7 @@ public class AntRunner {
             helper.parse(project, buildFile);
 
             // Add any plugin state
-            PluginState state = (PluginState)project.getReference("quokka.pluginState");
+            PluginState state = (PluginState)project.getReference("q.pluginState");
 
             for (Iterator i = pluginState.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();
