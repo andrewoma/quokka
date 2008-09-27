@@ -8,9 +8,9 @@
         <artifact/>
     </artifacts>
 
-    <bootstrap core="[0.2.1,0.2.1]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.3-ss,0.3-ss]" spec-version="[1.4,1.6]"/>
 
     <dependency-set>
-        <dependency-set group="quokka.internal.depset-depset" version="0.1"/>
+        <dependency-set group="quokka.internal.depset-depset" version="0.2-ss"/>
     </dependency-set>
 </project>
