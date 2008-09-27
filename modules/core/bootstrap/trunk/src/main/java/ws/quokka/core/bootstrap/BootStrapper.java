@@ -262,7 +262,7 @@ public class BootStrapper {
         command.createVmArgument().setValue("-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper");
         command.createVmArgument().setValue("-Dant.home=" + System.getProperty("ant.home"));
         command.createVmArgument().setValue("-Dant.library.dir=" + new File(System.getProperty("ant.home"), "antlib"));
-        command.createVmArgument().setValue("-Dquokka.bootstrap.jvmArgs=" + jdk.getMatchedConstraint().getJvmArgs());
+        command.createVmArgument().setValue("-Dq.bootstrap.jvmArgs=" + jdk.getMatchedConstraint().getJvmArgs());
 
         if (Log.get().isDebugEnabled()) {
             Log.get().debug(classPath.toString());
@@ -321,20 +321,20 @@ public class BootStrapper {
         Log.get().verbose("   librariesDir -> " + librariesDir.getAbsolutePath());
 
         if (cacheDir == null) {
-            cacheDir = new File(System.getProperty("quokka.bootstrap.cachedir"),
-                    new File(bootStrapDefaultDir, "cache").getAbsolutePath());
+            String dir = project.getProperty("q.bootstrap.cacheDir");
+            cacheDir = (dir != null) ? new File(dir) : new File(bootStrapDefaultDir, "cache");
         }
 
         Log.get().verbose("   cacheDir -> " + cacheDir.getAbsolutePath());
 
         if (jvmArgs == null) {
-            jvmArgs = unescape(System.getProperty("quokka.bootstrap.jvmArgs"));
+            jvmArgs = unescape(System.getProperty("q.bootstrap.jvmArgs"));
         }
 
         Log.get().verbose("   jvmArgs -> " + jvmArgs);
 
-        File bootStrapProperties = new File(System.getProperty("quokka.bootstrap.properties"),
-                new File(bootStrapDefaultDir, "bootstrap.xml").getAbsolutePath());
+        String dir = project.getProperty("q.bootstrap.properties");
+        File bootStrapProperties = (dir != null) ? new File(dir) : new File(bootStrapDefaultDir, "bootstrap.xml");
 
         if (resources == null) {
             Log.get().verbose("   resourcesFile -> " + bootStrapProperties.getAbsolutePath());

@@ -26,9 +26,9 @@ import org.apache.tools.ant.util.JavaEnvUtils;
 import org.w3c.dom.Element;
 
 import ws.quokka.core.bootstrap_util.Assert;
+import ws.quokka.core.bootstrap_util.IOUtils;
 import ws.quokka.core.bootstrap_util.Log;
 import ws.quokka.core.bootstrap_util.XmlParser;
-import ws.quokka.core.bootstrap_util.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -91,7 +91,6 @@ public class BootStrapResourcesParser extends XmlParser {
 
         return availableLibraries;
     }
-
 
     public BootStrapResources parse_(File file, File librariesDir, File cacheDir)
             throws IOException {

@@ -147,7 +147,7 @@ public class BootStrapConstraints {
             Assert.isTrue(union.getRanges().size() == 1, message);
 
             VersionRange range = (VersionRange)union.getRanges().get(0);
-            Assert.isTrue(range.getHigh() != null && range.getLow() != null, message);
+            Assert.isTrue((range.getHigh() != null) && (range.getLow() != null), message);
             Assert.isTrue(range.getHigh().equals(range.getLow()), message);
             Assert.isTrue(range.isHighInclusive() && range.isLowInclusive(), message);
 

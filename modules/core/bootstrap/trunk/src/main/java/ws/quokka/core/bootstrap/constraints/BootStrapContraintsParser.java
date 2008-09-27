@@ -205,9 +205,9 @@ public class BootStrapContraintsParser extends XmlParser {
     private List applyProfiles(List elements) {
         for (Iterator i = elements.iterator(); i.hasNext();) {
             Element element = (Element)i.next();
-            Set profiles = toSet(getAttribute(element, "profiles"));
+            String expression = getAttribute(element, "profiles");
 
-            if (!profilesMatcher.matches(profiles, activeProfiles)) {
+            if ((expression != null) && !profilesMatcher.matches(expression, activeProfiles)) {
                 i.remove();
             }
         }

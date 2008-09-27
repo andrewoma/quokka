@@ -87,10 +87,10 @@ public class BootStrapperTest extends AbstractTest {
         String command = bootStrapper.createCommandLine(jdk, path).toString();
 
         if (File.separatorChar == '\\') {
-            assertEquals("C:\\javahome\\java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=C:\\ant home\" \"-Dant.library.dir=C:\\ant home\\antlib\" -Dquokka.bootstrap.jvmArgs=-Xmx1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
+            assertEquals("C:\\javahome\\java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=C:\\ant home\" \"-Dant.library.dir=C:\\ant home\\antlib\" -Dq.bootstrap.jvmArgs=-Xmx1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
                 command);
         } else {
-            assertEquals("/javahome/java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=/ant home\" \"-Dant.library.dir=/ant home/antlib\" -Dquokka.bootstrap.jvmArgs=-Xmx1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
+            assertEquals("/javahome/java.exe -Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper \"-Dant.home=/ant home\" \"-Dant.library.dir=/ant home/antlib\" -Dq.bootstrap.jvmArgs=-Xmx1024m -Xmx1024m org.apache.tools.ant.launch.Launcher -main ws.quokka.core.main.ant.QuokkaMain '-Dprop2=value2\" quote' -Dprop1=value1 clean install",
                 command);
         }
     }

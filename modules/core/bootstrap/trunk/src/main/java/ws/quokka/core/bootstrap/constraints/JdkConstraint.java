@@ -139,9 +139,10 @@ public class JdkConstraint {
             if (value.isRequired() || (!value.isRequired() && !matchOptional)) {
                 String availableValue = (String)available.getProperties().get(key);
                 match = value.getValue().equals(availableValue);
+
                 if (Log.get().isDebugEnabled()) {
-                    Log.get().debug("   System property " + key + (match ? " matches" : " doesn't match") + ": constraint="
-                        + value.getValue() + ", jdk=" + availableValue);
+                    Log.get().debug("   System property " + key + (match ? " matches" : " doesn't match")
+                        + ": constraint=" + value.getValue() + ", jdk=" + availableValue);
                 }
             }
         }
@@ -160,7 +161,7 @@ public class JdkConstraint {
 
         boolean matches = (constraintValue == null) || constraintValue.isInRange(new Version(jdkValue));
 
-        if (constraintValue != null && Log.get().isDebugEnabled()) {
+        if ((constraintValue != null) && Log.get().isDebugEnabled()) {
             Log.get().debug("   " + property + (matches ? " matches" : " doesn't match") + ": constraint="
                 + constraintValue + ", jdk=" + jdkValue);
         }
@@ -172,7 +173,7 @@ public class JdkConstraint {
         String jdkValue = (String)jdk.getProperties().get(property);
         boolean matches = (constraintValue == null) || constraintValue.equals(jdkValue);
 
-        if (constraintValue != null && Log.get().isDebugEnabled()) {
+        if ((constraintValue != null) && Log.get().isDebugEnabled()) {
             Log.get().debug("   " + property + (matches ? " matches: " : " doesn't match: ") + "constraint="
                 + constraintValue + ", jdk=" + jdkValue);
         }
