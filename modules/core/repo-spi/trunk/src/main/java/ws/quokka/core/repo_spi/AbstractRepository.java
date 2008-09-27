@@ -29,7 +29,7 @@ import java.util.Set;
 public abstract class AbstractRepository implements Repository {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
 
-    public static final String PREFIX = "quokka.repo.";
+    public static final String PREFIX = "q.repo.";
 
     //~ Instance fields ------------------------------------------------------------------------------------------------
 

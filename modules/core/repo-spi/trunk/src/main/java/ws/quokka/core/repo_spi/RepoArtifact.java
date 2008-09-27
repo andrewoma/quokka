@@ -247,8 +247,8 @@ public class RepoArtifact extends AnnotatedObject implements Cloneable {
     /**
      * Returns a string describing where this artifact was imported from. It has no effect on the general
      * operation of quokka and is only used as a mechanism to verify a quokka artifact against the source
-     * it was imported from. Currently, it is set when artifacts are imported using quokka.maven:import
-     * and read via quokka.maven:verify
+     * it was imported from. Currently, it is set when artifacts are imported using maven:import
+     * and read via maven:verify
      */
     public String getImportedFrom() {
         return importedFrom;
