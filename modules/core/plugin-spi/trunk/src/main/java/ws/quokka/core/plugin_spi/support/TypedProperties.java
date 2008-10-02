@@ -481,6 +481,10 @@ public class TypedProperties {
      * @return a list of tokens
      */
     public static List commaSepList(String string, boolean trim, boolean preserveTokens) {
+        if (string == null) {
+            return new ArrayList();
+        }
+
         List tokens = new ArrayList();
         StringTokenizer tokenizer = new StringTokenizer(string, ",", true);
 
