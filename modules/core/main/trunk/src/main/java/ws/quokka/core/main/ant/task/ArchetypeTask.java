@@ -129,10 +129,20 @@ public class ArchetypeTask extends Task implements RepositoryAware {
 
         File localCopy = artifact.getLocalCopy();
 
-        if (checkProperties(localCopy, root)) {
+        Document config = Document.parse(URLs.toURL(localCopy, root + "archetype.xml"),
+                new Document.NullEntityResolver());
+
+        if (checkProperties(config)) {
             logger.info("Extracting the following archetype to " + getProject().getBaseDir().getAbsolutePath() + ":");
             displayEntries(localCopy, root);
             copyEntries(localCopy, root);
+
+            Element bannerEl = config.getRoot().getChild("banner");
+
+            if (bannerEl != null) {
+                String banner = getProject().replaceProperties(bannerEl.getText().trim());
+                logger.info(banner);
+            }
         }
     }
 
@@ -304,9 +314,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         }
     }
 
-    private boolean checkProperties(File localCopy, String root) {
-        Document document = Document.parse(URLs.toURL(localCopy, root + "archetype.xml"),
-                new Document.NullEntityResolver());
+    private boolean checkProperties(Document document) {
         boolean first = true;
         List properties = new ArrayList();
 

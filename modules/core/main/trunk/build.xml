@@ -1,15 +1,4 @@
-<project name="core.main.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
-
-    <target name="test-script">
-        <!--<script language="javascript" classpath="/Users/andrew/Downloads/bsf-2.4.0/lib/bsf.jar:/Users/andrew/.quokka/releases02/apache/commons/logging/1.0.4/logging_jar.jar:/Users/andrew/Downloads/rhino1_6R7/js.jar"> <![CDATA[-->
-        <!--<script language="javascript" classpath="${q.project.path.ant-types}:/Users/andrew/Downloads/bsf-2.4.0/lib/bsf.jar:/Users/andrew/.quokka/releases02/apache/commons/logging/1.0.4/logging_jar.jar:/Users/andrew/Downloads/rhino1_6R7/js.jar"> <![CDATA[-->
-        <script language="javascript" classpath="/Users/andrew/.quokka/releases02/apache/ant/1.7.1/bsf_jar.jar:/Users/andrew/Downloads/bsf-2.4.0/lib/bsf.jar:/Users/andrew/.quokka/releases02/apache/commons/logging/1.0.4/logging_jar.jar:/Users/andrew/Downloads/rhino1_6R7/js.jar"> <![CDATA[
-          for (i=1; i<=10; i++) {
-            echo = project.createTask("echo");
-            echo.setMessage(i*i);
-            echo.perform();
-          }
-        ]]></script>
-      </target>
+<project name="core.main">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

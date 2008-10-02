@@ -787,6 +787,7 @@ public class ProjectHelper extends ProjectHelper2 {
         factory.registerType(new RepoType("plugin", "Quokka plugin", "jar"));
         factory.registerType(new RepoType("archetype", "Quokka archetype", "jar"));
         factory.registerType(new RepoType("depset", "Quokka dependency set", "jar"));
+        factory.registerType(new RepoType("source", "Source code bundle", "jar"));
         antProject.addReference(REPOSITORY_FACTORY, factory);
 
         return factory;
