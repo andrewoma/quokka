@@ -1,3 +1,4 @@
-<project name="core.bootstrap.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.bootstrap">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

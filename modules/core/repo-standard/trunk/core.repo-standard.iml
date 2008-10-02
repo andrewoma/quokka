@@ -14,7 +14,7 @@
     <orderEntry type="module" module-name="core.repo-spi" />
     <orderEntry type="module" module-name="core.util" />
     <orderEntry type="module" module-name="core.test" />
-    <orderEntry type="library" name="ant-1.7" level="project" />
+    <orderEntry type="library" name="ant-1.7.1" level="project" />
     <orderEntry type="module" module-name="core.bootstrap-util" />
     <orderEntry type="module" module-name="core.bootstrap" />
     <orderEntry type="module" module-name="core.version" />

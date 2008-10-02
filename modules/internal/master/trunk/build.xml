@@ -1,4 +1,4 @@
-<project name="internal.master.ext">
+<project name="internal.master">
     <property name="home" location="../.."/>
 
     <!-- Default to building all -->

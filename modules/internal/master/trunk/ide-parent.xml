@@ -1,6 +1,0 @@
-<project>
-    <target name="clean"/>
-    <target name="install"/>
-    <target name="format"/>
-    <target name="cobertura"/>
-</project>

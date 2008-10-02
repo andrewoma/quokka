@@ -1,3 +1,4 @@
-<project name="core.itest.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.itest">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

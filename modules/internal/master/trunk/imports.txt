@@ -35,6 +35,9 @@ org.apache.ant:ant-trax:jar::1.7.1
 org.apache.ant:ant-weblogic:jar::1.7.1
 org.apache.ant:ant:jar::1.7.1
 
+# Ant 1.6.5
+ant:ant-launcher:jar::1.6.5
+
 # Ant 1.7
 #org.apache.ant:ant:jar::1.7.0
 #org.apache.ant:ant-junit:jar::1.7.0

@@ -1,3 +1,4 @@
-<project name="core.model.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.model">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

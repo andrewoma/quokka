@@ -1,5 +1,6 @@
-<project name="quokka.site.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="quokka.site">
+    <target name="clean"/>
+    <target name="install"/>
 
     <target name="site"
             depends="transform-html, transform-docbook, transform-docbook-html, transform-temp-html, extract-resources, help">
@@ -30,6 +31,38 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="deploy-repo">
+        <attribute name="local"/>
+        <attribute name="remote"/>
+        <sequential>
+            <!-- Make sure user and password have been set -->
+            <input-unless-set property="user"/>
+            <input-unless-set property="password"/>
+
+            <!-- rsync the repo up to quokka.ws -->
+            <exec executable="rsync" failonerror="true">
+                <env key="RSYNC_PASSWORD" value="@{password}"/>
+                <arg line="--recursive --times --whole-file --checksum --delete --force --verbose --delay-updates --exclude='.svn/' --rsh=ssh"/>
+                <arg value="@{local}"/>
+                <arg value="${user}@quokka.ws:/home/${user}/uploads/repo/@{remote}"/>
+            </exec>
+
+            <!--Roll over repository to the new version -->
+            <var name="tempVar" unset="true"/>
+            <input message="Continue with rollover?" validargs="y,n" addproperty="tempVar"/>
+            <if>
+                <equals arg1="${tempVar}" arg2="y"/>
+                <then>
+                    <sshexec host="quokka.ws"
+                             username="${user}"
+                             password="${password}"
+                             command="/bin/sh ~/bin/rollover-@{remote}-repo.sh"
+                             trust="true"/>
+                </then>
+            </if>
+        </sequential>
+    </macrodef>
+
     <target name="extract-resources">
         <unjar src="${q.project.path.site_naut05_custom}" dest="${q.project.targetDir}/temp"/>
         <copy todir="${q.project.targetDir}/site">
@@ -46,13 +79,24 @@
     </target>
 
     <target name="deploy-snapshot-repo">
-        <property name="snapshotRepoTemp" location="${q.project.targetDir}/snapshot-repo.zip"/>
-        <zip destfile="${snapshotRepoTemp}">
-            <fileset dir="${q.repo.snapshot.rootDir}" includes="quokka/**"/>
-        </zip>
+        <property name="snapshotRepoTemp" location="${q.project.targetDir}/snapshot/repository"/>
+        <delete dir="${snapshotRepoTemp}"/>
+        <delete dir="${snapshotRepoTemp}"/>
+        <copy todir="${snapshotRepoTemp}" preservelastmodified="true">
+            <fileset dir="/Users/andrew/.quokka/snapshots" includes="quokka/**"/>
+        </copy>
 
-        <deploy file="${snapshotRepoTemp}" script="deploy-snapshot-repo"/>
+        <deploy-repo local="${snapshotRepoTemp}" remote="snapshot"/>
     </target>
+
+    <!--<target name="deploy-snapshot-repo">-->
+        <!--<property name="snapshotRepoTemp" location="${q.project.targetDir}/snapshot-repo.zip"/>-->
+        <!--<zip destfile="${snapshotRepoTemp}">-->
+            <!--<fileset dir="${q.repo.snapshot.rootDir}" includes="quokka/**"/>-->
+        <!--</zip>-->
+
+        <!--<deploy file="${snapshotRepoTemp}" script="deploy-snapshot-repo"/>-->
+    <!--</target>-->
 
     <target name="deploy-reports">
         <property name="reportsTemp" location="${q.project.targetDir}/reports.zip"/>
@@ -63,13 +107,17 @@
         <deploy file="${reportsTemp}" script="deploy-reports"/>
     </target>
 
-    <target name="deploy-repo">
-        <property name="repoTemp" location="${q.project.targetDir}/repo.zip"/>
-        <zip destfile="${repoTemp}">
-            <fileset dir="${q.repo.localRelease.rootDir}"/>
-        </zip>
+    <!--<target name="deploy-repo">-->
+        <!--<property name="repoTemp" location="${q.project.targetDir}/repo.zip"/>-->
+        <!--<zip destfile="${repoTemp}">-->
+            <!--<fileset dir="${q.repo.localRelease.rootDir}"/>-->
+        <!--</zip>-->
 
-        <deploy file="${repoTemp}" script="deploy-repo"/>
+        <!--<deploy file="${repoTemp}" script="deploy-repo"/>-->
+    <!--</target>-->
+
+    <target name="deploy-repo">
+        <deploy-repo local="/Users/andrew/Dev/Projects/repository" remote="release"/>
     </target>
 
     <target name="deploy-all" depends="deploy-site, deploy-snapshot-repo, deploy-repo, deploy-reports"/>

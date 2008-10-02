@@ -1,3 +1,4 @@
-<project name="core.metadata.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.metadata">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

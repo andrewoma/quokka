@@ -1,3 +1,4 @@
-<project name="core.repo-resolver.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.repo-resolver">
+    <target name="clean"/>
+    <target name="install"/>
 </project>

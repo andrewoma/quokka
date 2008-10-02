@@ -12,7 +12,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="core.test" />
-    <orderEntry type="library" name="ant-1.7" level="project" />
+    <orderEntry type="library" name="ant-1.7.1" level="project" />
     <orderEntry type="module" module-name="core.bootstrap-util" />
     <orderEntry type="library" name="junit-3.8.1" level="project" />
     <orderEntryProperties />

@@ -21,4 +21,5 @@
     </plugin>
 
     <plugin group="quokka.plugin.jalopy" version="0.3-ss"/>
+    <plugin group="quokka.plugin.source" version="0.1-ss"/>
 </dependency-set>

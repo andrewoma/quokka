@@ -1,5 +1,6 @@
-<project name="core.bundle.ext">
-    <import file="../../internal/master/ide-parent.xml"/>
+<project name="core.bundle">
+    <target name="clean"/>
+    <target name="install"/>
 
     <target name="dist" depends="lifecycle:package, docbook-pdf">
     <!--<target name="dist" depends="lifecycle:package">-->
