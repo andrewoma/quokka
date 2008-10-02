@@ -2,8 +2,15 @@
 @rem =========================================================================
 @rem This script is designed to launch multiple versions of quokka via
 @rem quokka's bootstrapping mechanism. 
-@rem Edit the "EDIT HERE" section to set the default quokka version.
+@rem Edit the variables below to match your most commonly used configuration
+
+set _DEFAULT_QUOKKA=0.3-ss
+set _DEFAULT_ANT=1.7.1
+set _DEFAULT_OPTS=-Xmx512m
+@rem set JAVACMD=</path/to your most commonly used jdk/java>
+
 @rem =========================================================================
+
 set ERROR_CODE=0
 
 @rem === Set QUOKKA_HOME
@@ -21,18 +28,12 @@ set _NT=true
 for %%i in ("%~dp0..") do set QUOKKA_HOME=%%~fi
 
 :homeSet
-@rem =========================================================================
-@rem = EDIT HERE: 
-@rem = Edit the following section to set your default quokka configuration.
-@rem = Ideally, set the default to the most commonly used configuration as
-@rem = this will prevent forking a separate JVM on launching.
-@rem =========================================================================
-@rem set _JAVACMD=<\path\to your most commonly used jdk\java.exe>
-set _MAX_MEMORY=1024m
-set _LAUNCHER_CP=%QUOKKA_HOME%\lib\apache.ant_ant-launcher_jar_1.7.jar
-set _QUOKKA_CP=%QUOKKA_HOME%\lib\apache.ant_ant_jar_1.7.jar
-set _QUOKKA_CP=%_QUOKKA_CP%;%QUOKKA_HOME%\lib\quokka.bundle_core_jar_0.1.jar
-@rem =========================================================================
+set _LAUNCHER_CP=%QUOKKA_HOME%\lib\apache.ant_ant-launcher_jar_%_DEFAULT_ANT%.jar
+set _QUOKKA_CP=%QUOKKA_HOME%\lib\apache.ant_ant_jar_%_DEFAULT_ANT%.jar
+set _QUOKKA_CP=%_QUOKKA_CP%;%QUOKKA_HOME%\lib\quokka.bundle_core_jar_%_DEFAULT_QUOKKA%.jar
+
+if "%QUOKKA_OPTS%" == "" set _QUOKKA_OPTS=%QUOKKA_OPTS%
+if not "%QUOKKA_OPTS%" == "" set _QUOKKA_OPTS=%_DEFAULT_OPTS%
 
 @rem === Get the command line arguments
 set _QUOKKA_CMD_LINE_ARGS=
@@ -57,9 +58,10 @@ goto runQuokka
 if "%_JAVACMD%" == "" set _JAVACMD=java.exe
 
 :runQuokka
-set _QUOKKA_STANDARD_OPTS=-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper "-Dant.library.dir=%QUOKKA_HOME%\antlib" -Dquokka.bootstrap.maxMemory=%_MAX_MEMORY% -Xmx%_MAX_MEMORY%
+set _QUOKKA_ESC_OPTS=%_QUOKKA_OPTS:"=@quot@%
+set _QUOKKA_STANDARD_OPTS=-Dorg.apache.tools.ant.ProjectHelper=ws.quokka.core.main.ant.ProjectHelper "-Dant.library.dir=%QUOKKA_HOME%\antlib" "-Dquokka.bootstrap.jvmArgs=%_QUOKKA_ESC_OPTS%"
 set _QUOKKA_STANDARD_ARGS=-logger org.apache.tools.ant.NoBannerLogger -main ws.quokka.core.main.ant.QuokkaMain -nouserlib
-rem "%_JAVACMD%" %_QUOKKA_STANDARD_OPTS% %QUOKKA_OPTS% -classpath "%_LAUNCHER_CP%" "-Dant.home=%QUOKKA_HOME%" org.apache.tools.ant.launch.Launcher %_QUOKKA_STANDARD_ARGS% %QUOKKA_ARGS% -cp "%_QUOKKA_CP%" %_QUOKKA_CMD_LINE_ARGS%
+rem "%_JAVACMD%" %_QUOKKA_STANDARD_OPTS% %_QUOKKA_OPTS% -classpath "%_LAUNCHER_CP%" "-Dant.home=%QUOKKA_HOME%" org.apache.tools.ant.launch.Launcher %_QUOKKA_STANDARD_ARGS% %QUOKKA_ARGS% -cp "%_QUOKKA_CP%" %_QUOKKA_CMD_LINE_ARGS%
 "%_JAVACMD%" %_QUOKKA_STANDARD_OPTS% %QUOKKA_OPTS% -classpath "%_LAUNCHER_CP%" "-Dant.home=%QUOKKA_HOME%" org.apache.tools.ant.launch.Launcher %_QUOKKA_STANDARD_ARGS% %QUOKKA_ARGS% -cp "%_QUOKKA_CP%" %_QUOKKA_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
@@ -78,6 +80,7 @@ set _QUOKKA_CP=
 set _QUOKKA_STANDARD_OPTS=
 set _QUOKKA_STANDARD_ARGS=
 set _MAX_MEMORY=
+set _QUOKKA_ESC_OPTS=
 if "%_NT%"=="true" endlocal
 
 exit /B %ERROR_CODE%
