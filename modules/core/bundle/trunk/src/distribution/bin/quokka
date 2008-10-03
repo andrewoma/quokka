@@ -28,9 +28,9 @@ home=`cd "$home" && pwd`
 if [ -z "$QUOKKA_OPTS" ] ; then
     QUOKKA_OPTS=$defaultOpts
 fi
-launcherCp=$home/lib/apache.ant_launcher_jar_$defaultAnt.jar
-quokkaCp=$home/lib/apache.ant_ant_jar_$defaultAnt.jar
-quokkaCp=$quokkaCp:$home/lib/quokka.bundle_core_jar_$defaultQuokka.jar
+launcherCp=$home/lib/apache.ant_${defaultAnt}_launcher_jar.jar
+quokkaCp=$home/lib/apache.ant_${defaultAnt}_ant_jar.jar
+quokkaCp=$quokkaCp:$home/lib/quokka.bundle_${defaultQuokka}_core_jar.jar
 
 # Get the java command
 if [ -z "$JAVACMD" ] ; then

@@ -44,7 +44,7 @@ public class BundledRepository extends FileRepository {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
     public void initialise() {
-        bundleId = getArtifactId(getProperty("artifact", true));
+        bundleId = getArtifactId(getProperty("root", true));
 
         File rootDir = getRootDir(bundleId);
         getProperties().setProperty(PREFIX + getName() + ".root", rootDir.getPath());
@@ -77,7 +77,7 @@ public class BundledRepository extends FileRepository {
     protected RepoArtifactId getArtifactId(String artifact) {
         String[] tokens = Strings.split(artifact, ":");
         Assert.isTrue((tokens.length == 3) || (tokens.length == 2),
-            "'artifact' property should be in the format group[:name]:type");
+            "'artifact' property should be in the format group[:name]:version");
 
         String name = (tokens.length == 3) ? tokens[1] : tokens[0].substring(tokens[0].lastIndexOf(".") + 1);
         String version = (tokens.length == 3) ? tokens[2] : tokens[1];

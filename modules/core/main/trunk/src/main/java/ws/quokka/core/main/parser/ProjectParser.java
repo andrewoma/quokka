@@ -258,6 +258,12 @@ public class ProjectParser {
         // Ant properties ... those set by command line
         properties.putAll(antProperties);
 
+        // Add core repository
+        String home = (String)antProperties.get("ant.home");
+        properties.put("q.repo.core.url",
+            "file:" + home + File.separator + "lib"
+            + ";hierarchical=false;snapshots=true;releases=true;installSnapshots=false;installReleases=false");
+
         return properties;
     }
 

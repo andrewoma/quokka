@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
     <description>Quokka bundle module: Bundles the core modules and creates the distribution with documentation</description>
@@ -12,6 +12,7 @@
 
     <dependency-set>
         <path id="dist" description="Libraries required for the runtime distribution"/>
+
         <dependency group="apache.ant" version="1.7.1" paths="dist"/>
 
         <!-- Libraries for the core bundle -->
@@ -31,6 +32,7 @@
         <dependency-set group="quokka.internal.module-depset" version="0.3-ss"/>
 
         <plugin group="quokka.plugin.jarbundle" version="0.3-ss" targets="package"/>
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.3-ss"/>
 
         <plugin group="quokka.plugin.xml" version="0.3-ss">
             <target template="transform" name="docbook" prefix="docbook"/>
@@ -38,6 +40,23 @@
 
         <plugin group="quokka.plugin.fop" version="0.3-ss">
             <target name="docbook-pdf" template="transform" prefix="docbook-pdf" depends="docbook"/>
+        </plugin>
+
+        <property name="q.repo.core-bundle-dist.url"
+                  value="file:${basedir}/target/dist/quokka-0.3-ss/lib;hierarchical=false;snapshots=true;releases=true"/>
+        <plugin group="quokka.plugin.repository" version="0.1-ss">
+            <target name="copy-core" template="copy-path">
+                <property name="path" value="jarbundle"/>
+                <property name="repository" value="core-bundle-dist"/>
+            </target>
+            <target name="copy-dist" template="copy-path" depends="install">
+                <property name="path" value="dist"/>
+                <property name="repository" value="core-bundle-dist"/>
+            </target>
+            <target name="copy" depends="install">
+                <property name="to" value="core-bundle-dist"/>
+                <property name="id" value="quokka.bundle:core:jar:0.3-ss"/>
+            </target>
         </plugin>
     </dependency-set>
 </project>

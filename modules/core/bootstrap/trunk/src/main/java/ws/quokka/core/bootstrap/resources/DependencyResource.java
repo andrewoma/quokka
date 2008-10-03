@@ -59,7 +59,7 @@ public class DependencyResource {
     }
 
     public String toFileName() {
-        return group + "_" + name + "_jar_" + version + ".jar";
+        return group + "_" + version + "_" + name + "_jar.jar";
     }
 
     public static DependencyResource parse(String artifactId) {
@@ -68,19 +68,12 @@ public class DependencyResource {
 
         try {
             String group = tokenizer.nextToken();
-            String name = tokenizer.nextToken();
-            tokenizer.nextToken(); // type
-
             String version = tokenizer.nextToken();
-            version = version.substring(0, version.lastIndexOf(".")); // Strip extension
-
-            //            tokenizer.nextToken(); // extension
+            String name = tokenizer.nextToken();
             resource = new DependencyResource(group, name, Version.parse(version));
         } catch (NoSuchElementException e) {
             throw new BuildException("Too few tokens in artifact id: " + artifactId);
         }
-
-        Assert.isTrue(!tokenizer.hasMoreTokens(), "Too many tokens in artifact id: " + artifactId);
 
         return resource;
     }

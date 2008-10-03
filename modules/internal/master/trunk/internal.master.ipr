@@ -286,6 +286,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" filepath="$PROJECT_DIR$/../../archetype/jar/archetype.jar.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" filepath="$PROJECT_DIR$/../../archetype/multiproject/archetype.multiproject.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../archetype/war/archetype.war.iml" filepath="$PROJECT_DIR$/../../archetype/war/archetype.war.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../bundle/extensions/bundle.extensions.iml" filepath="$PROJECT_DIR$/../../bundle/extensions/bundle.extensions.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" filepath="$PROJECT_DIR$/../../core/bootstrap/core.bootstrap.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" filepath="$PROJECT_DIR$/../../core/bootstrap-util/core.bootstrap-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../core/bundle/core.bundle.iml" filepath="$PROJECT_DIR$/../../core/bundle/core.bundle.iml" />
