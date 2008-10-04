@@ -38,6 +38,8 @@
             <target template="transform" name="docbook" prefix="docbook"/>
         </plugin>
 
+        <plugin group="quokka.plugin.javadoc" version="0.3-ss" use-defaults="false" targets="aggregate-report"/>
+        <property name="q.javadoc.aggregate-report.destDir" value="${basedir}/target/dist/quokka-0.3-ss/api"/>
         <plugin group="quokka.plugin.fop" version="0.3-ss">
             <target name="docbook-pdf" template="transform" prefix="docbook-pdf" depends="docbook"/>
         </plugin>
