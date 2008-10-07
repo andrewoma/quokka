@@ -3,54 +3,22 @@
 <body>
 <h1>Roadmap</h1>
 
-<p>Quokka consists of many modules. The core itself consists of over 10 modules and each extension, including plugins,
-    archetypes and dependency sets are separate modules and have their own lifecycle.</p>
-
-<p>All of this is necessary, but makes tracking releases more difficult. The approach quokka takes is to
-    group together a set of module milestones into consolidated milestones (initially monthly).
-    Consolidated milestones will include a new quokka distribution of the same name and will synchronise
-    all extensions to work with the new core distribution.
+<p>The Quokka core would seem to be pretty much complete as Quokka now covers almost
+all of the use cases it set out to achieve. Community feedback is now required to validate
+    this is true for other users, with a particular focus on making any changes
+    to public APIs for other developers ASAP. This includes the plugin and repository APIs as
+    well as the bootstrapping module.
 </p>
-
-<p>
-    All work on quokka is assigned to an issue within the issue tracker, including the
-    milestone assinged to it.
-</p>
-<table>
-    <thead>
-        <tr>
-            <th>Milestone</th>
-            <th>ETA</th>
-            <th>Issues</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>0.2</td>
-            <td>1 Mar 2008</td>
-            <td>
-                <a href="http://code.google.com/p/quokka/issues/list?can=1&amp;q=Milestone:core-main-0_2+OR+Milestone:core-bootstrap-0_2+OR+Milestone:global-repo-0_2&amp;sort=milestone" shape="rect">Core</a>&nbsp;
-                <a href="http://code.google.com/p/quokka-contrib/issues/list?can=1&amp;q=Milestone:plugin-help-0_2+OR+Milestone:plugin-testng-0_1+OR+Milestone:archetype-site-0_1+OR+Milestone:plugin-war-0_1+OR+Milestone:plugin-cargo-0_1+OR+Milestone:plugin-javadoc-0_2+OR+Milestone:plugin-xml-0_2+OR+Milestone:archetype-plugin-0_1+OR+Milestone:plugin-junit-0_2&amp;sort=milestone" shape="rect">Contrib</a>
-            </td>
-        </tr>
-        <tr>
-            <td>0.3</td>
-            <td>1 Apr 2008</td>
-            <td>
-                <a href="http://code.google.com/p/quokka/issues/list?can=1&amp;q=Milestone:core-main-1_0-mxx+OR+Milestone:core-bootstrap-1_0-mxx+OR+Milestone:internal-site-1_0-mxx">Core</a>&nbsp;
-                <a href="http://code.google.com/p/quokka-contrib/issues/list?can=1&amp;q=Milestone:plugin-resources-1_0-mxx">Contrib</a>
-            </td>
-        </tr>
-        <tr>
-            <td>Unassigned</td>
-            <td>N/A</td>
-            <td>
-                <a href="http://code.google.com/p/quokka/issues/list?q=Milestone:Unassigned&amp;sort=component">Core</a>&nbsp;
-                <a href="http://code.google.com/p/quokka-contrib/issues/list?q=Milestone:Unassigned&amp;sort=component">Contrib</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<p>Bugfixes will the highest priority, but after that next on the list include:</p>
+<ul>
+    <li>Adding support for the <a href="http://www.scala-lang.org/">Scala Programming language</a></li>
+    <li>Adding support for the <a href="http://http://testng.org/doc/">TestNG</a> testing framework</li>
+    <li>Expanding the JEE plugin to support EJBs and EARs</li>
+    <li>Investigate IDE integration with Netbeans and Eclipse</li>
+    <li>Expand the developer documentation</li>
+</ul>
+<p>Check out the <a href="issue-tracker.html">Issue Tracker</a> as well for information on
+outstanding tasks and priorities</p>
 
 </body>
 </html>

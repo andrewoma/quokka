@@ -1,0 +1,1038 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Quokka vs Maven - Side by Side</title>
+    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/layout.css"
+          media="screen, projection, tv "/>
+    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/html.css"
+          media="screen, projection, tv "/>
+
+    <style type="text/css">
+        .maven {
+            background-color: #ddeeff;
+            font-size: 9pt;
+        }
+
+        .quokka {
+            background-color: #f4f4f4;
+            font-size: 9pt;
+        }
+
+        body {
+            text-align: left;
+        }
+
+        body {
+            margin: 10px;
+        }
+
+        li {
+            list-style: square
+        }
+    </style>
+</head>
+<body>
+<h1>Quokka vs Maven - Side by Side</h1>
+
+<h2>Introduction</h2>
+
+<p>This document provides a comparison between Quokka and Maven for building a simple web application.
+    Throughout this
+    document, Quokka configuration will be shown in <tt class="quokka">this style</tt>, while
+    Maven configuration will be in <tt class="maven">this style</tt>.</p>
+
+<p>This document is divided into the following sections:</p>
+<ul>
+    <li><a href="#about">About the web app</a></li>
+    <li><a href="#building-war">Building the .war file</a></li>
+    <li><a href="#dev-reports">Adding development reports</a></li>
+    <li><a href="#cobertura">Adding Cobertura for test coverage reporting</a></li>
+    <li><a href="#disabling-tests">Disabling Testing</a></li>
+    <li><a href="#jetty">Adding integration testing via Jetty</a></li>
+    <li><a href="#help">Getting Help</a></li>
+    <li><a href="#extensibility">Extensibility</a></li>
+    <li><a href="#dependencies">Dependency Analysis</a></li>
+    <li><a href="#peformance">Performance</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#appendix">Appendix</a></li>
+</ul>
+
+<h2><a name="about"><span/></a>About the web app</h2>
+
+<p>The web application in this example will consist of a static page, a simple servlet and a JSP page. It has
+    a single dependency on log4j, just to provide a sample dependency. The source
+    code structure of the application is as follows:
+</p>
+<pre>src/
+    main/
+        java/
+            sample/
+                HelloWorld.java
+                HelloWorldHelper.java
+        webapp/
+            index.html
+            snoop.jsp
+            WEB-INF/
+                web.xml
+    test/
+        java/
+            sample/
+                HelloWorldHelperTest.java
+                HelloWorldITest.java</pre>
+<h2><a name="building-war"><span/></a>Building the .war file</h2>
+
+<p>Given the following quokka configuration file (<code>build-quokka.xml</code>), building the .war file
+    is done by <code>quokka package</code>:</p>
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd"&gt;
+&lt;project&gt;
+    &lt;artifacts group="mycompany.myproject" version="0.1-ss"&gt;
+        &lt;artifact type="war"/&gt;
+    &lt;/artifacts&gt;
+
+    &lt;dependency-set&gt;
+        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
+        &lt;dependency group="sun.servlet.spec.dist" version="2.5" paths="compile"/&gt;
+        &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, war"/&gt;
+        &lt;dependency-set group="quokka.depset.jar" version="0.3-ss"/&gt;
+        &lt;plugin group="quokka.plugin.jee" version="0.1-ss" targets="war, war-exploded"/&gt;
+    &lt;/dependency-set&gt;
+&lt;/project&gt;</pre>
+<p>In comparision, here is the Maven configuration file (<code>pom.xml</code>), that builds
+    a .war file using <code>mvn package -Dmaven.test.failure.ignore=true</code>:</p>
+<pre class="maven">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;mycompany&lt;/groupId&gt;
+  &lt;artifactId&gt;myproject&lt;/artifactId&gt;
+  &lt;packaging&gt;war&lt;/packaging&gt;
+  &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;junit&lt;/groupId&gt;
+      &lt;artifactId&gt;junit&lt;/artifactId&gt;
+      &lt;version&gt;3.8.1&lt;/version&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;log4j&lt;/groupId&gt;
+      &lt;artifactId&gt;log4j&lt;/artifactId&gt;
+      &lt;version&gt;1.2.14&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.geronimo.specs&lt;/groupId&gt;
+      &lt;artifactId&gt;geronimo-servlet_2.5_spec&lt;/artifactId&gt;
+      &lt;version&gt;1.2&lt;/version&gt;
+      &lt;optional&gt;true&lt;/optional&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</pre>
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven packaging versus Quokka dependency sets</b>: Maven uses the concept of packaging to to introduce
+        plugin dependencies automatically (via the <code>&lt;packaging&gt;war&lt;/packaging&gt;</code>
+        declaration). Unfortunately, this is basically voodoo as there is no easy way to determine
+        what dependencies are introduced via this mechanism. Maven packaging binds certain goals to
+        lifecycle phases (as shown <a
+            href="http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html">here</a>).
+        These goals then force the dynamic loading of plugins from certain well-known locations. In the past, this
+        took the latest available version making maven builds unreproducible, but I believe as of maven 2.0.9 it
+        locks down the versions of certain plugins.
+
+    <p>In contrast, Quokka uses a nested dependency-set (via the <code>&lt;dependency-set group="quokka.depset.jar"
+        version="0.3-ss"/&gt;</code>
+        declaration). The nested dependency set is in exactly the same format as the project dependency set,
+        and is basically included, or merged into the project dependency set. The versions of any plugins are set
+        explicitly
+        in the nested set, so the build remains reproducible. Furthermore, it is easy to see what was included using the
+        quokka help system. Dependency sets are a core concept of Quokka replacing Maven packaging and project
+        inherientence
+        with a more general and flexible mechanism. It should also be noted that there is no hard-wired concept of
+        a lifecycle in Quokka. Instead there is a lifecycle plugin that defines abstract targets that other plugins
+        are free to implement.
+    </p>
+
+    <p><b>Maven has hard-wired paths</b>: Maven has hard-wired scopes for dependencies including compile, provided,
+        test, runtime,
+        system and import. It then applies a complicated set of rules as to what these paths mean in different contexts
+        (see
+        <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">here</a> for
+        details).
+    </p>
+
+    <p>In constrast, Quokka has no hard-wired paths in the core at all. Both plugins and the project can define
+        arbitrary paths. In the case above the lifecycle plugin defines the <code>compile</code> path and jee plugin
+        defines the <code>war</code>
+        path. When a dependency is declared it can be assigned to one or more paths, with each assignment able to set
+        options as to whether transitive dependencies are included, if the dependency is optional and what
+        optional dependencies should be included. Finally, plugins can group (or merge) paths together. e.g. to run
+        unit tests the <code>compile</code> and <code>test</code> are merged (for exact details see the lifecycle
+        plugin).</p>
+
+    <p>Unlike Maven, Quokka does not store all of these paths in the repository. Instead, the project defines
+        which paths are to the <i>exported</i> to the repository (which also supports arbitrary paths).</p>
+
+    <p>Essentially, Quokka has generalised all of Maven's special rules into a single mechanism. Furthermore,
+        the same mechanism is available to projects and plugins making Quokka much more extensible. Although this
+        simple example doesn't show it, path handling is a big differentiator between Quokka and Maven. See
+        <a href="http://quokka.ws/project-reference.html#paths">Paths</a> and
+        <a href="http://quokka.ws/project-reference.html#path-specs">Path Specifications</a> for more information.</p>
+
+    <p><b>Testing voodoo</b>: Maven automatically discovers that there are jUnit tests and runs them, presumably
+        via maven's testing plugin automatically detecting jUnit on the classpath. Quokka does not try to guess
+        what you want - you need to include the jUnit plugin (see the next section) if you want your tests to be
+        run with jUnit</p>
+
+    <p><b>Conciseness</b>: The quokka definition is much more concise, thanks largely due the use of XML attributes
+        instead of elements.</p>
+</div>
+<h2><a name="dev-reports"><span/></a>Adding development reports</h2>
+
+<p>We'll now add a test report to both configurations. In Quokka, the following is added to the dependency set in <code>build-quokka.xml</code>:
+</p>
+<pre>&lt;plugin group="quokka.plugin.devreport" version="0.3-ss"/&gt;
+&lt;plugin group="quokka.plugin.junit" version="0.3-ss"/&gt;
+&lt;plugin group="quokka.plugin.junitreport" version="0.3-ss"/&gt;
+</pre>
+<p>The jUnit report can now be generated using <code>quokka junitreport</code>, or an index of all reports
+    can be generated via <code>quokka reports</code>. (The devreport plugin is not required if you don't want an index).
+</p>
+
+<p>For Maven, testing is done via the sure-fire plugin and is configured as follows in <code>pom.xml</code>.
+    The report can be generated with <code>mvn surefire-report:report</code> or all reports can be generated
+    using <code>maven site</code></p>
+<pre class="maven">&lt;reporting&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-surefire-report-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.4.3&lt;/version&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/reporting&gt;
+</pre>
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Surefire verus native test frameworks</b>: Testing in maven is forced go through the sure-fire plugin
+        which supports a fixed set of frameworks. This has a number of important consequences in maven. Firstly, if you
+        are the author of a testing framework, you
+        have to lobby to get the surefire plugin patched to support your framework. Secondly, the surefire plugin
+        produces the same
+        reports regardless of the test framework used. This means you have to lobby to get features added to the
+        surefire report that may only be appropriate for your testing framework. At present, the surefire report
+        appears to support the lowest common demoninator and is inferior to any of the native reports from testing
+        frameworks.
+
+    <p>In constrast, any framework can perform testing in quokka - all it requires is a supporting plugin that
+        implements
+        the abstract <code>test</code> target
+        from the lifecycle plugin. Test frameworks are free to generate whatever reports they wish and be configured
+        as is appropriate to the framework. The net result in this case is that the quokka junit test reports
+        are far better than the Maven equivalents.
+
+    </p>
+
+    <p><b>Maven muddles developer reports with site generation</b>: To get a summary of all reports in Maven,
+        you need to perform <code>mvn site</code>. This generates a web site for your project that as a side effect
+        includes your developer reports. Web sites and developer reports have completely different audiences.
+        In fact, in most cases your developer reports should not be available on your web site. Furthermore,
+        to generate the summary, you have to suffer the overhead of generating site information that you are not
+        interested in.
+    </p>
+
+    <p>In constrast, in Quokka there is a plugin dedicated to producing a useful summary of developer
+        reports, namely the devreport plugin. Site generation is completely separate and unrelated.</p>
+
+    <p><b>Maven gives reports a special status</b>: In Maven, there is a dedicated <code>reports</code>
+        section in the <code>pom.xml</code>. In Quokka, reports are just plugins - there is nothing special
+        about them apart from them implementing devreport targets so that they appear in the reports index.</p>
+
+    <p><b>Plugin versions are optional in Maven</b>: In the snippet above, the Maven plugin version
+        has been set. However, this is optional in Maven and if not set it will find the latest available plugin
+        by default. This is a big problem for Maven and is one of the reasons that Maven builds are
+        not reproducible. i.e. If you forget to add the version and then check out your source a month later,
+        it may not build as a different plugin version has been used.</p>
+
+    <p>In constrast, plugins (and all other dependencies) in Quokka must be explicitly versioned to avoid
+        this problem. Quokka also provides tools such as <code>quokka list-plugins</code> to help you
+        find compatible plugin versions</p>
+</div>
+
+<h2><a name="cobertura"><span/></a>Adding Cobertura for test coverage reporting</h2>
+
+<p>Cobertura is an excellent open source test coverage framework. To enable it in Quokka, add the
+    following to <code>build-quokka.xml</code></p>
+<pre>&lt;plugin group="quokka.plugin.cobertura" version="0.3-ss"&gt;</pre>
+<p>The Cobertura report can now be generated using <code>quokka cobertura</code> and as before it will be available via
+    <code>quokka reports</code>.
+</p>
+
+<p>For Maven, the cobertura plugin is added as a report and is configured as follows in <code>pom.xml</code>.
+    The report can be generated with <code>mvn cobertura:cobertura</code> or all reports can be generated
+    using <code>maven site</code></p>
+<pre class="maven">&lt;reporting&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+            &lt;artifactId&gt;cobertura-maven-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.2&lt;/version&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/reporting&gt;
+</pre>
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven forking runs tests twice</b>: When generating the site for maven to view both the jUnit
+        test results and the Cobertura reports, Maven runs all of the tests twice. This is due to Maven
+        <i>forking</i> the build when it runs the Cobertura plugin. It does this so that it can use the
+        instrumented classes instead of the normal classes.</p>
+
+    <p>In constrast, Quokka automatically detects when instrumentation is enabled and automatically
+        adds the instrumented classes to the classpath during testing. This means the tests are only
+        executed once.</p>
+</div>
+<h2><a name="disabling-tests"><span/></a>Disabling Testing</h2>
+
+<p>To disable testing, Quokka relies on <i>profiles</i>. A profile can be used to modify the configuration
+    of Quokka by enabling or disabling configuration elements. The following configuration shows how
+    to disable testing using profiles in quokka:</p>
+<pre>&lt;dependency-set&gt;
+    &lt;profile id="skiptest" description="Skips tests, disabling all test-related targets"/&gt;
+     ...
+    &lt;plugin group="quokka.plugin.junit" version="0.3-ss" profiles="!skiptest"/&gt;
+    &lt;plugin group="quokka.plugin.junitreport" version="0.3-ss" profiles="!skiptest"/&gt;
+    &lt;plugin group="quokka.plugin.cobertura" version="0.3-ss" profiles="!skiptest"/&gt;
+&lt;/dependency-set&gt;
+</pre>
+<p>Testing can then be disabled by setting the <code>profiles</code> property to <code>skiptest</code>. This
+    is often done on the command line via <code>quokka -Dprofiles=skiptest &lt;target&gt;</code></p>
+
+<p>Maven supports profiles, but it is not possible to disable testing via it as the
+    test targets are included via the war packaging. The simplest way to disable the tests
+    in Maven is to set the <code>maven.test.skip</code> property to true. This is often done on the command
+    line via <code>mvn -Dmaven.test.skip=true &lt;target&gt;</code></p>
+
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Reduced overhead in Quokka</b>: As the profiles eliminate all of the plugins at initialisation,
+        there is no overhead associated with them. Maven too can achieve most of this via profiles, with
+        the exception of the test goals themselves.</p>
+</div>
+<h2><a name="jetty"><span/></a>Adding integration testing via Jetty</h2>
+
+<p>The following describes adding Jetty support to the project so that integration tests can be run
+    against a running web container. The goal is to start a Jetty server instance prior to integration
+    testing starting, run the tests against it and then shut down the instance when the tests complete.</p>
+
+<p>In quokka, the following configuration achieves what we want:</p>
+<pre>
+&lt;property name="q.jetty.defaults.stopKey" value="foo"/&gt;
+&lt;property name="q.jetty.defaults.stopPort" value="9999"/&gt;
+&lt;plugin group="quokka.plugin.jetty" version="0.1-ss" paths="(jsp-2.1)"&gt;
+    &lt;target name="start-jetty" template="run-template" profiles="!skiptest"
+            dependency-of="lifecycle:initialise-integration-test"
+                  depends="lifecycle:pre-initialise-integration-test"&gt;
+        &lt;property name="daemon" value="true"/&gt;
+        &lt;property name="scanIntervalSeconds" value="0"/&gt;
+        &lt;property name="includeInstrumentedOuput" value="true"/&gt;
+    &lt;/target&gt;
+    &lt;target name="stop-jetty" template="stop-template" profiles="!skiptest"
+        dependency-of="lifecycle:finalise-integration-test"
+              depends="lifecycle:pre-finalise-integration-test"/&gt;
+&lt;/plugin&gt;
+</pre>
+<p>There are several important things to note with the quokka configuration:</p>
+<ul>
+    <li>It uses <i>template</i> targets to start and stop Jetty. Templates allow instances of themselves
+        to be added to the project as separate targets with their own properties and names.
+    </li>
+    <li>It demonstrates how targets can be inserted into the lifecycle using the <code>dependency-of</code>
+        and <code>depends</code> attributes of <code>target</code>. This is how the Jetty server is started
+        and stopped before and after the integration tests.
+    </li>
+    <li>The <code>plugin</code> declaration has a <code>paths</code> entry that adds the optional <code>jsp-2.1</code>
+        dependency to the Jetty plugin's runtime path, effectively adding support for JSP 2.1. This is an example
+        of a <a href="http://quokka.ws/project-reference.html#path-specs">Path Specification</a> which gives great
+        control over what dependencies your project includes.
+    </li>
+</ul>
+<p>With the above configuration, Jetty will now be automatically started prior to integration testing.
+    By default, the jUnit plugin treats anything that ends in ITest.class as an integration test. So now,
+    the previously failing <code>HelloWorldITest</code> will now succeed. As an added bonus, the <code>includeInstrumentedOuput</code>
+    property means that Cobertura classes are added to the Jetty container classpath along with the instrumented
+    classes, meaning that code coverage data will be collected for the integration tests running inside the Jetty server
+    instance.</p>
+
+<p>For Maven, the following configuration needs to be added to the <code>pom.xml</code>:</p>
+<pre class="maven">&lt;build&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+                &lt;excludes&gt;
+                    &lt;exclude&gt;**/*ITest.java&lt;/exclude&gt;
+                &lt;/excludes&gt;
+            &lt;/configuration&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;surefire-it&lt;/id&gt;
+                    &lt;phase&gt;integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;test&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;excludes&gt;
+                            &lt;exclude&gt;none&lt;/exclude&gt;
+                        &lt;/excludes&gt;
+                        &lt;includes&gt;
+                            &lt;include&gt;**/*ITest.java&lt;/include&gt;
+                        &lt;/includes&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.mortbay.jetty&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-jetty-plugin&lt;/artifactId&gt;
+            &lt;version&gt;6.1.11&lt;/version&gt;
+            &lt;configuration&gt;
+                &lt;scanIntervalSeconds&gt;10&lt;/scanIntervalSeconds&gt;
+                &lt;stopKey&gt;foo&lt;/stopKey&gt;
+                &lt;stopPort&gt;9999&lt;/stopPort&gt;
+            &lt;/configuration&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;start-jetty&lt;/id&gt;
+                    &lt;phase&gt;pre-integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;run&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;scanIntervalSeconds&gt;0&lt;/scanIntervalSeconds&gt;
+                        &lt;daemon&gt;true&lt;/daemon&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;stop-jetty&lt;/id&gt;
+                    &lt;phase&gt;post-integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;stop&lt;/goal&gt;
+                    &lt;/goals&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/build&gt;    
+</pre>
+<p>Note that the surefire plugin configuration is required to make the <code>test</code> phase
+    exclude integration tests (those ending with <code>ITest.java</code>) and run them
+    in the <code>integration-test</code> phase.</p>
+
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven configuration violates the schema</b>: Maven target configuration
+        allows arbitrary elements for configuration of targets. However, this violates
+        the schema making tooling support irritating. It does however allow complex objects
+        to be configured.</p>
+
+    <p>In constrast, Quokka target configuration is via <code>property</code> elements and
+        therefore the quokka configuration file can be validated against a DTD. It also allows
+        configurations to be tweaked from other locations, such as command line properties,
+        user properties and project level properties. While properties are awkward for representing
+        complex types, Quokka supports <i>build resources</i> that allow arbitrary XML files to
+        be bundled with a dependency set. This is preferred mechanism for complex types in Quokka.</p>
+
+    <p><b>Maven configuration limitations:</b> The Maven configuration has several issues.
+        Firstly, only the test phase tests are included in the surefire report. It may be possible
+        to configure the surefire-report plugin to fix this, but I can't find any documentation.
+        Secondly, code coverage data is not collected for the integration tests.</p>
+</div>
+<h2><a name="help"><span/></a>Getting Help</h2>
+
+<p>Both Quokka and Maven plugins come with many configuration options. Furthermore, it can become difficult
+    to track project paths due to transitive dependencies (dependencies of dependencies). It is therefore
+    important to be able to get some help to work out what is going on.</p>
+
+<p>Quokka provides the following help mechanisms:</p>
+<ul>
+    <li>A detailed Quokka reference, including Getting Started and User Guides, available in HTML form
+        on the web site and in PDF format with the distribution.
+    </li>
+    <li>Built-in <code>-projecthelp</code> command line option that lists targets available in the
+        current project.
+    </li>
+    <li>Built-in <code>list-plugins</code> target that list plugins available in the repository, including
+        the versions that are compatible.
+    <li>The help plugin. Once included in a project, you can now use <code>quokka help</code> to generate a detailed
+        HTML report that includes information
+        on all project paths, plugin paths, dependency sets, targets and properties. Help is also bundled
+        inside plugins. This allows you to get help on targets or plugins, using the <code>target</code>
+        and <code>id</code> properties. e.g. <code>quokka help -Dtarget=jetty:run</code> will bring up HTML help
+        for the version of the Jetty plugin you are using.
+    </li>
+</ul>
+<p>Maven provides the following help mechanisms:</p>
+<ul>
+    <li>The maven website has various guides</li>
+    <li>I believe there's a free book available</li>
+    <li>A help plugin that shows how a project looks after profiles and settings are applied</li>
+    <li>A dependency plugin, that provides the <code>dependency:tree</code>
+        goal for listing project dependencies.
+    </li>
+</ul>
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven plugins don't bundle help</b>: The biggest issue with Maven is that help is not bundled
+        with plugins and that the web site only shows help for the latest version of the plugin. Therefore,
+        it is impossible to get help for a plugin version that isn't the latest.
+    </p>
+
+    <p>In constrast, Quokka bundles the help with plugin, ensuring it is always avaiable.</p>
+</div>
+
+<h2><a name="extensibility"><span/></a>Extensibility</h2>
+
+<p>Although not required for this particular project, it is common for projects to require ad hoc
+    targets for which no plugins exist. Quokka offers several options. Firstly, you can place
+    a standard Ant <code>build.xml</code> file along side the <code>build-quokka.xml</code> file
+    and it will be imported automatically. You are then free to use any Ant tasks you like. Some additional
+    tasks from AntContrib have also been bundled, such as <code>if</code>, <code>var</code>,
+    and <code>for</code> to provide some limited imperative support.</p>
+
+<p>If standard Ant targets are too limited or tedious, you can also use the script plugin. The script
+    plugin allows you to write code in any scripting language support by Apache BSF, or JSR 223. The following
+    is an example of using Javascript via script plugin:</p>
+<pre>&lt;dependency group="apache.ant" name="commons-net" version="1.7.1" paths="ant-types"/&gt;
+&lt;plugin group="quokka.plugin.fop" version="?" templates="transform"/&gt;
+
+&lt;plugin group="quokka.plugin.script" version="?"&gt;
+    &lt;target name="myscript" template="javascript"&gt;
+        &lt;property name="script"&gt;&lt;![CDATA[
+          // Example of built-in tasks (echo)
+          for (i=1; i&lt;=10; i++) {
+            echo = project.createTask("echo");
+            echo.setMessage(i*i);
+            echo.perform();
+          }
+
+          // Example of optional Ant task (ftp) - dependencies are added to ant-types
+          ftp = project.createTask("ftp")
+          ftp.setUserid("ftp.crap.com")
+
+          // Example of using a a quokka plugin (fop) - the plugin and template must be declared
+          props = new java.util.Properties()
+          props.put("in","src/fop/fo.xml")
+          props.put("out","${q.project.targetDir}/fop/fo.pdf")
+          quokka.execute("quokka.plugin.fop", "transform", props)
+        ]]&gt;&lt;/property&gt;
+    &lt;/target&gt;
+&lt;/plugin&gt;
+</pre>
+<p>Maven's extensiblity appears to be limited to the <a href="http://maven.apache.org/plugins/maven-antrun-plugin/">antrun
+    plugin</a>.
+    It allows arbitrary Ant tasks to be executed during any lifecycle phase.</p>
+
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven extensions are tied to lifecycle phases</b>: From my understanding, Maven (via the antrun plugin)
+        only allows tasks to piggy back on lifecycle phases.
+        In constrast, Quokka allows arbitrary targets to be added. The may be stand-alone or participate
+        in the lifecycle.</p>
+
+    <p><b>Quokka provides scripting support:</b> As far as I'm aware there is no equivalent of the
+        scripting capabilities of Quokka in Maven.</p>
+
+    <p><b>Quokka supports arbitrary paths:</b> The ability to add arbitrary project paths coupled with
+        the ability to add arbitrary targets is a powerful combination that lets an ad hoc target have
+        similar functionality to a proper Quokka plugin.</p>
+
+    <p><b>Maven has no native concept of tasks:</b> Maven isn't internally constructed of tasks that can
+        be reused from ad hoc targets. This means it has to look elsewhere for a solution and ends up
+        using Ant. It's a little ironic that having rewritten a lot of Ant tasks internally, it then relies
+        on Ant for extensibility.</p>
+
+    <p>In constrast, Quokka is an extension to Ant and it's plugins are largely built on Ant tasks. It
+        is there a natural mechanism for extensibility.</p>
+</div>
+
+<h2><a name="dependencies"><span/></a>Dependency Analysis</h2>
+
+<p>Quokka has a very strict policy regarding dependencies. Specifically, the core has no dependencies
+    other than the Ant core. Furthermore, plugins never use any dependencies that are not required by the task itself.
+    e.g.
+    the Cobertura plugin will naturally have dependencies on Cobertura itself, but would never use Apache commons
+    classes to ease development of the plugin itself.</p>
+
+<p>The list below includes all dependencies required to build and run this project, including project and
+    plugin dependencies. With this set the project can run offline:
+</p>
+    <pre>apache.ant 1.7.1 junit jar
+apache.ant 1.7.1 trax jar
+apache.log4j 1.2.15 log4j jar
+apache.oro 2.0.8 oro jar
+eclipse.jdt.core 3.1.1 core jar
+junit 3.8.2 junit jar
+mortbay.jetty 6.1.11 jetty jar
+mortbay.jetty 6.1.11 jsp-2.1 jar
+mortbay.jetty 6.1.11 util jar
+ow2.asm 2.2.1 asm jar
+quokka.depset 0.3-ss jar depset
+quokka.plugin.cobertura 0.3-ss cobertura plugin
+quokka.plugin.devreport 0.3-ss devreport plugin
+quokka.plugin.help 0.3-ss help plugin
+quokka.plugin 0.3-ss jar plugin
+quokka.plugin.javac 0.3-ss javac plugin
+quokka.plugin.jee 0.1-ss jee plugin
+quokka.plugin.jetty 0.1-ss jetty plugin
+quokka.plugin.junit 0.3-ss junit plugin
+quokka.plugin.junitreport 0.3-ss junitreport plugin
+quokka.plugin.lifecycle 0.3-ss lifecycle plugin
+quokka.plugin.resources 0.3-ss resources plugin
+quokka.plugin.standard-lifecycle 0.3-ss standard-lifecycle plugin
+sf.cobertura 1.8 cobertura jar
+sun.jsp.spec.dist 2.1 dist jar
+sun.servlet.spec.dist 2.5 dist jar
+</pre>
+<p>This is pretty good, it basically contains the plugins we are using plus the project dependencies.
+    However, Quokka has another trick available to cut down dependencies even further, namely
+    <i>Bundled Repositories</i>. Bundled repositories basically a zipped up repository. Quokka publishes
+    one at present named <code>quokka.bundle.extensions</code> that contains all of the quokka extensions (which
+    includes plugins, dependency sets and archetypes). It's primary design is to allow a project to keep
+    all of it's dependencies in version control along side the project, without clogging it up with
+    quokka related jars. e.g. The project can be configured to use a bundled repository by adding the following
+    properties to the project dependency set:</p>
+    <pre>&lt;property name="q.repo.project.url" value="delegate:core,bundle,local,shared"/&gt;
+&lt;property name="q.repo.bundle.url" value="bundle:quokka.bundle.extensions:2008.1;repository=shared"/&gt;
+&lt;property name="q.repo.local.url" value="file:${basedir}/lib;hierarchical=false;parents=shared"/&gt;
+</pre>
+<p>Note: it is best to copy the bundled repository to the <code>lib</code> directory and set the bundle repository's
+    <code>repository</code> property to
+    <code>local</code>
+    after running with this configuration the first time to ensure the bundle itself is local.</p>
+
+<p>Now when anlaysing the complete dependencies of our project we have:</p>
+<pre>
+apache.ant 1.7.1 junit
+apache.ant 1.7.1 trax
+apache.log4j 1.2.15 log4j
+apache.oro 2.0.8 oro
+eclipse.jdt.core 3.1.1 core
+junit 3.8.2 junit
+mortbay.jetty 6.1.11 jetty
+mortbay.jetty 6.1.11 jsp-2.1
+mortbay.jetty 6.1.11 util
+ow2.asm 2.2.1 asm
+bundle:quokka.bundle.extensions 2008.1 extensions
+sf.cobertura 1.8 cobertura
+sun.jsp.spec.dist 2.1 dist
+sun.servlet.spec.dist 2.5 dist
+</pre>
+<p>This is essentially the miminum dependencies you can possibly have regardless of the build system you
+    use (well, maybe you could remove the Ant dependencies and of course the quokka bundle). Also, it is trivial to work
+    out where a
+    particular dependency is used - just use <code>quokka help</code> and search the plugin paths for
+    the dependency you are interested in.</p>
+
+<p>Maven on the other hand, seems to have no policy on dependencies and dependencies are included
+    freely. Here is the list of dependency Maven requires (this was obtained by clearing the local Maven
+    repository and executing <code>mvn clean install; mvn site</code></p>
+
+<pre class="maven">ant ant 1.6.5
+asm asm 2.2.1
+asm asm-tree 2.2.1
+ch ethz ganymed ganymed-ssh2 build210
+com thoughtworks xstream xstream 1.2.2
+commons-beanutils commons-beanutils 1.7.0
+commons-collections commons-collections 3.1
+commons-collections commons-collections 3.2
+commons-digester commons-digester 1.6
+commons-io commons-io 1.4
+commons-lang commons-lang 2.1
+commons-logging commons-logging 1.0.4
+commons-validator commons-validator 1.1.4
+commons-validator commons-validator 1.2.0
+doxia doxia-core 1.0-alpha-4
+geronimo-spec geronimo-spec-jta 1.0.1B-rc4
+jakarta-regexp jakarta-regexp 1.4
+javax mail mail 1.4
+junit junit 3.8.1
+log4j log4j 1.2.14
+log4j log4j 1.2.9
+nekohtml nekohtml 1.9.6.2
+nekohtml xercesMinimal 1.9.6.2
+net sourceforge cobertura cobertura 1.9
+org apache ant ant 1.7.0
+org apache ant ant-launcher 1.7.0
+org apache bcel bcel 5.2
+org apache geronimo specs geronimo-annotation_1.0_spec 1.0
+org apache geronimo specs geronimo-servlet_2.5_spec 1.2
+org apache maven doxia doxia-core 1.0-alpha-10
+org apache maven doxia doxia-core 1.0-alpha-11
+org apache maven doxia doxia-decoration-model 1.0-alpha-10
+org apache maven doxia doxia-decoration-model 1.0-alpha-11
+org apache maven doxia doxia-module-apt 1.0-alpha-10
+org apache maven doxia doxia-module-apt 1.0-alpha-11
+org apache maven doxia doxia-module-fml 1.0-alpha-10
+org apache maven doxia doxia-module-fml 1.0-alpha-11
+org apache maven doxia doxia-module-xdoc 1.0-alpha-10
+org apache maven doxia doxia-module-xdoc 1.0-alpha-11
+org apache maven doxia doxia-module-xhtml 1.0-alpha-10
+org apache maven doxia doxia-module-xhtml 1.0-alpha-11
+org apache maven doxia doxia-site-renderer 1.0-alpha-10
+org apache maven doxia doxia-site-renderer 1.0-alpha-11
+org apache maven maven-archiver 2.2
+org apache maven maven-plugin-tools-api 2.0
+org apache maven plugins maven-clean-plugin 2.2
+org apache maven plugins maven-compiler-plugin 2.0.2
+org apache maven plugins maven-install-plugin 2.2
+org apache maven plugins maven-project-info-reports-plugin 2.1
+org apache maven plugins maven-resources-plugin 2.2
+org apache maven plugins maven-site-plugin 2.0-beta-6
+org apache maven plugins maven-surefire-plugin 2.4.2
+org apache maven plugins maven-surefire-report-plugin 2.4.3
+org apache maven plugins maven-war-plugin 2.1-alpha-1
+org apache maven reporting maven-reporting-impl 2.0
+org apache maven reporting maven-reporting-impl 2.0.4.1
+org apache maven scm maven-scm-api 1.0
+org apache maven scm maven-scm-manager-plexus 1.0
+org apache maven scm maven-scm-provider-cvs-commons 1.0
+org apache maven scm maven-scm-provider-cvsexe 1.0
+org apache maven scm maven-scm-provider-cvsjava 1.0
+org apache maven scm maven-scm-provider-perforce 1.0
+org apache maven scm maven-scm-provider-starteam 1.0
+org apache maven scm maven-scm-provider-svn-commons 1.0
+org apache maven scm maven-scm-provider-svnexe 1.0
+org apache maven shared file-management 1.2
+org apache maven shared maven-dependency-tree 1.1
+org apache maven shared maven-doxia-tools 1.0.1
+org apache maven shared maven-shared-io 1.1
+org apache maven shared maven-shared-jar 1.0
+org apache maven skins maven-default-skin 1.0
+org apache maven surefire surefire-api 2.4.2
+org apache maven surefire surefire-booter 2.4.2
+org apache maven surefire surefire-junit 2.4.2
+org apache maven wagon wagon-file 1.0-beta-3
+org apache maven wagon wagon-http-lightweight 1.0-beta-3
+org apache maven wagon wagon-http-shared 1.0-beta-3
+org apache maven wagon wagon-ssh 1.0-beta-3
+org apache maven wagon wagon-ssh-common 1.0-beta-3
+org apache velocity velocity 1.5
+org codehaus mojo cobertura-maven-plugin 2.2
+org codehaus plexus plexus-archiver 1.0-alpha-7
+org codehaus plexus plexus-compiler-api 1.5.3
+org codehaus plexus plexus-compiler-javac 1.5.3
+org codehaus plexus plexus-compiler-manager 1.5.3
+org codehaus plexus plexus-digest 1.0
+org codehaus plexus plexus-i18n 1.0-beta-7
+org codehaus plexus plexus-utils 1.0.4
+org codehaus plexus plexus-utils 1.1
+org codehaus plexus plexus-utils 1.4.5
+org codehaus plexus plexus-utils 1.4.7
+org codehaus plexus plexus-utils 1.4.9
+org codehaus plexus plexus-utils 1.5.5
+org codehaus plexus plexus-velocity 1.1.7
+org eclipse jdt core 3.1.1
+org mortbay jetty jetty 6.1.11
+org mortbay jetty jetty 6.1.5
+org mortbay jetty jetty-annotations 6.1.11
+org mortbay jetty jetty-management 6.1.11
+org mortbay jetty jetty-naming 6.1.11
+org mortbay jetty jetty-plus 6.1.11
+org mortbay jetty jetty-util 6.1.11
+org mortbay jetty jetty-util 6.1.5
+org mortbay jetty jsp-2.1 6.1.11
+org mortbay jetty jsp-api-2.1 6.1.11
+org mortbay jetty maven-jetty-plugin 6.1.11
+org mortbay jetty servlet-api-2.5 6.1.11
+org mortbay jetty servlet-api-2.5 6.1.5
+org mortbay jetty start 6.1.11
+org netbeans lib cvsclient 20060125
+oro oro 2.0.7
+oro oro 2.0.8
+regexp regexp 1.3
+urbanophile java-getopt 1.0.9
+xml-apis xml-apis 1.0.b2
+xpp3 xpp3_min 1.1.3.4.O xpp3_min-1.1.3.4.O.jar
+</pre>
+<p>Note: This list is being quite generous to Maven as it only includes .jar file dependencies. In reality,
+    Maven requires a lot of .pom dependencies as well to build.</p>
+
+<p><b>Analysis:</b></p>
+
+<div class="indent">
+    <p><b>Maven dependencies are excessive</b>: To build the simple web application, Maven requires
+        <b>116</b> .jar file dependencies (and many more .pom dependencies). Even worse, the bulk
+        of the dependencies are not related to the project, they are there to support Maven developers.</p>
+
+    <p>In constrast, Quokka offers the same functionaly with a total of <b>26</b> or <b>14</b> dependencies
+        (dependinging on whether you use bundled repositories or not).
+    </p>
+
+    <p><b>Maven doesn't make use of optional dependencies:</b> If you compare the Jetty dependencies
+        between the Quokka and Maven list, you will see that the Maven version includes many more Jetty dependencies
+        such as annotations, naming, management and plus. Quokka supports the notion of including optional
+        dependencies. We have seen an example of this where the Jetty plugin included the jsp-2.1 dependency.
+        This allows Quokka to exclude optional things by default, but allow them to be easily included by
+        the user. Maven doesn't support this model and therefore included additional dependencies that
+        the user has to exclude (if it is possible at all for plugin dependencies).</p>
+
+    <p><b>Maven's automatic conflict resolution introduces more dependencies</b>: Maven traverses
+        all dependencies in path and then applies conflict resolution rules on the resulting set. This means
+        that even though a dependency won't end up being used, it is still required to build the project.</p>
+
+    <p>In contrast, quokka uses <i>overrides</i> to resolve conflicts. Overrides apply as a path
+        is being traversed, so dependencies that are overridden are never traversed.</p>
+
+    <p><b>Maven exports it's project model to the repository:</b> Although not listed above, there are
+        many more dependencies required for the Maven build to work, namely Project Object Model (.pom) files.
+    </p>
+
+    <p>In constrast, Quokka's repository layout is independent of the project model - projects export their
+        artifacts and paths to the repository. So even if your project used a dozen nested dependency sets internally,
+        that complexity is not exported to the repository.</p>
+</div>
+<h2><a name="peformance"><span/></a>Performance</h2>
+
+<p>Virtually no optimisation of Quokka has been done at present. However, in it's current form it
+    appears to significantly outperform maven for this project. Each of the following commands was run 3 times
+    with <code>time</code> on an idle Core 2 Duo 2.4GHz processor under OS X 10.5.4, JDK 1.6.0_07 and the 3rd result was
+    taken (from real). It compares Quokka 0.3 against Maven 2.0.9</p>
+
+<div class="indent">
+    <table>
+        <tr>
+            <td colspan="2"><b>Packaging, skipping tests</b></td>
+        </tr>
+        <tr>
+            <td><code>quokka clean package -Dprofiles=skiptest</code></td>
+            <td>2.169s</td>
+        </tr>
+        <tr>
+            <td><code>mvn -o clean package -Dmaven.test.skip=true</code></td>
+            <td>4.479s</td>
+        </tr>
+        <tr>
+            <td align="right" colspan="2">Quokka is <b>2.07x</b> faster</td>
+        </tr>
+        <tr>
+            <td colspan="2"><b>Installing, skipping tests</b></td>
+        </tr>
+        <tr>
+            <td><code>quokka clean install -Dprofiles=skiptest</code></td>
+            <td>2.170s</td>
+        </tr>
+        <tr>
+            <td><code>mvn -o clean install -Dmaven.test.skip=true</code></td>
+            <td>8.338s *1</td>
+        </tr>
+        <tr>
+            <td align="right" colspan="2">Quokka is <b>3.84x</b> faster</td>
+        </tr>
+        <tr>
+            <td colspan="2"><b>Installing, including tests</b></td>
+        </tr>
+        <tr>
+            <td><code>quokka clean install</code></td>
+            <td>7.162s</td>
+        </tr>
+        <tr>
+            <td><code>mvn -o clean install -Dmaven.test.failure.ignore=true</code></td>
+            <td>9.144s</td>
+        </tr>
+        <tr>
+            <td align="right" colspan="2">Quokka is <b>1.28x</b> faster</td>
+        </tr>
+        <tr>
+            <td colspan="2"><b>Generating developer reports</b></td>
+        </tr>
+        <tr>
+            <td><code>quokka clean reports</code></td>
+            <td>9.539s</td>
+        </tr>
+        <tr>
+            <td><code>mvn -o clean site -Dmaven.test.failure.ignore=true</code></td>
+            <td>14.790s</td>
+        </tr>
+        <tr>
+            <td align="right" colspan="2">Quokka is <b>1.55x</b> faster</td>
+        </tr>
+    </table>
+    <p>*1: This is unfair to maven as it includes the time to start and stop the Jetty server. This could
+        be fixed by setting up a profile in Maven and disabling it for the test run. It is however extra
+        configuration that most users would not perform.
+    </p>
+</div>
+
+
+<h2><a name="conclusion"><span/></a>Conclusion</h2>
+
+<p>Quokka and Maven are very similar in their functionality. Both are largely declarative build frameworks
+    focusing on Java. Quokka has some clear advantages, in particular the number of dependencies it requires
+    to operate, the fact that dependencies are always set to a specific version to make Quokka builds reproducible,
+    extensibility and performance.
+    There are numerous other advantages that this example doesn't cover, such as flexible multi-project builds,
+    aggregated development reports, bootstrapping and support for multiple artifacts.
+    See <a href="quokka-vs-maven.html">Quokka vs Maven</a> for more information.
+
+<h2><a name="appendix"><span/></a>Appendix</h2>
+
+<p>Following is the complete Quokka <code>build-quokka.xml</code> file:</p>
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd"&gt;
+&lt;project default-target="package"&gt;
+    &lt;artifacts group="mycompany.myproject" version="0.1-ss"&gt;
+        &lt;artifact type="war"/&gt;
+    &lt;/artifacts&gt;
+
+    &lt;dependency-set&gt;
+        &lt;profile id="skiptest" description="Skips tests, disabling all test-related targets"/&gt;
+
+        &lt;dependency group="junit" version="3.8.2" paths="test-compile"/&gt;
+        &lt;dependency group="sun.servlet.spec.dist" version="2.5" paths="compile"/&gt;
+        &lt;dependency group="apache.log4j" version="1.2.15" paths="compile, war"/&gt;
+
+        &lt;dependency-set group="quokka.depset.jar" version="0.3-ss"/&gt;
+
+        &lt;plugin group="quokka.plugin.junit" version="0.3-ss" profiles="!skiptest"/&gt;
+        &lt;plugin group="quokka.plugin.jee" version="0.1-ss" targets="war, war-exploded"/&gt;
+
+        &lt;plugin group="quokka.plugin.devreport" version="0.3-ss"/&gt;
+        &lt;plugin group="quokka.plugin.junitreport" version="0.3-ss" profiles="!skiptest"/&gt;
+        &lt;plugin group="quokka.plugin.cobertura" version="0.3-ss" profiles="!skiptest"/&gt;
+        &lt;plugin group="quokka.plugin.help" version="0.3-ss"/&gt;
+
+        &lt;property name="q.jetty.defaults.stopKey" value="foo"/&gt;
+        &lt;property name="q.jetty.defaults.stopPort" value="9999"/&gt;
+        &lt;plugin group="quokka.plugin.jetty" version="0.1-ss" paths="(jsp-2.1)"&gt;  &lt;!-- Adds JSP 2.1 support --&gt;
+            &lt;target name="start-jetty" template="run-template" profiles="!skiptest"
+                    dependency-of="lifecycle:initialise-integration-test"
+                          depends="lifecycle:pre-initialise-integration-test"&gt;
+                &lt;property name="daemon" value="true"/&gt;
+                &lt;property name="scanIntervalSeconds" value="0"/&gt;
+                &lt;property name="includeInstrumentedOuput" value="true"/&gt;
+            &lt;/target&gt;
+            &lt;target name="stop-jetty" template="stop-template" profiles="!skiptest"
+                dependency-of="lifecycle:finalise-integration-test"
+                      depends="lifecycle:pre-finalise-integration-test"/&gt;
+        &lt;/plugin&gt;
+    &lt;/dependency-set&gt;
+&lt;/project&gt;
+</pre>
+<p>Following is the complete Maven <code>pom.xml</code>:</p>
+<pre class="maven">
+&lt;?xml version="1.0"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+&lt;groupId&gt;mycompany&lt;/groupId&gt;
+&lt;artifactId&gt;myproject&lt;/artifactId&gt;
+&lt;packaging&gt;war&lt;/packaging&gt;
+&lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
+&lt;name&gt;myproject Maven Webapp&lt;/name&gt;
+&lt;url&gt;http://maven.apache.org&lt;/url&gt;
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;junit&lt;/groupId&gt;
+        &lt;artifactId&gt;junit&lt;/artifactId&gt;
+        &lt;version&gt;3.8.1&lt;/version&gt;
+        &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;log4j&lt;/groupId&gt;
+        &lt;artifactId&gt;log4j&lt;/artifactId&gt;
+        &lt;version&gt;1.2.14&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.apache.geronimo.specs&lt;/groupId&gt;
+        &lt;artifactId&gt;geronimo-servlet_2.5_spec&lt;/artifactId&gt;
+        &lt;version&gt;1.2&lt;/version&gt;
+        &lt;optional&gt;true&lt;/optional&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+&lt;build&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+                &lt;excludes&gt;
+                    &lt;exclude&gt;**/*ITest.java&lt;/exclude&gt;
+                &lt;/excludes&gt;
+            &lt;/configuration&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;surefire-it&lt;/id&gt;
+                    &lt;phase&gt;integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;test&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;excludes&gt;
+                            &lt;exclude&gt;none&lt;/exclude&gt;
+                        &lt;/excludes&gt;
+                        &lt;includes&gt;
+                            &lt;include&gt;**/*ITest.java&lt;/include&gt;
+                        &lt;/includes&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.mortbay.jetty&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-jetty-plugin&lt;/artifactId&gt;
+            &lt;version&gt;6.1.11&lt;/version&gt;
+            &lt;configuration&gt;
+                &lt;scanIntervalSeconds&gt;10&lt;/scanIntervalSeconds&gt;
+                &lt;stopKey&gt;foo&lt;/stopKey&gt;
+                &lt;stopPort&gt;9999&lt;/stopPort&gt;
+            &lt;/configuration&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;start-jetty&lt;/id&gt;
+                    &lt;phase&gt;pre-integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;run&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;scanIntervalSeconds&gt;0&lt;/scanIntervalSeconds&gt;
+                        &lt;daemon&gt;true&lt;/daemon&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+                &lt;execution&gt;
+                    &lt;id&gt;stop-jetty&lt;/id&gt;
+                    &lt;phase&gt;post-integration-test&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;stop&lt;/goal&gt;
+                    &lt;/goals&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/build&gt;
+&lt;reporting&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-surefire-report-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.4.3&lt;/version&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+            &lt;artifactId&gt;cobertura-maven-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.2&lt;/version&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/reporting&gt;
+&lt;/project&gt;
+</pre>
+</body>
+</html>

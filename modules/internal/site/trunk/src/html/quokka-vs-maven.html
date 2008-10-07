@@ -1,19 +1,50 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Quokka vs Maven - Side by Side</title>
+    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/layout.css"
+          media="screen, projection, tv "/>
+    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/html.css"
+          media="screen, projection, tv "/>
+
+    <style type="text/css">
+        .Maven {
+            background-color: #ddeeff;
+            font-size: 9pt;
+        }
+
+        .quokka {
+            background-color: #f4f4f4;
+            font-size: 9pt;
+        }
+
+        body {
+            text-align: left;
+        }
+
+        body {
+            margin: 10px;
+        }
+
+        li {
+            list-style: square
+        }
+    </style>
+</head>
 <body>
 <h1>Quokka vs Maven</h1>
 
-<!--<p>Quokka is a plugin and dependency management extension for ANT. Essentially, it provides an ANT-based-->
+<!--<p>Quokka is a plugin and dependency management extension for Ant. Essentially, it provides an Ant-based-->
 <!--alternative to Maven, focusing on flexibility, reproducibilty and fine-grained dependency management.</p>-->
 
-<h2>Key advantages of Quokka:</h2>
+<h2>Key Advantages of Quokka:</h2>
 
 <h3>Usability</h3>
 <ul>
     <li><b>Humane, validated XML:</b> Quokka's project files make extensive use of attributes and provide
-        shorthand notations for many cases. Also, unlike maven, quokka project files do not contain arbitrary
-        configuration elements and can be validated against a DTD.
-        <br/>TODO: Compare a like for like project (pom.xml vs build-quokka.xml)
+        shorthand notations for many cases. Also, unlike Maven, quokka project files do not contain arbitrary
+        configuration elements and can be validated against a DTD. See <a href="quokka-vs-Maven-side-by-side.html#appendix">here</a>
+        for a comparison of a simple web application project.
     </li>
     <br/>
     <li><b>Detailed Project Help:</b>
@@ -24,8 +55,8 @@
     <br/>
     <li><b>Plugins bind themselves automatically by default:</b>
         Quokka's plugin architecture allows a plugin to implement an abstract target defined in another
-        plugin. For example, the lifecycle plugin defines an abstract target "compile", which is implemented
-        by the javac plugin. When using the javac plugin, it automatically binds itself "compile". Maven on the
+        plugin. For example, the lifecycle plugin defines an abstract target <code>compile</code>, which is implemented
+        by the javac plugin. When using the javac plugin, it automatically binds itself <code>compile</code>. Maven on the
         other hand requires the user to specify what phase a goal is bound to manually.
     </li>
     <br/>
@@ -37,30 +68,27 @@
     <li><b>Dependency handling:</b> Quokka allows transitive dependencies to be marked as mandatory or
         optional. By default, only mandatory transitive dependencies are included with a convenient
         shorthand notation for specifiying options. This fine control is via
-        "path specifications" that allow a graph of dependencies to be specified. e.g. A fictious
+        <a href="http://quokka.ws/project-reference.html#path-specs">Path Specifications</a> that allow a graph of dependencies to be specified. e.g. A fictious
         example of "testng(qdox(log4j), bsh)" might represent that you require the testng dependency along with
         the qdox dependency of it, it's log4j dependency, etc. This fine level of control also applies to plugin
-        dependencies. In contrast, Maven includes everything by default and only supports simple exclusions.
-        It appears to be impossible to exclude dependencies of plugins.
+        dependencies. In contrast, Maven cannot include optional dependencies and it
+        appears to be impossible to exclude dependencies of plugins.
     </li>
     <br/>
     <li><b>Global JDK configuration:</b> JDK source and target levels can be specified globally
         and all plugins that are JDK aware, such as javac and javadoc will pick up the configuration
-        automatically. Furthermore, some plugins such as jUnit will select the version of their
-        dependencies automatically (in this case jUnit 3.x for JDKs &lt; 1.5 and 4.x otherwise).
-        The default heap size for forked JVMs can also be set globally.
+        automatically. The default heap size for forked JVMs can also be set globally.
     </li>
     <br/>
     <li><b>Aggregated reports:</b>
         All reports currently available for quokka support aggregation into a single report when doing
-        multi-project builds. TODO ... check current status of maven aggregated reports.
+        multi-project builds. TODO ... check current status of Maven aggregated reports.
     </li>
     <br/>
-    <li><b>Repository management: </b> Quokka can statically determine all dependencies used by a project.
-        This combined with a repository API that allows browsing and deletion of dependencies from a
-        repository, it is possbile to prune "dead" artifacts from repositories automatically. Note: the
-        pruning functionality has not been implemented yet, but the underlying building blocks have. In contrast,
-        maven repositories tend to grow unmanaged as there are no tools to analyse them.
+    <li><b>Repository management: </b> Quokka supports various configurations of repositories out of the box,
+        including the ability to store project dependencies along side the source code. Remote repository
+        metadata is also available locally without retrieving artifacts, so it is possible to search
+        remote repositories efficiently.
     </li>
 </ul>
 
@@ -71,23 +99,23 @@
         into the core. It is just a normal plugin, contributing abstract targets and default path
         definitions. The plugin architecture is powerful enough to support this functionality. It also
         means it is possbile for other plugins to introduce additional paths and abstract targets. For example,
-        an EAR plugin could introduce an "ear" path that would be used to specifiy the libraries bundled into
-        the EAR lib directory.
+        the JEE plugin introduces a <code>war</code> path that specifies the libraries bundled into
+        the web application's lib directory.
     </li>
     <br/>
     <li><b>Multiple artifacts per project:</b> The quokka core supports multiple artifacts per project.
         Support for multiple artifacts is dependent on particular plugin implementations,
-        however it is common for plugins to support multiple artifacts for packaging. e.g. the Jar plugin
+        however it is normal for plugins that perform <i>packaging</i> to support multiple artifacts. e.g. the Jar plugin
         allows any number of .jar artifacts to be built from a single project, however the Javac plugin
         only supports compiling all source files as a single unit. In constrast, Maven only supports a
         single artifact explicitly and then relies on specific plugins to handle special cases
         such as remote interfaces for EJBs.
     </li>
     <br/>
-    <li><b>Custom paths from the repository:</b> Projects can define their own custom paths and add any artifacts
+    <li><b>Arbitrary paths from the repository:</b> Projects can define their own arbitrary paths and add any artifacts
         from the repository to it. Such paths can them be passed as arguments to plugins or used for any other
-        purpose such as a stand-alone ANT target. In contrast, Maven appears to only support a fixed set of
-        paths.
+        purpose such as a stand-alone Ant target. In contrast, Maven appears to only support a fixed set of
+        paths and leaves plugins to implement their own specialised mechanisms.
     </li>
     <br/>
     <li><b>Multiple paths exported to the repository:</b> When an artifact is exported to the repository,
@@ -97,28 +125,50 @@
         jdk of 1.4 or below. In contrast, Maven only exports it's fixed set of paths, usually the runtime path only.
     </li>
     <br/>
-    <li><b>Extensibility via ANT targets &amp; tasks:</b> As quokka is essentially a plugin for ANT, it is possible
-        to combine quokka targets with standard ANT targets. ANT targets can be stand-alone, or depend on or be a
-        dependency of other targets. All standard ANT tasks are available, including optional tasks when
-        the optional jars are referenced from the repository. Also, additional builtin ANT tasks have been provided
-        including the for, if and switch tasks from ant-contrib. You can even bundle standard ANT tasks in dependency
-        sets and use them like plugins. In contrast, maven has no native scripting language for extensions.
-        An ant-run plugin does exist that allows some ANT functionality to be run before or after goals,
-        but is limited in comparison and means your project ends up depending on both ANT and maven.
+    <li><b>Extensibility via Ant targets &amp; tasks:</b> As quokka is essentially a plugin for Ant, it is possible
+        to combine quokka targets with standard Ant targets. Ant targets can be stand-alone, or depend on or be a
+        dependency of other targets. All standard Ant tasks are available, including optional tasks when
+        the optional jars are referenced from the repository. Also, additional builtin Ant tasks have been provided
+        including the for, if and switch tasks from Ant-contrib. You can even bundle standard Ant tasks in dependency
+        sets and use them like plugins. In contrast, Maven has no native scripting language for extensions.
+        An Ant-run plugin does exist that allows some Ant functionality to be run before or after goals,
+        but is limited in comparison and means your project ends up depending on both Ant and Maven.
     </li>
     <br/>
-    <li><b>Fine control of dependency versions:</b> Quokka allows specific versions of dependencies
-        to be overridden to prevent conflicts. e.g. "testng(qdox(log4j@1.2.15), bsh)" would include
-        the standard testng dependencies, but override log4j to 1.2.15. It also supports global overrides,
-        for example setting all log4j 1.2.x versions to 1.2.15. In constrast, Maven doesn't appear
-        to allow overriding. It does however have automatic conflict resolution. Quokka avoids automated
-        conflict resolution to ensure reproducible, deterministic behaviour.
+    <li><b>Extensibility via scripting:</b> The scripting plugin supports writing ad hoc targets in any
+        scripting language compatible with Apache BSF, or JSR 223. Here's an example from the scripting plugin help:
+        <pre>&lt;dependency group="apache.ant" name="commons-net" version="1.7.1" paths="ant-types"/&gt;
+&lt;plugin group="quokka.plugin.fop" version="?" templates="transform"/&gt;
+
+&lt;plugin group="quokka.plugin.script" version="?"&gt;
+    &lt;target name="myscript" template="javascript"&gt;
+        &lt;property name="script"&gt;&lt;![CDATA[
+          // Example of built-in tasks (echo)
+          for (i=1; i&lt;=10; i++) {
+            echo = project.createTask("echo");
+            echo.setMessage(i*i);
+            echo.perform();
+          }
+
+          // Example of optional Ant task (ftp) - dependencies are added to ant-types
+          ftp = project.createTask("ftp")
+          ftp.setUserid("ftp.crap.com")
+
+          // Example of using a a quokka plugin (fop) - the plugin and template must be declared
+          props = new java.util.Properties()
+          props.put("in","src/fop/fo.xml")
+          props.put("out","${q.project.targetDir}/fop/fo.pdf")
+          quokka.execute("quokka.plugin.fop", "transform", props)
+        ]]&gt;&lt;/property&gt;
+    &lt;/target&gt;
+&lt;/plugin&gt;
+</pre>
     </li>
     <br/>
     <li><b>IDE/Tools integration:</b>
-        Quokka is implemented as a transparent plugin to an unmodified version of ANT. It hooks into already
-        existing extension points in ANT. This means for IDEs and other tools that use ANT, quokka appears to
-        be ANT (assuming you have control over the classpath used to launch ANT). The upshot is that
+        Quokka is implemented as a transparent plugin to an unmodified version of Ant. It hooks into already
+        existing extension points in Ant. This means for IDEs and other tools that use Ant, quokka appears to
+        be Ant (assuming you have control over the classpath used to launch Ant). The upshot is that
         for IDEs quokka integration comes essentially for free. Note: IDE integration is currently only tested
         for IntelliJ IDEA and works without modification. Eclipse and Netbeans have not been tested. In constrast,
         Maven requires specific plugins to be written for all tools and ides.
@@ -126,12 +176,12 @@
     <br/>
     <li><b>Dependency Sets versus inheritence:</b> Quokka allows build configurations to be composed
     of reusable configurations called dependency sets. Dependency sets may include dependencies,
-        plugins, properties, imported ANT targets and build resources. For example, there is a standard
+        plugins, properties, imported Ant targets and build resources. For example, there is a standard
         Jar Dependency Set supplied with quokka that bundles together the plugins required to
         compile java sources, copy and filter resources and build a .jar file.
         Each project has a root dependency set, that may nest other dependency sets such as the Jar.
-        Nested may nest other set to any level, providing a powerful composition model for
-        reusing build configurations. In constrast, maven provides a single iheritance model that cannot
+        Nested sets may nest other sets to any level, providing a powerful composition model for
+        reusing build configurations. In constrast, Maven provides a single inheritance model that cannot
         handle build resources, or additional ad hoc targets.
     </li>
     <br/>
@@ -145,12 +195,12 @@
         corporate code formatting rules. Maven has no such facility.
     </li>
     <br/>
-    <li><b>Multi-project flexibility: </b> Quokka's multi-project support is achieved using the subant task,
+    <li><b>Multi-project flexibility: </b> Quokka's multi-project support is achieved using the subAnt task,
         together with a buildpath task that can take a path of build files and determine the
         interdependencies between them. This allows a great deal of flexibility such as building
         different subsets of children from the parent, auto-discovery of modules, or optionally building
         all the children before the parent. Maven supports mult-module builds, however it appears
-        that all modules must be explictly defined an then executing a target always executes the same
+        that all modules must be explictly defined and then executing a target always executes the same
         target on all modules.
     </li>
 </ul>
@@ -160,11 +210,14 @@
     <li><b>Versioned Global Repository:</b>
         Artifacts in the global repository are immutable. If the metadata needs updating, then a different revision
         of the same artifact is created. This ensures that if an artifact is referenced from the global repository,
-        exactly the same artifact will always be returned over time.
+        exactly the same artifact will always be returned over time. I believe Maven now has a policy
+        of making artifacts immutable too. However, if the metadata is wrong with Maven, you have to wait
+        for the next release of the artifact to fix it. With Quokka, you can increment the <i>repository version</i>
+        while leaving the artifact's own version intact.
     </li>
     <br/>
     <li><b>Plugin versions are fixed:</b>
-        Plugins never "magically" upgrade themselves to new versions based
+        Plugins never magically upgrade themselves to new versions based
         on what is available in the repository at runtime. Plugin versions must be specified explicitly and do not
         change.
         Maven's default behaviour is to upgrade automatically which means plugins may upgrade without warning, breaking
@@ -173,13 +226,13 @@
     <br/>
     <li><b>Bootstrapping:</b> Quokka supports multiple versions of itself to be installed simultaneously. Projects
         can then be configured to request a specific version of quokka and the bootstrapping process will
-        automatically select the correct version. Bootstrapping can also select a particular JVM and heap size.
+        automatically select the correct version. Bootstrapping can also select a particular JVM and JVM
+        arguments.
     </li>
     <br/>
     <li><b>Snapshots do not expire:</b> Snapshot dependencies in quokka do not expire and get upgraded
-        automatically. The user controls explicitly when snapshots are updated. Note: The feature is not
-        implemented yet. In contrast, Maven snapshots expire and update automatically, potentially breaking
-        the build in the process.
+        automatically. The user controls explicitly when snapshots are updated. In contrast, Maven snapshots expire
+        and update automatically, potentially breaking the build in the process.
     </li>
 </ul>
 
@@ -187,8 +240,8 @@
 <p><b>Note:</b> The items below refer to <b>design</b> aspects that will impact robustness and
     agility <b>over time</b>. Maven as a product will be more robust than the initial quokka release.</p>
 <ul>
-    <li><b>Small code base:</b> Quokka plugins are generally a thin wrapper around existing ANT tasks and libraries,
-        and therefore inherit the robustness of the ANT tasks. In contrast, Maven tends to rewrite plugins from
+    <li><b>Small code base:</b> Quokka plugins are generally a thin wrapper around existing Ant tasks and libraries,
+        and therefore inherit the robustness of the Ant tasks. In contrast, Maven tends to rewrite plugins from
         scratch.
         <br/>TODO: Contrast compiler plugin implementations as an example
     </li>
@@ -215,25 +268,21 @@
     <br/>
     <li><b>No standard definition of things such as mailing lists are built into the core:</b> Quokka project
         definitions do not include web site information in them. This allows the project core to be
-        more stable than maven. Such information can be standardised in a site plugin for quokka if
+        more stable than Maven. Such information can be standardised in a site plugin for quokka if
         there is a need.
     </li>
     <br/>
-    <li><b>Repository definition seperate to the project definition:</b> Maven leaks it's pom.xml into the repository,
-        including information about test libraries. Quokka repository definitions are completely seperate
-        and have their own lifecycle indepependent of the project defintion.
-    </li>
 </ul>
 
 <h3>Fewer Dependencies</h3>
 <ul>
     <li><b>Core has no external dependencies:</b> The quokka core does not depend on any 3rd party libraries
-        excluding ANT. As such there is a miminal chance of conflicts with project libraries.
+        excluding Ant. As such there is a miminal chance of conflicts with project libraries.
     </li>
     <br/>
     <li><b>Plugins do not introduce additional dependencies:</b> Quokka plugins do not introduce
         additional dependencies on 3rd party libraries (excluding libraries used in actually peforming the
-        purpose of the plugin). For example, the maven javadoc plugin introduces a dependency on Apache's commons-lang
+        purpose of the plugin). For example, the Maven javadoc plugin introduces a dependency on Apache's commons-lang
         library. Quokka plugins do not introduce such dependencies, attempting to keep the overall project dependencies
         to a minimum.
     </li>
@@ -243,41 +292,68 @@
         a subset of functionality from a plugin you don't need the dependencies for that subset. For example,
         a plugin might produce HTML and PDF reports. If you're not interested in PDF reports you could
         exclude the PDF target and automatically exclude the PDF dependencies as a result. In constrast,
-        maven plugins define dependencies at a plugin level.
+        Maven plugins define dependencies at a plugin level.
     </li>
     <br/>
-    <li><b>Dependency normalisation:</b> Versions of certain 3rd party libraries that are used by multiple
-    plugins are judiciously "normalised" to the same version. e.g. All libraries using log4j might be
-    bumped to 1.2.15. Care is taken to regression test any such changes.</li>
+    <li><b>Overrides:</b> Quokka supports overriding of versions. It is used to resolve conflicts and
+        normalise dependencies to a single version. These are applied as a path is resolved, so the
+    overridden version of a dependency is never touched resulting in fewer dependencies. In contrast,
+    Maven resolves all possible dependencies in a path and <i>then</i> applies a conflict resolution
+    and duplicate removal process. This means that dependencies you never use are still required to
+    be in the repository.</li>
     <br/>
-    <li><b>Dependency comparison:</b> TODO ... compare the dependencies required by both frameworks for
-        typical project types.
+    <li><b>Dependency comparison:</b> The <a href="quokka-vs-maven-side-by-side.html#dependencies">Dependency Analaysis</a>
+        section of the <a href="quokka-vs-maven-side-by-side.html">Side by Side</a> guide shows how all of these
+        design choices add up to a massive difference in dependencies.
     </li>
 </ul>
 
-<h2>Key advantages of Maven:</h2>
+<h3>Repository</h3>
 <ul>
-    <li><b>Maturity:</b> Maven is a mature product with an active community. Quokka is newcomer currently in
-        a beta phase with a small community.
+    <li><b>Repository definition is seperate to the project definition:</b> Maven leaks it's pom.xml into the repository,
+        including information about test libraries, parent projects, etc. A particularly bad example is the
+        JSP 2.0 module from Jetty <a href="http://repo1.maven.org/maven2/org/mortbay/jetty/jsp-2.0/6.1.11/jsp-2.0-6.1.11.pom">here</a>.
+        Determing the dependencies for this module includes traversing parent poms and adding dependencies dynamically
+        created from plugins. In contrast, Quokka exports artifacts to the repository which has its own definition
+        and lifecycle independent of the project defintion. Here's the <a href="http://quokka.ws/repository/0.2/mortbay/jetty/6.1.11/jsp-2.0_paths_repository.xml">quokka definition</a>
+        of the same artifact.
+    </li>
+    <br/>
+    <li><b>QA process for the global repository:</b> While Quokka's current repository is small, the artifacts
+        that are in there have gone through a review process. Part of that process is running a verify
+        target which is a bit like lint for repositories. It currently includes the following checks:
+        <ul>
+            <li>Checks the artifact has a license</li>
+            <li>Warns is the artifact has multiple licenses</li>
+            <li>Checks the version is in a standard format</li>
+            <li>Warns if the name and group do not match conventions</li>
+            <li>Checks there is a description</li>
+            <li>Checks there are no duplicates by hash or maven id</li>
+            <li>Checks there are no mandatory dependencies on certain libraries such as XML apis</li>
+            <li>Checks that the description, licenses, dependencies and paths match the previous version of the same artifact</li>
+            <li>Warns if the aritfact does not exist in the maven repository</li>
+            <li>If the artifact exists in maven, checks that the paths and checksums match</li>
+            <li>Checks that any refrenced artifacts including dependencies, conflicts and overrides exist in the repository</li>
+        </ul>
+        <p>Hopefully, this process will make the Quokka repository much better than the Maven repository. The checks
+        above would have caught a lot of the current problems in the Maven repository.</p>
+    </li>
+    <li><b>Consistent naming:</b> Quokka has strict naming standards that apply to all artifacts in the global
+    repository.</li>
+</ul>
+
+<h2>Key Advantages of Maven:</h2>
+<ul>
+    <li><b>Maturity:</b> Maven is a mature product with an active community. Quokka is newcomer.
     </li>
     <br/>
     <li><b>Plugins:</b> The availability of plugins for Maven is far broader.
     </li>
     <br/>
-    <li><b>Global Repository:</b> Maven has a fairly comprehensive global repository. However, it suffers from
-        maintenance issues, such as untimely updates. It also includes all transitive dependencies by default
-        making it awkward to use.
+    <li><b>Global repository:</b> Maven has a fairly comprehensive global repository. However, it suffers badly
+        from incorrect and/or incomplete metadata, or even missing artifacts. Due to this and other reasons, quokka cannot use Maven repositories
+        directly, but it does provide facilities via the maven plugin to import from Maven.
     </li>
 </ul>
-
-<h2>Minor Quokka Advantages</h2>
-<ul>
-    <li><b>Code coverage without forking:</b> Quokka provides allows code coverage to be run without "forking"
-        the build. This means you can get a coverage report without running your tests twice as is the case
-        with maven.
-    </li>
-    <br/>
-</ul>
-
 </body>
 </html>

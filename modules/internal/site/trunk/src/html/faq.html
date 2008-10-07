@@ -6,13 +6,44 @@
 <div id="faq-summary">
     <ol>
         <li><a href="#q1">How does Quokka compare to Maven?</a></li>
+        <li><a href="#q2">Why doesn't Quokka use the Maven global repository?</a></li>
     </ol>
 </div>
 
 <div id="faq">
     <dl>
         <dt><a name="q1"><span/></a>1. How does Quokka compare to Maven?</dt>
-        <dd>See the separate document <a href="quokka-vs-maven.html">here</a></dd>
+        <dd>See the separate document <a href="quokka-vs-maven.html">here</a> and the
+            side by side comparision of a web application <a href="quokka-vs-maven-side-by-side.html">here</a></dd>
+    </dl>
+    <dl>
+        <dt><a name="q2"><span/></a>2. Why doesn't Quokka use the Maven global repository?</dt>
+        <dd><p>Quokka would love to use the Maven repository and there were some initial naive
+            attempts to do this. Unfortunately, the Maven repository is intimately tied to
+            Maven and pratically impossible to parse by anything but maven itself.</p>
+
+            <p>The root of the problem is that Maven doesn't actually have a repository format as such.
+                Instead, it just copies the project definition (pom.xml) that created an artifact into the repository.
+                That project definition must then be parsed to determine the dependencies. Unfortunately, the
+                pom.xml can include all sorts of surprises, not limited to:
+            </p>
+            <ul>
+                <li>References to parent poms</li>
+                <li>Indirect definitions of versions via properties</li>
+                <li>Dependencies may change dependending on the JDK in use due to profiles
+                    being activated automatically
+                </li>
+                <li>Some dependencies are added on the fly by plugins, notably the maven dependency plugin</li>
+                <li>Some versions are set/overridden by distribution management mechanisms</li>
+            </ul>
+            <p>You don't believe this exists? See <a href="http://repo1.maven.org/maven2/org/mortbay/jetty/jsp-2.0/6.1.11/jsp-2.0-6.1.11.pom">here</a> for an example of most of the above in action.</p>
+            <p>If you are not interested in transitive dependencies, then yes, it would be possible access just the
+                artifacts. However, Quokka makes use of transitive dependencies and therefore needs this information
+                in an accessible format. The (unhappy) solution adopted in the end was to make importing from maven
+                as easy as possible (the import process actually uses a maven plugin to extract the path information
+                using maven itself).
+            </p>
+        </dd>
     </dl>
 </div>
 </body>
