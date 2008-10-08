@@ -75,7 +75,7 @@ public class UrlRepository extends AbstractStandardRepository {
         user = getProperty("user", false);
         password = getProperty("password", false);
 
-        String defaultIndex = System.getProperty("user.home") + "/.quokka/cache/repository/" + getName() + "-index";
+        String defaultIndex = getProperties().get("q.cacheDir") + "index-repo/" + getName() + "-index";
         index = normalise(new File(getProperty("index", defaultIndex)));
         indexArchive = new File(index, "_index.zip");
         indexExpanded = new File(index, "_index");

@@ -32,6 +32,7 @@ import org.apache.tools.ant.helper.AntXMLContext;
 import org.apache.tools.ant.helper.ProjectHelper2;
 import org.apache.tools.ant.launch.Locator;
 import org.apache.tools.ant.taskdefs.ImportTask;
+import org.apache.tools.ant.taskdefs.condition.Os;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 
@@ -99,6 +100,8 @@ public class ProjectHelper extends ProjectHelper2 {
     private static final String BUILD_RESOURCES_LISTENER = "q.project.buildResourcesListener";
     public static final String REPOSITORY_FACTORY = "q.project.repositoryFactory";
     public static final String REPOSITORY = "q.project.repository";
+    public static final String Q_PREFERENCES_DIR = "q.preferencesDir";
+    public static final String Q_CACHE_DIR = "q.cacheDir";
 
     static {
         SPECIAL_TARGETS.put("archetype", ArchetypeTask.class);
@@ -180,9 +183,10 @@ public class ProjectHelper extends ProjectHelper2 {
 
     private void handleSpecialTarget(Project antProject, String specialTarget) {
         antProject.setBasedir(System.getProperty("user.dir"));
+        setDefaultProperties(antProject);
 
         AnnotatedProperties projectProperties = ProjectParser.getProjectProperties(null,
-                PropertiesUtil.getProperties(antProject));
+                PropertiesUtil.getProperties(antProject), antProject);
         Repository repository = getRepository(getRepositoryProperties(projectProperties, antProject), antProject);
 
         Target target = new Target();
@@ -256,19 +260,30 @@ public class ProjectHelper extends ProjectHelper2 {
         }
     }
 
+    private static void setDefaultProperty(Project project, String key, String value) {
+        if (project.getProperty(key) == null) {
+            project.setProperty(key, FileUtils.getFileUtils().normalize(project.replaceProperties(value)).getPath());
+        }
+    }
+
+    private static boolean isOSX() {
+        return Os.isFamily(Os.FAMILY_MAC) && Os.isFamily(Os.FAMILY_UNIX);
+    }
+
     private DefaultProjectModel initialise_(Project antProject, File quokkaFile, boolean topLevel) {
+        antProject.log("Quokka project detected: parsing '" + quokkaFile.getPath() + "'", Project.MSG_VERBOSE);
         clearInheritedProperties(antProject);
         antProject.setProperty("q.project.file", quokkaFile.getAbsolutePath());
         antProject.setBaseDir(quokkaFile.getParentFile());
+        setDefaultProperties(antProject);
 
         Profiles profiles = new Profiles(antProject.getProperty("profiles"));
         Map antProperties = PropertiesUtil.getProperties(antProject);
         BootStrapper bootStrapper = bootStrap(antProject, antProperties, quokkaFile, profiles, topLevel);
 
         registerBuiltIns(antProject);
-        antProject.log("Quokka project detected: parsing '" + quokkaFile.getPath() + "'", Project.MSG_VERBOSE);
 
-        AnnotatedProperties projectProperties = ProjectParser.getProjectProperties(quokkaFile, antProperties);
+        AnnotatedProperties projectProperties = ProjectParser.getProjectProperties(quokkaFile, antProperties, antProject);
         projectProperties.put("basedir", quokkaFile.getParent());
 
         Repository repository = getRepository(getRepositoryProperties(projectProperties, antProject), antProject);
@@ -305,6 +320,13 @@ public class ProjectHelper extends ProjectHelper2 {
         setTypeDefinitionClassLoaders(projectModel);
 
         return projectModel;
+    }
+
+    public static void setDefaultProperties(Project antProject) {
+        setDefaultProperty(antProject, Q_PREFERENCES_DIR,
+            isOSX() ? "${user.home}/Library/Preferences/Quokka" : "${user.home}/.quokka");
+        setDefaultProperty(antProject, Q_CACHE_DIR,
+            isOSX() ? "${user.home}/Library/Caches/Quokka" : "${user.home}/.quokka/caches");
     }
 
     private String getTargetDir(Project antProject) {

@@ -250,7 +250,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         for (Iterator i = parents.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
 
-            if (!repository.supportsReslove(artifactId)) {
+            if (!repository.supportsResolve(artifactId)) {
                 continue;
             }
 
@@ -292,7 +292,7 @@ public abstract class AbstractStandardRepository extends AbstractRepository {
         getProject().log(message, Project.MSG_DEBUG);
     }
 
-    public boolean supportsReslove(RepoArtifactId artifactId) {
+    public boolean supportsResolve(RepoArtifactId artifactId) {
         return (
             (snapshots && artifactId.getVersion().isSnapShot()) || (releases && !artifactId.getVersion().isSnapShot())
         ) && supports(supports, artifactId);

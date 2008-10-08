@@ -41,16 +41,18 @@ import java.util.StringTokenizer;
 
 
 /**
- * Version identifier for bundles and packages.
+ * Version identifier for artifacts.
  * <p/>
  * <p/>
- * Version identifiers have four components.
+ * Version identifiers the following components.
  * <ol>
  * <li>Major version. A non-negative integer.</li>
  * <li>Minor version. A non-negative integer.</li>
  * <li>Micro version. A non-negative integer.</li>
+ * <li>Update version. A non-negative integer.</li>
  * <li>Qualifier. A text string. See <code>Version(String)</code> for the
  * format of the qualifier string.</li>
+ * <li>Repository version. A non-negative integer.</li>
  * </ol>
  * <p/>
  * <p/>
@@ -59,17 +61,15 @@ import java.util.StringTokenizer;
  * <p/>
  * Modified by Andrew O'Malley to include the update field which corresponds to the JSR-277 early draft.
  * Also modify to use the JSR-277 '-qualifier' grammar. This is much nicer than the OSGi version that
- * requires all parts to be specified for a qualifier to be used. e.g. 1.0-qualifier vs. 1.0.0.0.qualifier
+ * requires all parts to be specified for a qualifier to be used. e.g. 1.0-qualifier vs. 1.0.0.0.qualifier.
+ * A repository version has also been added that allows the metadata in the repository to be updated
+ * independently of the release of the software.
  * <p/>
  * The class also accepts non-standard version strings. Such strings cannot be compared, only equated.
- * TODO: Split this into 2 classes and a factory class/method.
  * <p/>
  * NOTE: Qualifier handling is different in OSGi vs JSR 277. Qualified versions are greater than unqualified
- * in OSGi, but are less than in 277. This takes the 277 approach.
- *
- * @version $Revision: 1.17 $
- * @Immutable
- * @since 1.3
+ * in OSGi, but are less than in 277. This takes the 277 approach. Unlike 277, the underscore character
+ * is not permitted anywhere within the version.
  */
 public class Version implements Comparable {
     //~ Static fields/initializers -------------------------------------------------------------------------------------
@@ -143,11 +143,13 @@ public class Version implements Comparable {
      * Here is the grammar for version strings.
      * <p/>
      * <pre>
-     * version ::= major('.'minor('.'micro('.'qualifier)?)?)?
+     * version ::= major('.'minor('.'micro('.'qualifier('~'repositoryVersion)?)?)?)?
      * major ::= digit+
      * minor ::= digit+
      * micro ::= digit+
-     * qualifier ::= (alpha|digit|'_'|'-')+
+     * update ::= digit+
+     * qualifier ::= (alpha|digit|'-')+
+     * repositoryVersion ::= digit+
      * digit ::= [0..9]
      * alpha ::= [a..zA..Z]
      * </pre>

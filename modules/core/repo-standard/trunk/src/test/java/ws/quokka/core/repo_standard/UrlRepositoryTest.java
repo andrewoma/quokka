@@ -72,10 +72,10 @@ public class UrlRepositoryTest extends AbstractRepositoryTest {
     }
 
     public void testRemoteResolve() {
-        put("root", "http://quokka.ws/repository");
+        put("root", "http://quokka.ws/repository/0.2");
         initialise();
 
-        RepoArtifact artifact = repository.resolve(new RepoArtifactId("apache.ant", "ant-launcher", "jar", "1.7"));
+        RepoArtifact artifact = repository.resolve(new RepoArtifactId("apache.ant", "launcher", "jar", "1.7.1"));
         assertNotNull(artifact);
         System.out.println(artifact);
     }

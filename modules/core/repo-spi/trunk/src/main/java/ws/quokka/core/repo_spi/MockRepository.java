@@ -59,7 +59,7 @@ public class MockRepository extends AbstractRepository {
         return new HashSet(artifacts.keySet());
     }
 
-    public boolean supportsReslove(RepoArtifactId artifactId) {
+    public boolean supportsResolve(RepoArtifactId artifactId) {
         return true;
     }
 

@@ -111,7 +111,7 @@ public class BootStrapResourcesParser extends XmlParser {
             rootEl = parseXml(file);
         } catch (BuildException e) {
             if (e.getCause() instanceof FileNotFoundException) {
-                Log.get().warn("This project uses bootstrapping, but no resources (such as available jdks) have been defined in: "
+                Log.get().verbose("This project uses bootstrapping, but no resources (such as available jdks) have been defined in: "
                     + e.getCause().getMessage());
 
                 return resources;

@@ -40,12 +40,13 @@ public class BundledRepositoryTest extends AbstractRepositoryTest {
     }
 
     public void testResolveArtifact() {
-        put("repository", "bundle");
+        put("repository", "source");
         put("root", "mygroup:bundle1:1.0");
 
-//        properties.put("q.repo.bundle.class", "file");
-//        properties.put("q.repo.bundle.hierarchical", "false");
-//        properties.put("q.repo.bundle.root", getTestCaseResource("repository").getAbsolutePath());
+        properties.put("q.repo.source.class", "file");
+        properties.put("q.repo.source.hierarchical", "false");
+        properties.put("q.repo.source.root", getTestCaseResource("repository").getAbsolutePath());
+        properties.put("q.cacheDir", normalise(getModuleHome().getPath() + "/target/cache"));
         initialise();
         factory.registerType(new RepoType("jar", "jar", "jar"));
         resolveArtifact(new RepoArtifactId("apache.ant", "trax", "jar", "1.7"), 0);

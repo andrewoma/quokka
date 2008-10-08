@@ -28,6 +28,10 @@ public abstract class AbstractExceptionHandler {
 
     public abstract Object runIt() throws Exception;
 
+    /**
+     * Wraps any exception in a {@link org.apache.tools.ant.BuildException}, effectively softening checked
+     * exceptions to runtime exceptions 
+     */
     public Object soften() {
         try {
             return runIt();

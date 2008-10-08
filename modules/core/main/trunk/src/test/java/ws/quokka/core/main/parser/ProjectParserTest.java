@@ -19,8 +19,21 @@ package ws.quokka.core.main.parser;
 
 import ws.quokka.core.bootstrap_util.ProjectLogger;
 import ws.quokka.core.main.AbstractMainTest;
-import ws.quokka.core.model.*;
-import ws.quokka.core.repo_spi.*;
+import ws.quokka.core.main.ant.ProjectHelper;
+import ws.quokka.core.model.Artifact;
+import ws.quokka.core.model.Dependency;
+import ws.quokka.core.model.DependencySet;
+import ws.quokka.core.model.License;
+import ws.quokka.core.model.Path;
+import ws.quokka.core.model.PathSpec;
+import ws.quokka.core.model.PluginDependency;
+import ws.quokka.core.model.PluginDependencyTarget;
+import ws.quokka.core.model.Profile;
+import ws.quokka.core.model.Profiles;
+import ws.quokka.core.model.Project;
+import ws.quokka.core.repo_spi.MockRepository;
+import ws.quokka.core.repo_spi.RepoArtifact;
+import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.util.AnnotatedProperties;
 import ws.quokka.core.util.Strings;
 import ws.quokka.core.version.Version;
@@ -28,7 +41,14 @@ import ws.quokka.core.version.VersionRangeUnion;
 
 import java.io.File;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -252,11 +272,17 @@ public class ProjectParserTest extends AbstractMainTest {
     }
 
     public void testGetProperties() {
+        org.apache.tools.ant.Project project = new org.apache.tools.ant.Project();
+        project.init();
+        ProjectHelper.setDefaultProperties(project);
+
         Map antProps = new HashMap();
         antProps.put("antprop1", "value1");
+        antProps.put(ProjectHelper.Q_CACHE_DIR, project.getProperty(ProjectHelper.Q_CACHE_DIR));
+        antProps.put(ProjectHelper.Q_PREFERENCES_DIR, project.getProperty(ProjectHelper.Q_PREFERENCES_DIR));
 
         AnnotatedProperties properties = ProjectParser.getProjectProperties(getTestCaseResource("full2-quokka.xml"),
-                antProps);
+                antProps, project);
         assertEquals("value1", properties.get("antprop1"));
         assertEquals("value1", properties.get("projectprop1"));
 
@@ -315,6 +341,7 @@ public class ProjectParserTest extends AbstractMainTest {
     private void parse(String projectFile, Profiles profiles) {
         org.apache.tools.ant.Project antProject = new org.apache.tools.ant.Project();
         antProject.init();
+        ProjectHelper.setDefaultProperties(antProject);
 
         ProjectParser parser = new ProjectParser(getTestCaseResource(projectFile + "-quokka.xml"), profiles,
                 repository, true, new AnnotatedProperties(), new ProjectLogger(antProject));
@@ -322,13 +349,19 @@ public class ProjectParserTest extends AbstractMainTest {
     }
 
     public void testGetProjectProperties() {
+        org.apache.tools.ant.Project project = new org.apache.tools.ant.Project();
+        project.init();
+        ProjectHelper.setDefaultProperties(project);
+
         Map antProperties = new HashMap();
         antProperties.put("prop3", "antvalue3");
         antProperties.put("prop6", "antvalue6");
         antProperties.put("prop7", "antvalue7");
+        antProperties.put(ProjectHelper.Q_CACHE_DIR, project.getProperty(ProjectHelper.Q_CACHE_DIR));
+        antProperties.put(ProjectHelper.Q_PREFERENCES_DIR, project.getProperty(ProjectHelper.Q_PREFERENCES_DIR));
 
         AnnotatedProperties properties = ProjectParser.getProjectProperties(getTestCaseResource(
-                    "properties-test-quokka.xml"), antProperties);
+                    "properties-test-quokka.xml"), antProperties, project);
         assertEquals("xmlvalue1", properties.get("prop1"));
         assertEquals("xmlvalue2", properties.get("prop2"));
         assertEquals("antvalue3", properties.get("prop3"));

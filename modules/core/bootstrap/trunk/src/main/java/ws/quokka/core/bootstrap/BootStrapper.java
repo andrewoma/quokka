@@ -312,7 +312,6 @@ public class BootStrapper {
             "Bootstrapping requires at least one core constraint to be defined");
 
         String antHome = System.getProperty("ant.home");
-        File bootStrapDefaultDir = new File(antHome, "bootstrap");
 
         if (librariesDir == null) {
             librariesDir = new File(new File(antHome), "lib");
@@ -322,7 +321,7 @@ public class BootStrapper {
 
         if (cacheDir == null) {
             String dir = project.getProperty("q.bootstrap.cacheDir");
-            cacheDir = (dir != null) ? new File(dir) : new File(bootStrapDefaultDir, "cache");
+            cacheDir = (dir != null) ? new File(dir) : new File(project.getProperty("q.cacheDir"), "bootstrap");
         }
 
         Log.get().verbose("   cacheDir -> " + cacheDir.getAbsolutePath());
@@ -333,12 +332,12 @@ public class BootStrapper {
 
         Log.get().verbose("   jvmArgs -> " + jvmArgs);
 
-        String dir = project.getProperty("q.bootstrap.properties");
-        File bootStrapProperties = (dir != null) ? new File(dir) : new File(bootStrapDefaultDir, "bootstrap.xml");
+        String dir = project.getProperty("q.bootstrap.xml");
+        File bootStrapXml = (dir != null) ? new File(dir) : new File(project.getProperty("q.preferencesDir"), "bootstrap.xml");
 
         if (resources == null) {
-            Log.get().verbose("   resourcesFile -> " + bootStrapProperties.getAbsolutePath());
-            resources = new BootStrapResourcesParser().parse(bootStrapProperties, librariesDir, cacheDir);
+            Log.get().verbose("   resourcesFile -> " + bootStrapXml.getAbsolutePath());
+            resources = new BootStrapResourcesParser().parse(bootStrapXml, librariesDir, cacheDir);
         }
 
         //        Assert.isTrue(resources.getJdks().size() != 0, "No jdks have been defined for bootstrapping in: " + bootStrapProperties.getAbsolutePath());
@@ -367,7 +366,7 @@ public class BootStrapper {
 
             if (jdk == null) {
                 throw new BuildException("No jdks have been defined that meet the bootstrap requirements in "
-                    + bootStrapProperties.getAbsolutePath());
+                    + bootStrapXml.getAbsolutePath());
             }
 
             String bootJavaHome = jdk.getProperties().getProperty("java.home");

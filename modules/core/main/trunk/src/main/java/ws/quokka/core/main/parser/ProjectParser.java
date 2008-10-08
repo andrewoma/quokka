@@ -18,6 +18,7 @@
 package ws.quokka.core.main.parser;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.apache.tools.ant.util.FileUtils;
 
 import org.xml.sax.Locator;
 
@@ -224,7 +225,8 @@ public class ProjectParser {
         return project;
     }
 
-    public static AnnotatedProperties getProjectProperties(File projectFile, Map antProperties) {
+    public static AnnotatedProperties getProjectProperties(File projectFile, Map antProperties,
+        org.apache.tools.ant.Project antProject) {
         AnnotatedProperties properties = new AnnotatedProperties();
 
         // Project properties
@@ -241,7 +243,8 @@ public class ProjectParser {
         addTopLevelProjectProperties(projectFile, properties);
 
         // User properties
-        final File file = new File(new File(new File(System.getProperty("user.home")), ".quokka"), "quokka.properties");
+        File file = FileUtils.getFileUtils().normalize(antProject.replaceProperties(antProperties.get(
+                        "q.preferencesDir") + "/quokka.properties"));
 
         if (!file.exists()) {
             File parentFile = file.getParentFile();

@@ -125,6 +125,15 @@
         jdk of 1.4 or below. In contrast, Maven only exports it's fixed set of paths, usually the runtime path only.
     </li>
     <br/>
+    <li><b>Transitive dependencies can be disabled:</b> At times, transitive dependencies can be more trouble
+        than they are worth. In such cases, they can be easily disabled in Quokka by appending a <tt>+</tt>
+        after the path name. e.g. The following definition will include transitive dependencies:
+        <pre>&lt;dependency group="apache.ant" version="1.7.1" <b>paths="runtime"</b>/&gt;</pre>
+        And the following will not include transitive dependencies (in this case ant's launcher.jar):
+        <pre>&lt;dependency group="apache.ant" version="1.7.1" <b>paths="runtime+"</b>/&gt;</pre>
+        In constrast, Maven cannot disable transitive dependencies - you have to manually exclude each one.
+    </li>
+    <br/>
     <li><b>Extensibility via Ant targets &amp; tasks:</b> As quokka is essentially a plugin for Ant, it is possible
         to combine quokka targets with standard Ant targets. Ant targets can be stand-alone, or depend on or be a
         dependency of other targets. All standard Ant tasks are available, including optional tasks when
@@ -324,7 +333,7 @@
         target which is a bit like lint for repositories. It currently includes the following checks:
         <ul>
             <li>Checks the artifact has a license</li>
-            <li>Warns is the artifact has multiple licenses</li>
+            <li>Warns if the artifact has multiple licenses</li>
             <li>Checks the version is in a standard format</li>
             <li>Warns if the name and group do not match conventions</li>
             <li>Checks there is a description</li>
@@ -333,7 +342,7 @@
             <li>Checks that the description, licenses, dependencies and paths match the previous version of the same artifact</li>
             <li>Warns if the aritfact does not exist in the maven repository</li>
             <li>If the artifact exists in maven, checks that the paths and checksums match</li>
-            <li>Checks that any refrenced artifacts including dependencies, conflicts and overrides exist in the repository</li>
+            <li>Checks that any referenced artifacts including dependencies, conflicts and overrides exist in the repository</li>
         </ul>
         <p>Hopefully, this process will make the Quokka repository much better than the Maven repository. The checks
         above would have caught a lot of the current problems in the Maven repository.</p>

@@ -62,7 +62,7 @@ public class DelegatingRepository extends AbstractRepository {
         for (Iterator i = repositories.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
 
-            if (repository.supportsReslove(artifactId)) {
+            if (repository.supportsResolve(artifactId)) {
                 try {
                     return repository.resolve(artifactId, retrieveArtifact);
                 } catch (UnresolvedArtifactException e) {
@@ -118,11 +118,11 @@ public class DelegatingRepository extends AbstractRepository {
         return false;
     }
 
-    public boolean supportsReslove(RepoArtifactId artifactId) {
+    public boolean supportsResolve(RepoArtifactId artifactId) {
         for (Iterator i = repositories.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
 
-            if (repository.supportsReslove(artifactId)) {
+            if (repository.supportsResolve(artifactId)) {
                 return true;
             }
         }
@@ -136,7 +136,7 @@ public class DelegatingRepository extends AbstractRepository {
         for (Iterator i = repositories.iterator(); i.hasNext();) {
             Repository repository = (Repository)i.next();
 
-            if (repository.supportsReslove(artifact.getId())) {
+            if (repository.supportsResolve(artifact.getId())) {
                 RepoArtifact updated = repository.updateSnapshot(artifact);
 
                 if (updated != null) {

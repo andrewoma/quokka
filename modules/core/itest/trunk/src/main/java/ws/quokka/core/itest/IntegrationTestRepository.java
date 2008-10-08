@@ -212,8 +212,8 @@ public class IntegrationTestRepository extends AbstractRepository implements Rep
         return repository.listArtifactIds(includeReferenced);
     }
 
-    public boolean supportsReslove(RepoArtifactId artifactId) {
-        return repository.supportsReslove(artifactId);
+    public boolean supportsResolve(RepoArtifactId artifactId) {
+        return repository.supportsResolve(artifactId);
     }
 
     public boolean supportsInstall(RepoArtifactId artifactId) {

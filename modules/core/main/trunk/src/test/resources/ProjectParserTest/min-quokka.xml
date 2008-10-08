@@ -1,4 +1,4 @@
-<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.1" "http://quokka.ws/dtd/project-0.1.dtd">
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 <project name="itest">
     <artifacts group="group" version="version">
         <artifact name="name" type="type"/>

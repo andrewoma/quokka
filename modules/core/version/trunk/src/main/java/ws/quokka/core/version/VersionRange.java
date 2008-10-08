@@ -19,10 +19,12 @@ package ws.quokka.core.version;
 
 import org.apache.tools.ant.BuildException;
 
+/*
+ * Source taken from Apache Felix 1.0 release, variable names changed to match conventions
+ */
 
 /**
  * VersionRange defines a range of versions.
- * Source taken from Apache Felix 1.0 release, variable names changed to match conventions
  */
 public class VersionRange {
     //~ Static fields/initializers -------------------------------------------------------------------------------------

@@ -69,7 +69,7 @@ public abstract class AbstractRepository implements Repository {
         for (Iterator i = ids.iterator(); i.hasNext();) {
             RepoArtifactId id = (RepoArtifactId)i.next();
 
-            if (!supportsReslove(id)) {
+            if (!supportsResolve(id)) {
                 i.remove();
             }
         }

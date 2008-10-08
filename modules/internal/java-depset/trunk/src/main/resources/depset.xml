@@ -22,4 +22,5 @@
 
     <plugin group="quokka.plugin.jalopy" version="0.3-ss"/>
     <plugin group="quokka.plugin.source" version="0.1-ss"/>
+    <plugin group="quokka.plugin.javadoc" version="0.3-ss" use-defaults="false" targets="collect"/>
 </dependency-set>

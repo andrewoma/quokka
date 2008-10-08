@@ -282,17 +282,7 @@ public class IOUtils {
      * Returns a MD5 hash as a hex string of the bytes given
      */
     public String md5String(byte[] bytes) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-
-            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
-            messageDigest.reset();
-            messageDigest.update(bytes);
-
-            return toHex(messageDigest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new BuildException(e);
-        }
+        return toHex(md5(bytes));
     }
 
     /**
@@ -302,7 +292,6 @@ public class IOUtils {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
-            // Create a hash of the jdk location and use it a key for a cache of jvm system properties
             messageDigest.reset();
             messageDigest.update(bytes);
 

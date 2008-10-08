@@ -21,23 +21,64 @@ import java.util.Collection;
 
 
 /**
+ * Repository defines both the interface for implementing a Repository and the API for
+ * accessing it. A Repository instance will be created by the {@link RepositoryFactory}
+ * implementation. The factory will create an instance of the repository implementation
+ * and call {@link #setName(String)} and {@link #setFactory(RepositoryFactory)}, followed
+ * by a call to {@link #initialise()}. The repository instance should then be ready to use.
  *
  */
 public interface Repository {
     //~ Methods --------------------------------------------------------------------------------------------------------
 
+    /**
+     * Called by {@link ws.quokka.core.repo_spi.RepositoryFactory} on creation - should not
+     * be used by clients such as plugins.
+     */
     void initialise();
 
+    /**
+     * Called by {@link ws.quokka.core.repo_spi.RepositoryFactory} prior to {@link #initialise()}  - should not
+     * be used by clients such as plugins.
+     */
     void setFactory(RepositoryFactory factory);
 
+    /**
+     * Called by {@link ws.quokka.core.repo_spi.RepositoryFactory} prior to {@link #initialise()}  - should not
+     * be used by clients such as plugins.
+     */
+    void setName(String name);
+
+    /**
+     * Returns the factory that created this repository
+     */
     RepositoryFactory getFactory();
 
+    /**
+     * Resolves an artifact from the repository. Equivalent to {@link #resolve(RepoArtifactId, boolean)}
+     * with the retrieveArtifact set to true.
+     */
     RepoArtifact resolve(RepoArtifactId artifactId);
 
+    /**
+     * Resolves an artifact from the repository.
+     * @param retrieveArtifact if true, the artifact will be retrieved so that it is accessible as a file
+     * on the local file system. If false, if the artifact does not exist on the local file system, it will
+     * not be retrieved. In this instance, most implementations should return a hash of the remote artifact
+     * retrievable via {@link RepoArtifact#getHash()}
+     */
     RepoArtifact resolve(RepoArtifactId artifactId, boolean retrieveArtifact);
 
+    /**
+     * Installs the artifact into the repository
+     */
     void install(RepoArtifact artifact);
 
+    /**
+     * Removes the artifact from the repository. Note: the artifact will only be removed from this repository
+     * instance. If there artifact is available in other repositories referenced by this repository, the
+     * artifacts in other repositories will NOT be removed.
+     */
     void remove(RepoArtifactId artifactId);
 
     /**
@@ -59,13 +100,23 @@ public interface Repository {
      */
     Collection listArtifactIds(String group, String name, String type, boolean includeReferenced);
 
-    boolean supportsReslove(RepoArtifactId artifactId);
+    /**
+     * Returns true if this repository can resolve this artifact. Note: this does not mean that artifact
+     * exists in the repository, only that it conceivable could exist. e.g. If the repository supports
+     * snapshots, it would return true for any snapshot id regardless of whether it exists in the repository.
+     */
+    boolean supportsResolve(RepoArtifactId artifactId);
 
+    /**
+     * Returns true if the repository can install this artifact. e.g. it would return true if the
+     * repository stores snapshots and the id given has a snapshot version.
+     */
     boolean supportsInstall(RepoArtifactId artifactId);
 
+    /**
+     * Returns the name of the repository
+     */
     String getName();
-
-    void setName(String name);
 
     /**
      * Update the snapshot to the latest version available in this repository or any parents

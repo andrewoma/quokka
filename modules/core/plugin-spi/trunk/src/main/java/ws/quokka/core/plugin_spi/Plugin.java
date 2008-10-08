@@ -20,7 +20,7 @@ package ws.quokka.core.plugin_spi;
 
 /**
  * Plugin is the minimal interface that must be implemented to be considered as a plugin.
- * It is more common to inherit form {@link ws.quokka.core.plugin_spi.support.AbstractPlugin}.
+ * It is more common to inherit from {@link ws.quokka.core.plugin_spi.support.AbstractPlugin}.
  * A plugin may also implement additonal interfaces, such as {@link ResourcesAware}. The
  * values of such interfaces with be set prior to {@link #initialise()} being called.
  * <br>

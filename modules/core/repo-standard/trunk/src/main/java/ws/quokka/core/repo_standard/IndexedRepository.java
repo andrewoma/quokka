@@ -137,8 +137,8 @@ public class IndexedRepository extends AbstractRepository {
         return repository.supportsInstall(artifactId);
     }
 
-    public boolean supportsReslove(RepoArtifactId artifactId) {
-        return repository.supportsReslove(artifactId);
+    public boolean supportsResolve(RepoArtifactId artifactId) {
+        return repository.supportsResolve(artifactId);
     }
 
     public RepoArtifact updateSnapshot(RepoArtifact artifact) {

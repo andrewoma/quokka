@@ -69,7 +69,7 @@ public class BundledRepository extends FileRepository {
 
     protected File getRootDir(RepoArtifactId id) {
         String cache = getProperty("cache",
-                normalise(new File(System.getProperty("user.home") + "/.quokka/bundled-repo-cache")).getPath());
+                normalise(new File(getProperties().get("q.cacheDir") + "/bundled-repos")).getPath());
 
         return new File(cache, id.toPathString());
     }

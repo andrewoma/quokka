@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Quokka vs Maven - Side by Side</title>
-    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/layout.css"
-          media="screen, projection, tv "/>
-    <link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/html.css"
-          media="screen, projection, tv "/>
+    <!--<link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/layout.css"-->
+          <!--media="screen, projection, tv "/>-->
+    <!--<link xmlns="" rel="stylesheet" type="text/css" href="http://quokka.ws/css/html.css"-->
+          <!--media="screen, projection, tv "/>-->
 
     <style type="text/css">
         .maven {
@@ -80,7 +80,6 @@
                 HelloWorldHelperTest.java
                 HelloWorldITest.java</pre>
 <h2><a name="building-war"><span/></a>Building the .war file</h2>
-
 <p>Given the following quokka configuration file (<code>build-quokka.xml</code>), building the .war file
     is done by <code>quokka package</code>:</p>
 <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -130,6 +129,7 @@
 &lt;/project&gt;</pre>
 <p><b>Analysis:</b></p>
 
+
 <div class="indent">
     <p><b>Maven packaging versus Quokka dependency sets</b>: Maven uses the concept of packaging to to introduce
         plugin dependencies automatically (via the <code>&lt;packaging&gt;war&lt;/packaging&gt;</code>
@@ -140,7 +140,7 @@
         These goals then force the dynamic loading of plugins from certain well-known locations. In the past, this
         took the latest available version making maven builds unreproducible, but I believe as of maven 2.0.9 it
         locks down the versions of certain plugins.
-
+    </p>
     <p>In contrast, Quokka uses a nested dependency-set (via the <code>&lt;dependency-set group="quokka.depset.jar"
         version="0.3-ss"/&gt;</code>
         declaration). The nested dependency set is in exactly the same format as the project dependency set,
@@ -186,8 +186,10 @@
         run with jUnit</p>
 
     <p><b>Conciseness</b>: The quokka definition is much more concise, thanks largely due the use of XML attributes
-        instead of elements.</p>
+        instead of elements.
+    </p>
 </div>
+
 <h2><a name="dev-reports"><span/></a>Adding development reports</h2>
 
 <p>We'll now add a test report to both configurations. In Quokka, the following is added to the dependency set in <code>build-quokka.xml</code>:
@@ -225,7 +227,7 @@
         surefire report that may only be appropriate for your testing framework. At present, the surefire report
         appears to support the lowest common demoninator and is inferior to any of the native reports from testing
         frameworks.
-
+    </p>
     <p>In constrast, any framework can perform testing in quokka - all it requires is a supporting plugin that
         implements
         the abstract <code>test</code> target
@@ -428,7 +430,7 @@
             &lt;/executions&gt;
         &lt;/plugin&gt;
     &lt;/plugins&gt;
-&lt;/build&gt;    
+&lt;/build&gt;
 </pre>
 <p>Note that the surefire plugin configuration is required to make the <code>test</code> phase
     exclude integration tests (those ending with <code>ITest.java</code>) and run them
@@ -470,6 +472,7 @@
     </li>
     <li>Built-in <code>list-plugins</code> target that list plugins available in the repository, including
         the versions that are compatible.
+    </li>
     <li>The help plugin. Once included in a project, you can now use <code>quokka help</code> to generate a detailed
         HTML report that includes information
         on all project paths, plugin paths, dependency sets, targets and properties. Help is also bundled
@@ -882,6 +885,7 @@ xpp3 xpp3_min 1.1.3.4.O xpp3_min-1.1.3.4.O.jar
     There are numerous other advantages that this example doesn't cover, such as flexible multi-project builds,
     aggregated development reports, bootstrapping and support for multiple artifacts.
     See <a href="quokka-vs-maven.html">Quokka vs Maven</a> for more information.
+</p>
 
 <h2><a name="appendix"><span/></a>Appendix</h2>
 
@@ -912,7 +916,7 @@ xpp3 xpp3_min 1.1.3.4.O xpp3_min-1.1.3.4.O.jar
 
         &lt;property name="q.jetty.defaults.stopKey" value="foo"/&gt;
         &lt;property name="q.jetty.defaults.stopPort" value="9999"/&gt;
-        &lt;plugin group="quokka.plugin.jetty" version="0.1-ss" paths="(jsp-2.1)"&gt;  &lt;!-- Adds JSP 2.1 support --&gt;
+        &lt;plugin group="quokka.plugin.jetty" version="0.1-ss" paths="(jsp-2.1)"&gt;  &lt;!- Adds JSP 2.1 support -&gt;
             &lt;target name="start-jetty" template="run-template" profiles="!skiptest"
                     dependency-of="lifecycle:initialise-integration-test"
                           depends="lifecycle:pre-initialise-integration-test"&gt;

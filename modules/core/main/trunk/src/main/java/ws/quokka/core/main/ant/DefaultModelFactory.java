@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -59,9 +60,19 @@ public class DefaultModelFactory implements ModelFactory {
 
     public ProjectModel getProjectModel(File projectFile, List activeProfiles, boolean topLevel,
         AnnotatedProperties projectProperties, Logger log, Project project) {
+        if (project == null) {
+            project = new Project();
+            project.init();
+            ProjectHelper.setDefaultProperties(project);
+        }
+
         if (projectProperties == null) {
             // Only really passed in to prevent reloading. If null load
-            projectProperties = ProjectParser.getProjectProperties(projectFile, new HashMap());
+            // TODO: Properties handling is a mess ...
+            Map antProperties = new HashMap();
+            antProperties.put(ProjectHelper.Q_CACHE_DIR, project.getProperty(ProjectHelper.Q_CACHE_DIR));
+            antProperties.put(ProjectHelper.Q_PREFERENCES_DIR, project.getProperty(ProjectHelper.Q_PREFERENCES_DIR));
+            projectProperties = ProjectParser.getProjectProperties(projectFile, antProperties, project);
         }
 
         DefaultProjectModel model = new DefaultProjectModel();
@@ -71,11 +82,6 @@ public class DefaultModelFactory implements ModelFactory {
         model.setProject(new ProjectParser(projectFile, profiles, repository, topLevel, projectProperties, log).parse());
         model.setRepository(repository);
         model.setProfiles(profiles);
-
-        if (project == null) {
-            project = new Project();
-            project.init();
-        }
 
         model.setAntProject(project);
         project.setName(model.getProject().getName());
