@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka main module: provides the core quokka functionality</description>
+    <description>Main module providing the core quokka functionality</description>
 
     <artifacts group="quokka.core.main" version="0.3-ss">
         <artifact paths="runtime"/>

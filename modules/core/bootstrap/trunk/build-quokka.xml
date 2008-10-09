@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka bootstrapping module: allows automatic booting of different quokka versions</description>
+    <description>Bootstrap module allows automatic booting (and forking) of different quokka versions</description>
 
     <artifacts group="quokka.core.bootstrap" version="0.3-ss">
         <artifact paths="runtime"/>

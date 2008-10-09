@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka Repository SPI: service provider interface for repositories</description>
+    <description>Repository Service Provider Interface (SPI)</description>
 
     <artifacts group="quokka.core.repo-spi" version="0.3-ss">
         <artifact paths="runtime"/>

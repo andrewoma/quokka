@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project name="quokka.internal.site">
-    <description>Quokka module for generating and deploying the web site</description>
+    <description>Generates and deploys the quokka web site - for internal use only</description>
 
     <bootstrap core="[0.3-ss,0.3-ss]" spec-version="[1.4,1.6]"/>
 

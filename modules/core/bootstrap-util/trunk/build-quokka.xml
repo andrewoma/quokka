@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka bootstrapping utilities: classes required for bootstrapping that can be reused in other modules</description>
+    <description>Utilities required for bootstrapping that can be reused in other modules</description>
 
     <artifacts group="quokka.core.bootstrap-util" version="0.3-ss">
         <artifact paths="runtime"/>

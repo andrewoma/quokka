@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka test module: provides base classes for unit tests</description>
+    <description>Base classes for unit tests</description>
 
     <artifacts group="quokka.core.test" version="0.3-ss">
         <artifact paths="runtime"/>

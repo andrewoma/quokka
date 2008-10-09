@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka dependency set for creating archetypes - for internal use only</description>
+    <description>Dependency set for creating archetypes - for internal use only</description>
 
     <artifacts group="quokka.internal.archetype-depset" type="depset" version="0.2-ss">
         <artifact/>

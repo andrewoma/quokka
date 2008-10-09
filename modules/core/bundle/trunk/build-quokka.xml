@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka bundle module: Bundles the core modules and creates the distribution with documentation</description>
+    <description>Bundle containing all of the core modules</description>
 
     <artifacts group="quokka.bundle" version="0.3-ss">
         <artifact name="core" paths="dist"/>

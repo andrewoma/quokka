@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka versioning module: implements versions, ranges and unions</description>
+    <description>Versions, ranges and unions of quokka artifacts</description>
 
     <artifacts group="quokka.core.version" version="0.3-ss">
         <artifact paths="runtime"/>

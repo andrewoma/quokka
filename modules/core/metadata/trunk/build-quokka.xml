@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka metadata module: provides a subset of project metadata for plugins</description>
+    <description>Metadata module providing a subset of project metadata for plugins</description>
 
     <artifacts group="quokka.core.metadata" version="0.3-ss">
         <artifact paths="runtime"/>

@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka path resolver: resolves artfitact paths from a repository</description>
+    <description>Resolves artfitact paths from a repository</description>
 
     <artifacts group="quokka.core.repo-resolver" version="0.3-ss">
         <artifact paths="runtime"/>

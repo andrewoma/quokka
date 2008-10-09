@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka dependency set for creating plugins</description>
+    <description>Dependency set for creating plugins - for internal use only</description>
 
     <artifacts group="quokka.internal.plugin-depset" type="depset" version="0.3-ss">
         <artifact/>

@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka plugin SPI: service provider interface for quokka plugins</description>
+    <description>Plugin Service Provider Interface (SPI) for plugins</description>
 
     <artifacts group="quokka.core.plugin-spi" version="0.3-ss">
         <artifact paths="runtime"/>

@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka standard repositories: includes file, checksum, url, indexed, delegating and bundled repositories</description>
+    <description>Standard repository implementations including file, checksum, url, indexed, delegating and bundled repositories</description>
 
     <artifacts group="quokka.core.repo-standard" version="0.3-ss">
         <artifact paths="runtime"/>

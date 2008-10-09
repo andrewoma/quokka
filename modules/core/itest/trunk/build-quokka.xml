@@ -2,7 +2,7 @@
 <!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
 
 <project>
-    <description>Quokka integration test module: provides base classes for integration tests</description>
+    <description>Integration testing base classes</description>
 
     <artifacts group="quokka.core.itest" version="0.3-ss">
         <artifact paths="runtime"/>
