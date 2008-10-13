@@ -3,9 +3,9 @@
 # quokka's bootstrapping mechanism. Set the following to match your most commonly used
 # configuration to prevent bootstrapping from forking another JVM:
 
-defaultQuokka="0.3-ss"
+defaultQuokka="0.3"
 defaultAnt="1.7.1"
-defaultOpts="-Xmx512m"
+defaultOpts="-Xmx1024m"
 #JAVACMD=</path/to your most commonly used jdk/java>
 
 # =========================================================================
