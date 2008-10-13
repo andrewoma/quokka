@@ -17,6 +17,9 @@
 
 package ws.quokka.core.repo_standard;
 
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Untar;
+
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
 import ws.quokka.core.version.Version;
@@ -45,18 +48,46 @@ public class IndexedRepositoryTest extends AbstractRepositoryTest {
         repository.rebuildCaches();
 
         RepoArtifactId newId = new RepoArtifactId("group5.subgroup", "name", "paths", "3.3");
-        File out = new File(getOutputDir(), "_index.zip");
+        File out = new File(getOutputDir(), "_index.tar.bz2");
+        System.out.println(out.getPath());
+
+        File extractedDir = new File(getOutputDir(), "untarred-index");
 
         try {
             repository.install(new RepoArtifact(newId));
-            assertContainsEntries(out,
-                new String[] {
-                    "group1_version1_name1_jar.jar.MD5", "group1_version1_name1_jar_repository.xml",
-                    "group5.subgroup_3.3_name_paths_repository.xml"
-                });
+            untar(out, extractedDir);
+
+            assertExists(extractedDir, "group1/version1/name1_jar.jar.MD5");
+            assertExists(extractedDir, "group1/version1/name1_jar_repository.xml");
+            assertExists(extractedDir, "group5/subgroup/3.3/name_paths_repository.xml");
         } finally {
             repository.remove(newId);
-            assertNotContainsEntries(out, new String[] { "group5.subgroup_3.3_name_paths_repository.xml" });
+            delete(extractedDir);
+            untar(out, extractedDir);
+            assertNotExists(extractedDir, "group5/subgroup/3.3/name_paths_repository.xml");
         }
+    }
+
+    private void untar(File out, File extractedDir) {
+        Project project = new Project();
+        project.init();
+
+        Untar untar = new Untar();
+        untar.setProject(project);
+        untar.setSrc(out);
+        untar.setDest(extractedDir);
+
+        Untar.UntarCompressionMethod method = new Untar.UntarCompressionMethod();
+        method.setValue("bzip2");
+        untar.setCompression(method);
+        untar.execute();
+    }
+
+    private void assertNotExists(File extractedDir, String path) {
+        assertNotExists(new File(normalise(new File(extractedDir, path).getPath())));
+    }
+
+    private void assertExists(File extractedDir, String path) {
+        assertExists(new File(normalise(new File(extractedDir, path).getPath())));
     }
 }

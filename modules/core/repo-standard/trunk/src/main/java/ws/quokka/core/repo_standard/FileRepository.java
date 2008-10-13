@@ -17,6 +17,8 @@
 
 package ws.quokka.core.repo_standard;
 
+import org.apache.tools.ant.BuildException;
+
 import ws.quokka.core.bootstrap_util.Assert;
 import ws.quokka.core.repo_spi.RepoArtifact;
 import ws.quokka.core.repo_spi.RepoArtifactId;
@@ -26,6 +28,7 @@ import ws.quokka.core.repo_spi.UnresolvedArtifactException;
 import ws.quokka.core.util.Strings;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,58 +140,110 @@ public class FileRepository extends AbstractStandardRepository {
     }
 
     private Set listArtifactIdsHierarchical() {
-        Set ids = new TreeSet();
-        List files = new ArrayList();
-        listFiles(files, rootDir);
+        try {
+            Set ids = new TreeSet();
+            List files = new ArrayList();
+            listFiles(files, rootDir);
 
-        for (Iterator i = files.iterator(); i.hasNext();) {
-            File file = (File)i.next();
-            String name = stripName(file.getName());
-            String[] tokens = (name == null) ? null : Strings.splitPreserveAllTokens(name, "_");
+            String canonicalRootDir = rootDir.getCanonicalPath();
 
-            if ((name != null) && ((tokens.length == 2) || (tokens.length == 3))) {
-                String version = file.getParentFile().getName();
-                RepoArtifactId id = new RepoArtifactId(deriveGroup(file), tokens[0], tokens[1], version);
-                ids.add(id);
-            } else {
-                log().verbose("Skipping file as it is not a valid artifact: " + file.getPath());
+            for (Iterator i = files.iterator(); i.hasNext();) {
+                File file = (File)i.next();
+                String canonicalFile = file.getCanonicalPath();
+                String relative = canonicalFile.substring(canonicalRootDir.length() + 1);
+
+                String name = stripName(file.getName());
+                String[] tokens = (name == null) ? null : Strings.splitPreserveAllTokens(name, "_");
+
+                if (!relative.startsWith("_") && (name != null) && ((tokens.length == 2) || (tokens.length == 3))) {
+                    String version = file.getParentFile().getName();
+                    String group = deriveGroup(relative);
+
+                    if (group == null) {
+                        log().verbose("Skipping file as it is not a valid artifact: " + file.getPath());
+                    } else {
+                        String type = tokens[1];
+                        autoRegisterType(type, getExtension(file.getName()));
+                        ids.add(new RepoArtifactId(group, tokens[0], type, version));
+                    }
+                } else {
+                    log().verbose("Skipping file as it is not a valid artifact: " + file.getPath());
+                }
             }
+
+            return ids;
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
+
+    /**
+     * Automatically registers unkown types discovered when listing
+     */
+    private void autoRegisterType(String type, String extension) {
+        if (extension == null) {
+            return;
         }
 
-        return ids;
+        try {
+            getFactory().getType(type);
+        } catch (Exception e) {
+            getFactory().registerType(new RepoType(type, "Automatically registered type", extension));
+        }
     }
 
     private String stripName(String name) {
+        int index = getExtensionStart(name);
+
+        return (index == -1) ? null : name.substring(0, index);
+    }
+
+    private int getExtensionStart(String name) {
         int index = name.lastIndexOf("_");
 
         if (index == -1) {
-            return null; // Not a valid id
+            return -1; // Not a valid id
         }
 
-        index = name.indexOf(".", index);
-
-        if (index == -1) {
-            return null; // Not a valid id
-        }
-
-        return name.substring(0, index);
+        return name.indexOf(".", index);
     }
 
-    private String deriveGroup(File file) {
-        // TODO: Make this a bit safer in the case of spurious files in the repository
-        String group = null;
-        file = file.getParentFile().getParentFile();
-
-        while (!file.equals(rootDir)) {
-            group = (group == null) ? file.getName() : (file.getName() + "." + group);
-            file = file.getParentFile();
+    private String getExtension(String name) {
+        if (name.endsWith("_repository.xml")) {
+            return null;
         }
 
-        return group;
+        int index = getExtensionStart(name);
+
+        return Strings.split(name.substring(index + 1), ".")[0]; // Ignore secondary extensions such as .MD5
+    }
+
+    private String deriveGroup(String relative) {
+        StringBuffer group = new StringBuffer();
+        String[] tokens = Strings.split(relative, File.separator);
+
+        if (tokens.length < 3) {
+            return null;
+        }
+
+        for (int i = 0; i < (tokens.length - 2); i++) {
+            String token = tokens[i];
+            group.append(token);
+
+            if (i != (tokens.length - 3)) {
+                group.append(".");
+            }
+        }
+
+        return group.toString();
     }
 
     private void listFiles(List files, File dir) {
         File[] files1 = dir.listFiles();
+
+        if (files1 == null) {
+            return; // Repository dir doesn't exist yet or is not readable
+        }
 
         for (int i = 0; i < files1.length; i++) {
             File file = files1[i];
@@ -208,13 +263,20 @@ public class FileRepository extends AbstractStandardRepository {
         Set ids = new TreeSet();
         File[] files = rootDir.listFiles();
 
+        if (files == null) {
+            return ids;
+        }
+
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             String name = stripName(file.getName());
             String[] tokens = (name == null) ? null : Strings.splitPreserveAllTokens(name, "_");
 
-            if ((name != null) && ((tokens.length == 4) || (tokens.length == 5))) {
-                RepoArtifactId id = new RepoArtifactId(tokens[0], tokens[2], tokens[3], tokens[1]);
+            if ((name != null) && !name.startsWith("_") && ((tokens.length == 4) || (tokens.length == 5))) {
+                String type = tokens[3];
+                autoRegisterType(type, getExtension(file.getName()));
+
+                RepoArtifactId id = new RepoArtifactId(tokens[0], tokens[2], type, tokens[1]);
                 ids.add(id);
             } else {
                 log().verbose("Skipping file as it is not a valid artifact: " + file.getPath());

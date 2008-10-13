@@ -18,10 +18,8 @@
 package ws.quokka.core.repo_standard;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.taskdefs.Expand;
-import org.apache.tools.ant.taskdefs.Get;
+import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.util.Base64Converter;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -58,6 +56,7 @@ public class UrlRepository extends AbstractStandardRepository {
     private File indexExpanded;
     private long indexExpiry;
     private ChecksumRepository indexRepository;
+    private boolean indexed;
 
     //~ Methods --------------------------------------------------------------------------------------------------------
 
@@ -74,17 +73,20 @@ public class UrlRepository extends AbstractStandardRepository {
 
         user = getProperty("user", false);
         password = getProperty("password", false);
+        indexed = getBoolean("indexed", true);
 
-        String defaultIndex = getProperties().get("q.cacheDir") + "index-repo/" + getName() + "-index";
-        index = normalise(new File(getProperty("index", defaultIndex)));
-        indexArchive = new File(index, "_index.zip");
-        indexExpanded = new File(index, "_index");
-        indexExpiry = Integer.parseInt(getProperty("indexExpiry", "360")); // Defaults to hourly
+        if (indexed) {
+            String defaultIndex = getProperties().get("q.cacheDir") + "/index-repo/" + getName() + "-index";
+            index = normalise(new File(getProperty("index", defaultIndex)));
+            indexArchive = new File(index, "_index.tar.bz2");
+            indexExpanded = new File(index, "_index");
+            indexExpiry = Integer.parseInt(getProperty("indexExpiry", "86400")); // Defaults to daily
 
-        String indexUrl = "checksum:" + indexExpanded.getPath() + ";hierarchical=false";
-        String indexId = getName() + "-index";
-        getFactory().getProperties().put("q.repo." + indexId + ".url", indexUrl);
-        indexRepository = (ChecksumRepository)getFactory().getOrCreate(indexId, true);
+            String indexUrl = "checksum:" + indexExpanded.getPath() + ";hierarchical=true";
+            String indexId = getName() + "-index";
+            getFactory().getProperties().put("q.repo." + indexId + ".url", indexUrl);
+            indexRepository = (ChecksumRepository)getFactory().getOrCreate(indexId, true);
+        }
 
         Assert.isTrue(getParents().size() == 0, "Url repositories cannot have parents");
     }
@@ -93,6 +95,9 @@ public class UrlRepository extends AbstractStandardRepository {
         // Try the index when called when not retrieving artifacts as this is
         // called when retrieving metadata for artifacts not stored locally.
         if (!retrieveArtifact) {
+            Assert.isTrue(indexed,
+                "Repository '" + getName()
+                + "' is not indexed and therefore does not support resolving artifacts without retrieving them.");
             updateIndex();
 
             return indexRepository.resolve(id, false);
@@ -148,13 +153,15 @@ public class UrlRepository extends AbstractStandardRepository {
 
         try {
             url = new URL(this.url, relativePath);
-            log().verbose("Attempting to get: " + url.toString());
+            log().verbose("Attempting to download " + url.toString());
         } catch (MalformedURLException e) {
             throw new BuildException(e);
         }
 
         try {
-            new IOUtils().download(getProject(), url, user, password, destination);
+            IOUtils utils = new IOUtils();
+            utils.createDir(destination.getParentFile());
+            utils.download(getProject(), url, user, password, destination);
         } catch (Exception e) {
             if (notFound(url)) {
                 return false;
@@ -204,6 +211,8 @@ public class UrlRepository extends AbstractStandardRepository {
     }
 
     public Collection listArtifactIds(boolean includeReferenced) {
+        Assert.isTrue(indexed,
+            "Repository '" + getName() + "' is not indexed and therefore does not support listing of artifacts.");
         updateIndex();
 
         return indexRepository.listArtifactIds(includeReferenced);
@@ -232,7 +241,10 @@ public class UrlRepository extends AbstractStandardRepository {
         boolean available;
 
         try {
-            available = getRemoteFile("_index.zip", indexArchive); // Ant's get uses temp file internally, so is safe
+            String indexName = "_index.tar.bz2";
+            log().info("Attempting to download repository index for '" + getName() + "' from " + url.toString()
+                + indexName);
+            available = getRemoteFile(indexName, indexArchive); // Ant's get uses temp file internally, so is safe
         } catch (Exception e) {
             // Ignore ... there may not be an index, or we might be off line
             log().debug("Unable to get index for '" + getName() + "': " + e.getMessage());
@@ -248,10 +260,14 @@ public class UrlRepository extends AbstractStandardRepository {
         delete.setDir(temp);
         delete.execute();
 
-        Expand expand = (Expand)getProject().createTask("unzip");
-        expand.setSrc(indexArchive);
-        expand.setDest(temp);
-        expand.execute();
+        Untar untar = (Untar)getProject().createTask("untar");
+        untar.setSrc(indexArchive);
+        untar.setDest(temp);
+
+        Untar.UntarCompressionMethod method = new Untar.UntarCompressionMethod();
+        method.setValue("bzip2");
+        untar.setCompression(method);
+        untar.execute();
 
         delete.setDir(indexExpanded);
         delete.execute();

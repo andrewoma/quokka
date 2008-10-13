@@ -18,7 +18,7 @@
 package ws.quokka.core.repo_standard;
 
 import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.taskdefs.Tar;
 import org.apache.tools.ant.util.FileUtils;
 
 import ws.quokka.core.bootstrap_util.Assert;
@@ -73,7 +73,7 @@ public class IndexedRepository extends AbstractRepository {
         }
 
         if (indexRepository == null) {
-            String url = "checksum:" + indexRoot.getPath() + ";hierarchical=false;parents=" + repository.getName();
+            String url = "checksum:" + indexRoot.getPath() + ";hierarchical=true;parents=" + repository.getName();
             String id = getName() + "-index";
             getFactory().getProperties().put("q.repo." + id + ".url", url);
             indexRepository = (ChecksumRepository)getFactory().getOrCreate(id, true);
@@ -111,15 +111,19 @@ public class IndexedRepository extends AbstractRepository {
 
     private void archiveIndex() {
         // Create temp file first to protect against interruptions
-        Zip zip = (Zip)getFactory().getProject().createTask("zip");
-        zip.setBasedir(indexRoot);
+        Tar tar = (Tar)getFactory().getProject().createTask("tar");
+        tar.setBasedir(indexRoot);
 
-        File temp = new File(indexRoot.getParentFile(), "_index.zip.tmp");
+        Tar.TarCompressionMethod method = new Tar.TarCompressionMethod();
+        method.setValue("bzip2");
+        tar.setCompression(method);
+
+        File temp = new File(indexRoot.getParentFile(), "_index.tar.bz2.tmp");
         Assert.isTrue(!temp.exists() || temp.delete(), "Cannot delete: " + temp.getPath());
-        zip.setDestFile(temp);
-        zip.execute();
+        tar.setDestFile(temp);
+        tar.execute();
 
-        File out = new File(indexRoot.getParentFile(), "_index.zip");
+        File out = new File(indexRoot.getParentFile(), "_index.tar.bz2");
         Assert.isTrue(!out.exists() || out.delete(), "Cannot delete: " + out.getPath());
         Assert.isTrue(temp.renameTo(out), "Cannot rename " + temp.getPath());
     }
