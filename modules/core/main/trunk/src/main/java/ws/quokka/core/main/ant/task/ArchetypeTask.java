@@ -177,7 +177,7 @@ public class ArchetypeTask extends Task implements RepositoryAware {
         }
 
         sb.append("\nTo use an archtype type: $ quokka archetype -Darchetype=group[:name][:version] [-Dprop1=value1]");
-        sb.append("\n    e.g. $ quokka archetype -Darchetype=quokka.archetype.jar -Dgroup=mycompany.myproject");
+        sb.append("\n    e.g. $ quokka archetype -Darchetype=quokka.archetype.jar");
 
         getProject().log(sb.toString());
     }

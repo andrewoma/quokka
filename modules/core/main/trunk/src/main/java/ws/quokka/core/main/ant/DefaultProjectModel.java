@@ -721,6 +721,8 @@ public class DefaultProjectModel implements ProjectModel {
 
         resolvedProperties.put("q.project.exportedPaths", exportedPaths.toString()); // May be empty
 
+        resolvedProperties.put("q.project.forkMaxMemory", "1024m"); // Increase heap by default for forking
+
         // Put the plugin properties in first. Order is not important as plugin properties should be
         // unique to their plugin
         for (Iterator i = resolvedTargets.values().iterator(); i.hasNext();) {

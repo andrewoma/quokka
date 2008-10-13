@@ -123,7 +123,12 @@ public class QuokkaMain extends Main {
 
                 Main main = new Main();
                 Reflect reflect = new Reflect();
-                reflect.invoke(main, "processArgs", new Object[] { args.toArray(new String[args.size()]) });
+
+                try {
+                    reflect.invoke(main, "processArgs", new Object[] { args.toArray(new String[args.size()]) });
+                } catch (Exception e) {
+                    return null; // The arguments are not valid ... let if fall through for the standard failure messages
+                }
 
                 Vector targets = (Vector)reflect.get(reflect.getField(Main.class, "targets"), main);
 

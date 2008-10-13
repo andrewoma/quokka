@@ -58,10 +58,13 @@ import ws.quokka.core.main.ant.task.InputUnlessSetTask;
 import ws.quokka.core.main.ant.task.ListPluginsTask;
 import ws.quokka.core.main.ant.task.PluginTargetTask;
 import ws.quokka.core.main.ant.task.RunTargetTask;
+import ws.quokka.core.main.ant.task.SetProxyTask;
 import ws.quokka.core.main.ant.task.SwitchTask;
 import ws.quokka.core.main.ant.task.VariableTask;
 import ws.quokka.core.main.parser.ProjectParser;
 import ws.quokka.core.model.Profiles;
+import ws.quokka.core.plugin_spi.support.Setter;
+import ws.quokka.core.plugin_spi.support.TypedProperties;
 import ws.quokka.core.repo_spi.RepoType;
 import ws.quokka.core.repo_spi.Repository;
 import ws.quokka.core.repo_spi.RepositoryFactory;
@@ -102,6 +105,7 @@ public class ProjectHelper extends ProjectHelper2 {
     public static final String REPOSITORY = "q.project.repository";
     public static final String Q_PREFERENCES_DIR = "q.preferencesDir";
     public static final String Q_CACHE_DIR = "q.cacheDir";
+    private static volatile boolean proxySet = false;
 
     static {
         SPECIAL_TARGETS.put("archetype", ArchetypeTask.class);
@@ -772,6 +776,9 @@ public class ProjectHelper extends ProjectHelper2 {
     }
 
     private Repository getRepository(AnnotatedProperties properties, Project antProject) {
+        // Make sure any proxy configuration is configured prior to Repository access
+        configureProxy(properties, antProject);
+
         RepositoryFactory factory = createFactory(properties, antProject);
         Repository repository;
 
@@ -795,6 +802,32 @@ public class ProjectHelper extends ProjectHelper2 {
         antProject.addReference(REPOSITORY, repository);
 
         return repository;
+    }
+
+    /**
+     * Configures proxy settings if any properties starting with q.proxy.* have been set
+     */
+    private void configureProxy(AnnotatedProperties properties, Project antProject) {
+        if (!proxySet) {
+            proxySet = true;
+
+            for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+
+                if (key.startsWith("q.proxy.")) {
+                    SetProxyTask setProxy = new SetProxyTask();
+                    setProxy.setTaskName("setproxy");
+                    setProxy.setProject(antProject);
+
+                    Setter setter = new Setter(new TypedProperties("q.proxy.", properties, antProject));
+                    setter.set(setProxy,
+                        new String[] { "host", "port", "nonProxyHosts", "user", "password", "socksHost", "socksPort" });
+                    setProxy.execute();
+
+                    break;
+                }
+            }
+        }
     }
 
     private RepositoryFactory createFactory(AnnotatedProperties properties, Project antProject) {
