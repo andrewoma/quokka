@@ -3,6 +3,7 @@
     <target name="install"/>
 
     <target name="dist" depends="repo:copy, copy-core, copy-dist, docbook-pdf, javadocs">
+    <!--<target name="dist">-->
         <property name="distdir" location="${q.project.targetDir}/dist/quokka-${q.project.artifact.version}"/>
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}">

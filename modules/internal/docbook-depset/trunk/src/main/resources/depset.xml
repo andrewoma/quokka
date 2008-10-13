@@ -6,6 +6,6 @@
     <dependency group="sf.docbook.xsl" name="saxon65-ext" version="1.72" paths="docbook"/>
     <dependency group="apache.ant" name="trax" version="1.7.1" paths="docbook"/>
 
-    <dependency group="quokka.xmlcat.docbook-xsl-1-72-0" version="0.1.1-ss" paths="docbook-cat"/>
-    <dependency group="quokka.xmlcat.docbook-dtd-4-5" version="0.1.1-ss" paths="docbook-cat"/>
+    <dependency group="quokka.xmlcat.docbook-xsl-1-72-0" version="0.1.1" paths="docbook-cat"/>
+    <dependency group="quokka.xmlcat.docbook-dtd-4-5" version="0.1.1" paths="docbook-cat"/>
 </dependency-set>

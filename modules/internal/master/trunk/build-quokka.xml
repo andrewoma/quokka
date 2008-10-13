@@ -4,7 +4,7 @@
 <project name="internal.master">
     <description>Master module for building and managing all other modules at once</description>
 
-    <bootstrap core="[0.3-ss,0.3-ss]" spec-version="[1.4,1.6]"/>
+    <bootstrap core="[0.3,0.3]" spec-version="[1.4,1.6]"/>
     <!--<bootstrap>-->
     <!--<cores version="1.0">-->
     <!--<core options="xerces, xercesimpl" profiles="jdk1.2, jdk1.3"/>-->
@@ -20,14 +20,14 @@
     <!--</bootstrap>-->
 
     <dependency-set>
-        <plugin group="quokka.plugin.standard-lifecycle" version="0.3-ss"/>
-        <plugin group="quokka.plugin.cobertura" version="0.3-ss" use-defaults="false"
+        <plugin group="quokka.plugin.standard-lifecycle" version="0.3"/>
+        <plugin group="quokka.plugin.cobertura" version="0.3" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.junitreport" version="0.3-ss" use-defaults="false"
+        <plugin group="quokka.plugin.junitreport" version="0.3" use-defaults="false"
                 targets="aggregate-report"/>
-        <plugin group="quokka.plugin.help" version="0.3-ss" use-defaults="false"
+        <plugin group="quokka.plugin.help" version="0.3" use-defaults="false"
                 targets="aggregate-report, help"/>
-        <plugin group="quokka.plugin.devreport" version="0.3-ss" use-defaults="false" targets="reports"/>
-        <plugin group="quokka.plugin.subversion" version="0.3-ss"/>
+        <plugin group="quokka.plugin.devreport" version="0.3" use-defaults="false" targets="reports"/>
+        <plugin group="quokka.plugin.subversion" version="0.3"/>
     </dependency-set>
 </project>
