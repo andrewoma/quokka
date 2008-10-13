@@ -38,8 +38,8 @@
 
 <p>This document provides a comparison between Quokka and Maven for building a simple web application.
     Throughout this
-    document, Quokka configuration will be shown in <tt class="quokka">this style</tt>, while
-    Maven configuration will be in <tt class="maven">this style</tt>.</p>
+    document, Quokka configuration will be shown in <code style="background-color: #f4f4f4">this style</code>, while
+    Maven configuration will be in <code style="background-color: #ddeeff">this style</code>.</p>
 
 <p>This document is divided into the following sections:</p>
 <ul>
@@ -99,9 +99,11 @@
 &lt;/project&gt;</pre>
 <p>In comparision, here is the Maven configuration file (<code>pom.xml</code>), that builds
     a .war file using <code>mvn package -Dmaven.test.failure.ignore=true</code>:</p>
-<pre class="maven">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+<pre style="background-color: #ddeeff">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                http://maven.apache.org/maven-v4_0_0.xsd"&gt;
   &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
   &lt;groupId&gt;mycompany&lt;/groupId&gt;
   &lt;artifactId&gt;myproject&lt;/artifactId&gt;
@@ -205,7 +207,7 @@
 <p>For Maven, testing is done via the sure-fire plugin and is configured as follows in <code>pom.xml</code>.
     The report can be generated with <code>mvn surefire-report:report</code> or all reports can be generated
     using <code>maven site</code></p>
-<pre class="maven">&lt;reporting&gt;
+<pre style="background-color: #ddeeff">&lt;reporting&gt;
     &lt;plugins&gt;
         &lt;plugin&gt;
             &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
@@ -275,7 +277,7 @@
 <p>For Maven, the cobertura plugin is added as a report and is configured as follows in <code>pom.xml</code>.
     The report can be generated with <code>mvn cobertura:cobertura</code> or all reports can be generated
     using <code>maven site</code></p>
-<pre class="maven">&lt;reporting&gt;
+<pre style="background-color: #ddeeff">&lt;reporting&gt;
     &lt;plugins&gt;
         &lt;plugin&gt;
             &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
@@ -371,7 +373,7 @@
     instance.</p>
 
 <p>For Maven, the following configuration needs to be added to the <code>pom.xml</code>:</p>
-<pre class="maven">&lt;build&gt;
+<pre style="background-color: #ddeeff">&lt;build&gt;
     &lt;plugins&gt;
         &lt;plugin&gt;
             &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
@@ -649,7 +651,7 @@ sun.servlet.spec.dist 2.5 dist
     freely. Here is the list of dependency Maven requires (this was obtained by clearing the local Maven
     repository and executing <code>mvn clean install; mvn site</code></p>
 
-<pre class="maven">ant ant 1.6.5
+<pre style="background-color: #ddeeff">ant ant 1.6.5
 asm asm 2.2.1
 asm asm-tree 2.2.1
 ch ethz ganymed ganymed-ssh2 build210
@@ -932,7 +934,7 @@ xpp3 xpp3_min 1.1.3.4.O xpp3_min-1.1.3.4.O.jar
 &lt;/project&gt;
 </pre>
 <p>Following is the complete Maven <code>pom.xml</code>:</p>
-<pre class="maven">
+<pre style="background-color: #ddeeff">
 &lt;?xml version="1.0"?&gt;
 &lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;

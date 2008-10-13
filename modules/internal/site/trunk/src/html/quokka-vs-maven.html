@@ -62,7 +62,8 @@
     <br/>
     <li><b>Coherent site &amp; documentation:</b> While still a work in progress, quokka provides a coherent
         site and set of documentation. Furthermore, plugin documentation is available for all versions of plugins,
-        not just the latest version (historical versions of the core documentations are also available).
+        not just the latest version (historical versions of the core documentation is also available). In fact,
+        plugin documentation is bundled with the plugin itself.
     </li>
     <br/>
     <li><b>Dependency handling:</b> Quokka allows transitive dependencies to be marked as mandatory or
@@ -85,11 +86,6 @@
         multi-project builds. TODO ... check current status of Maven aggregated reports.
     </li>
     <br/>
-    <li><b>Repository management: </b> Quokka supports various configurations of repositories out of the box,
-        including the ability to store project dependencies along side the source code. Remote repository
-        metadata is also available locally without retrieving artifacts, so it is possible to search
-        remote repositories efficiently.
-    </li>
 </ul>
 
 <h3>Extensibility/Flexibility</h3>
@@ -328,6 +324,14 @@
         of the same artifact.
     </li>
     <br/>
+    <li><b>Remote repository metadata is available locally:</b> Quokka supports indexing of repositories. This allows
+        full metadata about artifacts contained in remote repository to be available locally. This makes
+        things like searching remote repositories possible. In constrast,
+        Maven doesn't support querying of remote repositories. This has lead to various stop gap solutions like
+        <a href="http://www.mvnrepository.com/">http://www.mvnrepository.com</a> to provide an index. Unfortunately,
+        such information is not available Maven plugins, making it's utility limited.
+    </li>
+    <br/>
     <li><b>QA process for the global repository:</b> While Quokka's current repository is small, the artifacts
         that are in there have gone through a review process. Part of that process is running a verify
         target which is a bit like lint for repositories. It currently includes the following checks:
@@ -347,8 +351,12 @@
         <p>Hopefully, this process will make the Quokka repository much better than the Maven repository. The checks
         above would have caught a lot of the current problems in the Maven repository.</p>
     </li>
+     <li><b>Repository management: </b> Quokka supports various configurations of repositories out of the box,
+        including the ability to store project dependencies along side the source code.
+    </li>
     <li><b>Consistent naming:</b> Quokka has strict naming standards that apply to all artifacts in the global
-    repository.</li>
+    repository. In constrast, maven has two flavours of naming mixed in the same repository, e.g. ant:ant and
+    org.apache.ant:ant.</li>
 </ul>
 
 <h2>Key Advantages of Maven:</h2>

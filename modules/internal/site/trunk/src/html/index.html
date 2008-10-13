@@ -9,19 +9,19 @@
 </p>
 <p>
     For Java developers, quokka provides an <a href="http://ant.apache.org">Ant</a>-based
-    alternative to <a href="http://maven.apache.org">Maven</a>. See <a href="quokka-vs-maven.html">Quokka vs Maven</a>
-    for a comparison.
+    alternative to <a href="http://maven.apache.org">Maven</a>. For Maven users, see the <a href="quokka-vs-maven-side-by-side.html">Side by Side Comparison</a>
+    for building a web application and the <a href="quokka-vs-maven.html">Quokka vs Maven Guide</a>.
 </p>
 
 <h2>Key Features</h2>
 <dl>
     <dt><b>Modular Builds</b></dt>
     <dd style="margin-bottom:1em">
-        Build tasks such as compilation, or source code formatting are packaged into <i>plugins</i>. Each
+        Build tasks such as compilation, or source code formatting are packaged into <a href="extensions.html#plugins"><i>plugins.</i></a> Each
         project can be tailored to include specific plugins as required.
         <br/><br/>
         Build configurations (including plugins, dependencies and other resources) can be bundled
-        into a <i>dependency set</i> for re-use amongst projects. For example, a dependency
+        into a <a href="project-reference.html#dependency-sets"><i>dependency set</i></a> for re-use amongst projects. For example, a dependency
         set could be defined to add Checksytle processing to your project, along with your tailored checkstyle
         configuration file. Projects can include any number of such dependency sets, and sets may nest other
         sets within them, providing varying degrees of reuse.
@@ -31,12 +31,13 @@
         Quokka allows any number of paths of dependencies to be defined for use within a project. Selected paths can
         also be exported to the repository for reuse within other projects. If your project depends on another project,
         quokka can automatically include dependencies of your dependencies recursively. In such cases you have full
-        control down to any level as to which dependencies are included.
+        control down to any level as to which dependencies are included using <a href="project-reference.html#path-specs"><i>Path Specifications</i>.</a>
     </dd>
     <dt><b>Extensibility</b></dt>
     <dd style="margin-bottom:1em">
-        Quokka projects can be extended using both plugins and standard Ant scripts. The plugin architecture allows
-        plugins to interact with one another. For example, the life cycle plugin defines an abstract "test" target which
+        Quokka projects can be extended using plugins, as well as ad hoc targets using <a href="extending.html">standard Ant files</a> or
+        scripts via the <a href="quokka.plugin.script_script_plugin_latest.html">Scripting plugin</a>. The plugin architecture allows
+        plugins to interact with one another. For example, the life cycle plugin defines an abstract <code>test</code> target which
         is implemented by both the jUnit and TestNG plugins - you just pick the implementation for your project.
         Furthermore, explicit SPIs have been defined to extend quokka programatically, including the Plugin and
         Repository SPIs.
@@ -49,7 +50,7 @@
         <ul>
             <li><b>Bootstrapping:</b>
                 A project can be configured to use a specific version of quokka and jvm. Quokka will then fork the
-                required environment automatically.
+                required environment automatically (see <a href="project-reference.html#bootstrapping">Bootstrapping</a>)
             </li>
             <li><b>Versioned global repository:</b>
                 Once an artifact, such as a .jar, is stored in the global repository, it and any metadata associated
@@ -62,10 +63,10 @@
             </li>
             <li><b>Plugins do not automatically upgrade themselves: </b>
                 Unlike Maven, quokka plugins do not automatically upgrade themselves. You must specify the version of a
-                plugin to use and it remains constant.
+                plugin to use and it remains constant. Likewise, snapshots never upgrade themselves automatically.
             </li>
             <li><b>Release plugin:</b>
-                The release plugin provides additional checks upon releasing and tagging your code, including ensuring
+                The <a href="quokka.plugin.release_release_plugin_latest.html">Release plugin</a> provides additional checks upon releasing and tagging your code, including ensuring
                 that bootstrapping is configured and there are no snapshot dependencies.
             </li>
         </ul>
@@ -74,16 +75,15 @@
 <h2>Additional Features</h2>
 <ul>
     <li><b>Profiles:</b>
-        Profiles can be used to enable certain features, or change configurations for a given project. Profiles
+        <a href="project-reference.html#profiles">Profiles</a> can be used to enable certain features, or change configurations for a given project. Profiles
         might include "dev" and "prod" for configuring a .war file for development and production environments
         respectively. There are also automatic
-        profiles based on property values. For example, if you set your java source level to 1.5, the jUnit
-        plugin will automatically select jUnit 4.x, instead of 3.x.
+        profiles based on the JDK version and operating system.
     </li>
     <li><b>IDE integration:</b>
         Quokka is implemented as a transparent extension to ANT. There have been no modifications to ANT at all
         to implement quokka. As such, existing IDE integration for ANT works with quokka by default (or can be
-        configured to do so).
+        configured to do so). See <a href="ides.html">IDE Integration</a>
     </li>
     <li><b>Extensions:</b>
         A wide range of extensions are available for quokka already, with the list growing rapidly. See the
@@ -106,20 +106,35 @@
 
     <p>
         <span class="title">Quokka 0.3 Released</span>
-        This release was internal only and not released to the public
+        This release is considered to be virtually feature complete. Work will now focus on expanding
+        the range of plugins available and bug fixes. Major changes is this release include:
     </p>
     <ul>
         <li>Rewrote override and conflict handling. Overrides can now be applied to particular paths
         or path specifications.</li>
         <li>Refactored repositories: added
         override support, extended shorthand notation, added support for snapshot updates, added 'paths' type,
-            added exclusion support, moved path resolution into a separate module.</li>
+            added exclusion support, moved path resolution into a separate module. Added core repository
+            configured to the installation lib directory.
+        </li>
         <li>Added property support within quokka build files</li>
-        <li>Added maven plugin: currently supports importing artifacts from maven repositories.</li>
-        <li>Added jee plugin: currently supports packaging of war files.</li>
+        <li>Added a side by side comparison guide to Maven</li>
+        <li>Defined the process for uploading artifacts to the global repository</li>
+        <li>Added Maven plugin: currently supports importing artifacts from maven repositories.</li>
+        <li>Added JEE plugin: currently supports packaging of war files.</li>
+        <li>Added Jetty plugin: supports running of web applications via an embedded Jetty server instance.</li>
+        <li>Added JavaCC plugin: generates parsers from grammar files.</li>
+        <li>Added Scripting plugin: allows ad hoc targets to be written in variety of scripting languages.</li>
+        <li>Added Source plugin: allows bundling of source code and installation in the repository.</li>
+        <li>Added war archetype: archetype for building web applications.</li>
         <li>Improved bootstrapping: Allow any jvm-args to be specified, allow bootstrapping options
         to be defined in a separate file</li>
+        <li>Enhanced profiles: Added logical expressions for selecting profiles and automatic profiles
+        for operating systems.</li>
+        <li>Improved help: better plugin help, added help for ids and targets</li>
+        <li>Improved usability by reducing the namespace size for quokka properties and targets</li>
         <li>Improved archetypes: Allow the artifact to be downloaded from a given repository</li>
+        <li>Improved Javadoc plugin: Added it as a proper developer report and added aggregation</li>
         <li>Added console mode to reduce startup overhead</li>
         <li>Improved test coverage for key code paths and validated project, repository and plugin dtds</li>
         <li>Improved XML serialisation for XML generated by quokka plugins</li>
