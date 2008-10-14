@@ -4,7 +4,7 @@
 <project>
     <description>Metadata module providing a subset of project metadata for plugins</description>
 
-    <artifacts group="quokka.core.metadata" version="0.3">
+    <artifacts group="quokka.core.metadata" version="0.3.1-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
