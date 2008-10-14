@@ -4,7 +4,7 @@
 <project>
     <description>Integration testing base classes</description>
 
-    <artifacts group="quokka.core.itest" version="0.3">
+    <artifacts group="quokka.core.itest" version="0.3.1-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
