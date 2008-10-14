@@ -4,7 +4,7 @@
 <project>
     <description>Bootstrap module allows automatic booting (and forking) of different quokka versions</description>
 
-    <artifacts group="quokka.core.bootstrap" version="0.3-ss">
+    <artifacts group="quokka.core.bootstrap" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
