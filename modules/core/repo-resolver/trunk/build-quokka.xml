@@ -4,7 +4,7 @@
 <project>
     <description>Resolves artfitact paths from a repository</description>
 
-    <artifacts group="quokka.core.repo-resolver" version="0.3">
+    <artifacts group="quokka.core.repo-resolver" version="0.3.1-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
