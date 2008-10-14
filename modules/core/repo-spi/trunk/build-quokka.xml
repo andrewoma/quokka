@@ -4,7 +4,7 @@
 <project>
     <description>Repository Service Provider Interface (SPI)</description>
 
-    <artifacts group="quokka.core.repo-spi" version="0.3-ss">
+    <artifacts group="quokka.core.repo-spi" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
