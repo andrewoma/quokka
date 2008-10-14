@@ -1,0 +1,17 @@
+<project name="itest">
+    <artifacts group="group" version="version">
+        <artifact name="name"/>
+    </artifacts>
+
+    <paths>
+        <path id="path1" description="Path 1 desc"/>
+        <path id="path2" description="Path 2 desc"/>
+    </paths>
+
+    <dependency-set>
+        <dependency name="qdox" version="1.5" pathSpecs="path1 < (crap,shit)"/>
+        <dependency name="bsh" version="2.1">
+            <path-spec to="path1" from="runtime" descend="true" mandatory="true" options="crap,shit"/>
+        </dependency>
+    </dependency-set>
+</project>

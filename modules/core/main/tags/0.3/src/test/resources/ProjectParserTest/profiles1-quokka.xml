@@ -1,0 +1,26 @@
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
+<project name="test">
+    <artifacts group="dummy.group" version="1.0-m01-ss">
+        <artifact name="artifact1" paths="runtime"/>
+        <artifact name="artifact2" paths="test" profiles="p1"/>
+        <artifact name="artifact3" paths="compile" profiles="p2"/>
+    </artifacts>
+
+    <dependency-set>
+        <profile id="p1" description="Profile 1"/>
+        <profile id="p2" description="Profile 2"/>
+
+        <path id="runtime"/>
+        <path id="test" profiles="p1"/>
+        <path id="compile" profiles="p2"/>
+
+        <dependency group="apache.ant" version="1.7.1" paths="compile, runtime"/>
+        <dependency group="apache.ant" name="trax" version="1.7.1" paths="compile, runtime" profiles="p1"/>
+        <dependency group="apache.ant" name="junit" version="1.7.1" paths="compile, runtime" profiles="p2"/>
+        <plugin group="quokka.plugin.junitplugin" version="1.0-m01-ss">
+            <target name="test1" profiles="p1"/>
+            <target name="test2" profiles="p2"/>
+            <target name="test3"/>
+        </plugin>
+    </dependency-set>
+</project>

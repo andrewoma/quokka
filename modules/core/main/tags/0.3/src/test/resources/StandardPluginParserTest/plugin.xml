@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin PUBLIC "quokka.ws/dtd/plugin-0.2" "http://quokka.ws/dtd/plugin-0.2.dtd">
+
+<plugin class="somepackage.someclass" name-space="some.name.space">
+    <types>
+        <type id="war" description="war desc" extension="war"/>
+        <type id="ear" description="ear desc" extension="ear"/>
+    </types>
+
+    <targets>
+        <target name="target1"
+                alias="alias1"
+                depends="target2, target3"
+                enabled-by-default="true"
+                implements="lifecyce:clean"
+                prefix="prefix1"
+                template="true"
+                template-name="template-name1"
+                abstract="true"
+                description="Description1"
+                main="true">
+
+            <path-group id="group1" paths="path1, path2" merge-with-core="true"/>
+            <path-group id="group2" paths="path3" merge-with-core="false"/>
+            <path-group id="group3" paths="path4"/>
+            
+            <property name="t1prop1" value="t1value1"/>
+            <property name="t1prop2">t1value2</property>
+
+            <project-path description="Some path1" id="path1" descend-default="true" mandatory-default="true"/>
+            <project-path description="Some path2" id="path2" descend-default="false" mandatory-default="false"/>
+            <project-path description="Some path3" id="path3"/>
+        </target>
+
+        <target name="target2"
+                enabled-by-default="false"
+                template="false"
+                abstract="false"
+                main="false">
+        </target>
+    </targets>
+
+    <properties>
+        <property name="prop1" value="value1" targets="target1"/>
+        <property name="prop2">value2</property>
+        <property name="prop3" value="value3" targets="target2"/>
+    </properties>
+</plugin>
