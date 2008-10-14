@@ -1,0 +1,4 @@
+<project name="core.repo-spi">
+    <target name="clean"/>
+    <target name="install"/>
+</project>
