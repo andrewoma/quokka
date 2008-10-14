@@ -4,7 +4,7 @@
 <project>
     <description>Bundle containing all of the core modules</description>
 
-    <artifacts group="quokka.bundle" version="0.3-ss">
+    <artifacts group="quokka.bundle" version="0.3">
         <artifact name="core" paths="dist"/>
     </artifacts>
 
