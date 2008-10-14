@@ -1,0 +1,28 @@
+<project name="core.bundle">
+    <target name="clean"/>
+    <target name="install"/>
+
+    <target name="dist" depends="repo:copy, copy-core, copy-dist, docbook-pdf, javadocs">
+    <!--<target name="dist">-->
+        <property name="distdir" location="${q.project.targetDir}/dist/quokka-${q.project.artifact.version}"/>
+        <mkdir dir="${distdir}"/>
+        <copy todir="${distdir}">
+            <fileset dir="${q.project.sourceDir}/distribution"/>
+        </copy>
+        <property name="distfile" location="${q.project.targetDir}/quokka-${q.project.artifact.version}.zip"/>
+        <copy todir="${distdir}" file="${docbook-pdf.out}"/>
+        <chmod file="${distdir}/bin/quokka" perm="a+x"/>
+
+        <!-- Make a zip file, fixing cr and permisisons for quokka script -->
+        <fixcrlf srcdir="${distdir}" includes="**/quokka" cr="remove"/>
+        <zip destfile="${distfile}">
+            <fileset dir="${distdir}/.." excludes="**/quokka"/>
+            <zipfileset dir="${distdir}/.." filemode="755" includes="**/quokka"/>
+        </zip>
+    </target>
+
+    <target name="javadocs">
+        <subant target="javadoc:collect" buildpath="../bootstrap-util:../metadata:../plugin-spi:../repo-resolver:../repo-spi:../util:../version"/>
+        <run-target target="javadoc:aggregate-report"/>
+    </target>
+</project>
