@@ -4,7 +4,7 @@
 <project>
     <description>Base classes for unit tests</description>
 
-    <artifacts group="quokka.core.test" version="0.3-ss">
+    <artifacts group="quokka.core.test" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
