@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.2" "http://quokka.ws/dtd/repository-0.2.dtd">
+<artifact group="group1" name="name1" stub="false" type="jar" version="version1">
+    <paths>
+        <path description="Runtime path" id="runtime"/>
+    </paths>
+    <dependencies>
+        <dependency group="dep-group1" name="dep-name1" paths="runtime" type="dep-type1" version="dep-version1"/>
+    </dependencies>
+</artifact>

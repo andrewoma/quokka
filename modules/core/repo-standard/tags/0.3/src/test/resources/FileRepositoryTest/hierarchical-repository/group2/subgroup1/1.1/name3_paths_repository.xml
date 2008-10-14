@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE artifact PUBLIC "quokka.ws/dtd/repository-0.1" "http://quokka.ws/dtd/repository-0.1.dtd">
+<artifact group="group2.subgroup1" name="name3" type="paths" version="1.1">
+    <dependencies>
+        <dependency group="dep-group1" name="dep-name1" version="dep-version1" type="dep-type1"/>
+    </dependencies>
+</artifact>
