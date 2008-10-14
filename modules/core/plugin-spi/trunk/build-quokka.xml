@@ -4,7 +4,7 @@
 <project>
     <description>Plugin Service Provider Interface (SPI) for plugins</description>
 
-    <artifacts group="quokka.core.plugin-spi" version="0.3-ss">
+    <artifacts group="quokka.core.plugin-spi" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
