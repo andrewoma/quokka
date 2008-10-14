@@ -1,0 +1,60 @@
+/*
+ * Copyright 2007-2008 Andrew O'Malley
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+package ws.quokka.core.bootstrap_util;
+
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+
+
+/**
+ * TargetLogger logs messages via an Ant target
+ **/
+public class TargetLogger extends AbstractLogger {
+    //~ Instance fields ------------------------------------------------------------------------------------------------
+
+    private Target target;
+
+    //~ Constructors ---------------------------------------------------------------------------------------------------
+
+    public TargetLogger(Target target) {
+        super(target.getProject());
+        this.target = target;
+    }
+
+    //~ Methods --------------------------------------------------------------------------------------------------------
+
+    public void debug(String message) {
+        log(target, message, Project.MSG_DEBUG);
+    }
+
+    public void verbose(String message) {
+        log(target, message, Project.MSG_VERBOSE);
+    }
+
+    public void warn(String message) {
+        log(target, message, Project.MSG_WARN);
+    }
+
+    public void error(String message) {
+        log(target, message, Project.MSG_ERR);
+    }
+
+    public void info(String message) {
+        log(target, message, Project.MSG_INFO);
+    }
+}

@@ -1,0 +1,4 @@
+<project name="core.bootstrap-util">
+    <target name="clean"/>
+    <target name="install"/>
+</project>

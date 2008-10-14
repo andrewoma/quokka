@@ -1,0 +1,96 @@
+options
+{
+    LOOKAHEAD=2;
+	static=false;
+}
+
+PARSER_BEGIN(ProfilesMatcher)
+package ws.quokka.core.bootstrap_util.profile;
+
+import java.util.Set;
+import java.io.StringReader;
+
+public class ProfilesMatcher
+{
+    private Set active;
+	private String expression;
+
+    public ProfilesMatcher(Set active, String expression) {
+		this(new StringReader(expression));
+		this.active = active;
+		this.expression = expression;
+	}
+
+	public boolean matches() {
+		try {
+			return expr();
+		} catch (Throwable t) {
+			throw new RuntimeException("Invalid profiles expression: '" + expression + "' " + t.getMessage());
+		}
+	}
+}
+
+PARSER_END(ProfilesMatcher)
+
+SKIP :
+{
+    " "
+|   "\r"
+|   "\n"
+|   "\t"
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>|<PERIOD>)* >
+| < #LETTER: [ "a"-"z", "A"-"Z" ] >
+| < #DIGIT: [ "0"-"9"] >
+| < #PERIOD: [ "." ] >
+}
+
+boolean expr():
+{
+    boolean a;
+    boolean b;
+}
+{
+    a=term()
+    (
+        "|" b=expr()    { a |= b; }
+    )*
+                        { return a; }
+}
+
+boolean term():
+{
+    boolean a;
+    boolean b;
+}
+{
+    a=unary()
+    (
+        "&" b=term()    { a &= b; }
+|       "+" b=term()    { a &= b; } /* Make '+' alias for '&' to prevent the need for escaping in XML attributes */
+    )*
+                        { return a; }
+}
+
+boolean unary():
+{
+    boolean a;
+}
+{
+    "!" a=element()     { return !a; }
+|   "-" a=element()     { return !a; } /* Make backward compatible for the moment */
+|   a=element()         { return a; }
+}
+
+boolean element():
+{
+    Token t;
+    boolean a;
+}
+{
+    t=<IDENTIFIER>      { return active.contains(t.toString()); }
+|   "(" a=expr() ")"    { return a; }
+}
