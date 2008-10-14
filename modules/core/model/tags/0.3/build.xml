@@ -1,0 +1,4 @@
+<project name="core.model">
+    <target name="clean"/>
+    <target name="install"/>
+</project>
