@@ -1,0 +1,4 @@
+<project name="quokka.internal.module-depset">
+    <target name="clean"/>
+    <target name="install"/>
+</project>
