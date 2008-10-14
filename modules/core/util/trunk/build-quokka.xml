@@ -4,7 +4,7 @@
 <project>
     <description>Common utilities</description>
 
-    <artifacts group="quokka.core.util" version="0.3">
+    <artifacts group="quokka.core.util" version="0.3.1-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
