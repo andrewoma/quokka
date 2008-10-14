@@ -4,7 +4,7 @@
 <project>
     <description>Standard repository implementations including file, checksum, url, indexed, delegating and bundled repositories</description>
 
-    <artifacts group="quokka.core.repo-standard" version="0.3">
+    <artifacts group="quokka.core.repo-standard" version="0.3.1-ss">
         <artifact paths="runtime"/>
     </artifacts>
 
