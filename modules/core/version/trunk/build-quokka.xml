@@ -4,7 +4,7 @@
 <project>
     <description>Versions, ranges and unions of quokka artifacts</description>
 
-    <artifacts group="quokka.core.version" version="0.3-ss">
+    <artifacts group="quokka.core.version" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
