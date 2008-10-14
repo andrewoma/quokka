@@ -4,7 +4,7 @@
 <project>
     <description>Utilities required for bootstrapping that can be reused in other modules</description>
 
-    <artifacts group="quokka.core.bootstrap-util" version="0.3-ss">
+    <artifacts group="quokka.core.bootstrap-util" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
