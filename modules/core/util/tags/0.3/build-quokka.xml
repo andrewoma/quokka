@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project PUBLIC "quokka.ws/dtd/project-0.2" "http://quokka.ws/dtd/project-0.2.dtd">
+
+<project>
+    <description>Common utilities</description>
+
+    <artifacts group="quokka.core.util" version="0.3">
+        <artifact paths="runtime"/>
+    </artifacts>
+
+    <bootstrap core="[0.3,0.3]" spec-version="[1.4,1.6]"/>
+
+    <dependency-set>
+        <dependency group="apache.ant" version="1.7.1" paths="compile, runtime"/>
+        <dependency group="apache.ant" name="launcher" version="1.7.1" paths="compile, runtime"/>
+        <dependency group="quokka.core.bootstrap-util" version="0.3" paths="compile, runtime"/>
+        <dependency group="quokka.core.test" version="0.3" paths="test-compile(junit)"/>
+
+        <dependency-set group="quokka.internal.java-depset" version="0.2"/>
+    </dependency-set>
+</project>

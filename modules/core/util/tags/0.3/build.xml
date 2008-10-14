@@ -1,0 +1,4 @@
+<project name="core.util">
+    <target name="clean"/>
+    <target name="install"/>
+</project>
