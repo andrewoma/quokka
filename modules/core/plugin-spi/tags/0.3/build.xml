@@ -1,0 +1,4 @@
+<project name="core.plugin-spi">
+    <target name="clean"/>
+    <target name="install"/>
+</project>
