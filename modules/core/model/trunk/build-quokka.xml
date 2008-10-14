@@ -4,7 +4,7 @@
 <project>
     <description>The quokka project model</description>
 
-    <artifacts group="quokka.core.model" version="0.3-ss">
+    <artifacts group="quokka.core.model" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
