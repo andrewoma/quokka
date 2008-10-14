@@ -4,7 +4,7 @@
 <project>
     <description>Dependency set for creating plugins - for internal use only</description>
 
-    <artifacts group="quokka.internal.plugin-depset" type="depset" version="0.3">
+    <artifacts group="quokka.internal.plugin-depset" type="depset" version="0.3.1-ss">
         <artifact/>
     </artifacts>
 
