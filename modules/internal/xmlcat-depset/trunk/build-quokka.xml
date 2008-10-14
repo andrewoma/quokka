@@ -4,7 +4,7 @@
 <project>
     <description>Dependency set for creating XML catalogs - for internal use only</description>
 
-    <artifacts group="quokka.internal.xmlcat-depset" type="depset" version="0.2-ss">
+    <artifacts group="quokka.internal.xmlcat-depset" type="depset" version="0.2">
         <artifact/>
     </artifacts>
 
