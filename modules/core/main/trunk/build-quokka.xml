@@ -4,7 +4,7 @@
 <project>
     <description>Main module providing the core quokka functionality</description>
 
-    <artifacts group="quokka.core.main" version="0.3-ss">
+    <artifacts group="quokka.core.main" version="0.3">
         <artifact paths="runtime"/>
     </artifacts>
 
