@@ -4,7 +4,7 @@
 <project>
     <description>Dependency set for creating java modules</description>
 
-    <artifacts group="quokka.internal.java-depset" type="depset" version="0.2">
+    <artifacts group="quokka.internal.java-depset" type="depset" version="0.2.1-ss">
         <artifact/>
     </artifacts>
 
